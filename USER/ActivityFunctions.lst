@@ -1,0 +1,3097 @@
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE ACTIVITYFUNCTIONS
+OBJECT MODULE PLACED IN ..\OBJ\ActivityFunctions.obj
+COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\ActivityFunctions.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE O
+                    -RDER NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDW
+                    -ARE\sht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\ActivityFunctions.lst) 
+                    -TABS(2) OBJECT(..\OBJ\ActivityFunctions.obj)
+
+line level    source
+
+   1          /* VHB15AÊª»¯Æ÷*/ 
+   2          
+   3          #include "all.h"
+   4          
+   5          //2019.03.29
+   6          sfr P4M0 = 0xB4; 
+   7          sfr P4M1 = 0xB3;
+   8          sfr P4SW = 0xBB;
+   9          sfr WDT_CONTR = 0xC1;
+  10          sbit EA       = 0xA8^7;
+  11          sbit EX1      = 0xA8^2;
+  12          sbit ET0      = 0xA8^1;
+  13          sfr P1M0 = 0x92; 
+  14          sfr P1M1 = 0x91;
+  15          sbit P10 = 0x90^0;
+  16          sbit P12 = 0x90^2;
+  17          sbit P13 = 0x90^3;
+  18          sbit P17 = 0x90^7;
+  19          sbit P20 = 0xA0^0;
+  20          sbit P21 = 0xA0^1;
+  21          sbit P22 = 0xA0^2;
+  22          sbit P27 = 0xA0^7;
+  23          sfr P2M0 = 0x96;
+  24          sfr P2M1 = 0x95;
+  25          sbit P32 = 0xB0^2;
+  26          sbit P34 = 0xB0^4;
+  27          sbit P35 = 0xB0^5;
+  28          sbit P36 = 0xB0^6;
+  29          sbit P37 = 0xB0^7;
+  30          sfr P3M0 = 0xB2;
+  31          sfr P3M1 = 0xB1; 
+  32          sbit P40 = 0xC0^0;
+  33          sbit P43 = 0xC0^3;
+  34          sbit TI  = 0x98^1;
+  35          sbit RI  = 0x98^0;
+  36          sbit TR0 = 0x88^4;
+  37          sbit IT1 = 0x88^2;
+  38          
+  39          static enum Wire_Mode_Def  //heating wire mode
+  40          { 
+  41            Wire_Sel_Double = 0,  //double heating wire
+  42            Wire_Sel_In_Only,     //INSP Only heating wire
+  43            Wire_Sel_None,        //Whithout heating wire
+  44          }Wire_Mode_Sel; 
+  45              
+  46          //´íÎó¼ì²âºÍ±¨¾¯Ïà¹Ø±äÁ¿  
+  47          uint8_t  ERR_Kind=0;//´íÎóµÄÖÖÀà//0´«¸ÐÆ÷/1¸ßÎÂ/2µÍÎÂ/3µÍÊª/4ÎÞË®/5»¼Õß´«¸ÐÆ÷/6³öÆø¿Ú´«¸ÐÆ÷/7¼ÓÈÈÅÌ´«¸ÐÆ÷ 
+             -  
+  48          bit Wire_Mode_Mismatch ; //»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä   
+  49          static bit JRP_Sensor_Err;
+  50          static bit CQK_Sensor_Err;
+  51          static bit RTD_Sensor_Err;
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 2   
+
+  52          static bit SHIDU_Sensor_Err;    
+  53              
+  54          uint8_t AlarmSoundPauseStatus = 0;//±¨¾¯ÉùÒôÔÝÍ£ 0-Õý³£±¨¾¯ 1-±¨¾¯ÉùÒôÔÝÍ£(½ö±¨¾¯Ê±ÓÐÐ§)
+  55          uint8_t AlarmInfoIndex = 0;//
+  56                    
+  57          static uint8_t  xdata  HiTemp_Count=0;    //¸ßÎÂ¶È´ÎÊý
+  58          static uint8_t  xdata  LoTemp_Count=0;    //µÍÎÂ¶È´ÎÊý
+  59          static uint8_t  xdata  LoTemp_CQK_Count=0;//³öÆø¿ÚµÍÎÂ¶È´ÎÊý
+  60          static uint8_t  xdata  LoHumity_Count=0;  //µÍÊª¶È´ÎÊý
+  61          
+  62          uint8_t No_HeatSensor_Times=0;//¼ÓÈÈÅÌÎÂ¶È´«¸ÐÆ÷ÎÞÏìÓ¦´ÎÊý
+  63          static uint16_t  No_CQKSensor_Times=0;//³öÆø¿ÚÎÂ¶È´«¸ÐÆ÷ÎÞÏìÓ¦´ÎÊý
+  64          static uint16_t  CQKSensor_Hithen800_Times=0;//³¬¹ý80¶È
+  65          static uint16_t  JRP_Sensor_Temp_No_Change_Times=0;// ¼ÓÈÈÅÌÎÂ¶ÈÍêÈ«²»±äµÄ´ÎÊý2014-07-03
+  66          static uint16_t  CQK_Sensor_Temp_No_Change_Times=0;// ³öÆø¿ÚÎÂ¶ÈÍêÈ«²»±äµÄ´ÎÊý    
+  67          static uint8_t ERR_RT_Temp_Times=0;//»¼ÕßÎÂ¶È³¬¹ý80¶È
+  68          static uint8_t No_ReadData_SHIDU_Times=0;//»¼Õß¶ËÎÂ¶ÈÎÞÏìÓ¦´ÎÊý
+  69          static uint16_t  RT_Temp_Not_Updated_10mS = 0;//Á¬ÐøÎ´²ÉÑùµ½Êý¾ÝµÄÊ±¼ä
+  70          static uint8_t No_ReadData_Temp_Times=0;//³öÆø¿ÚÎÂ¶ÈÎÞÏìÓ¦´ÎÊý
+  71          static uint16_t  Nochange_Times=0;//»¼Õß¶ËÎÂÊª¶ÈÍêÈ«²»±äµÄ´ÎÊý
+  72          
+  73          uint8_t RT_Temp_Reach_Set_Cnt = 0;//ÈËÌåÎÂ¶È´ïµ½Éè¶¨ÎÂ¶È-1.5
+  74          uint8_t CQK_Temp_Reach_Set_Cnt = 0;//³öÆø¿ÚÎÂ¶È´ïµ½30
+  75          
+  76          uint8_t show_str[16]; 
+  77          
+  78          static uint8_t xdata  Work_Day=0;
+  79          static uint8_t xdata  Work_Hour=0;
+  80          static uint8_t xdata  Work_Min=0;
+  81          static uint8_t xdata  Work_Sec=0;
+  82          
+  83          //´æ´¢Ïà¹Ø
+  84          struct stc_data_flash data_flash;//
+  85          static uint16_t  Run_Count;
+  86          BYTE  xdata  SaveData[16];
+  87                                              
+  88          //´®¿ÚÏà¹Ø±äÁ¿                                    
+  89          static bit Buff_Full_flag;    
+  90          static uint8_t xdata  Rec_Count;
+  91          static BYTE  xdata  Rec_Buff[21];          //½ÓÊÕµ½µÄÖ¸ÁîREAD0001[CR]-READ0200[CR];
+  92                                              //Ò»ÌõÖ¸Áî¿É½ÓÊÕ256ÌõÊý¾Ý                                   
+  93          static uint16_t   Tick_20ms=0;
+  94          uint8_t defalut_mode = Load_User_Pre_MODE;  //Ô¤ÉèÄ£Ê½Ñ¡Ôñ
+  95          
+  96          //ÊµÊ±²ÎÊý
+  97          int  xdata            RT_Temp=0;            //ÈËÌå¶ËÎÂ¶È
+  98          int  xdata            JEP_Temp=280;           //¼ÓÈÈÅÌÎÂ¶È
+  99          long  xdata           CQK_Temp=280;           //³öÆø¿ÚÎÂ¶È
+ 100          static uint16_t  xdata    RT_SHIDU=0;             //ÈËÌå¶ËÊª¶È
+ 101          static uint16_t  xdata    CONTROL_RT_SHIDU=550;     //¿ØÖÆ¼ÓÈÈµÄÊª¶È
+ 102          uint16_t    xdata Diplay_RTtemp = 0;
+ 103          
+ 104          //Éè¶¨²ÎÊý    
+ 105          uint8_t         Work_Mode = Invasive_Mode; //Ä¬ÈÏ1ÎªÓÐ´´Ä£Ê½ £¬0ÎªÎÞ´´Ä£Ê½£¬2£¬¼òÒ×Ä£Ê½(ÎÞ·¢ÈÈË¿)       
+ 106          int                   Set_RT_Temp=390;         //ÈËÌå¶ËÎÂ¶ÈÉè¶¨Öµ       
+ 107          uint16_t          Set_RT_WCTemp=340;       //ÈËÌåÎÞ´´ÎÂ¶È
+ 108          uint16_t          Set_RT_YCTemp=390;       //ÈËÌåÓÐ´´ÎÂ¶È
+ 109          uint16_t          Set_CQK_Temp=370;        //³öÆø¿ÚÎÂ¶È
+ 110          uint16_t          Set_CQK_WCTemp=310;      //ÈËÌåÎÞ´´ÎÂ¶È
+ 111          uint16_t          Set_CQK_YCTemp=370;      //ÈËÌåÓÐ´´ÎÂ¶È
+ 112          uint8_t         In_Exp_Ratio=4;  //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀý  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
+ 113          
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 3   
+
+ 114          //¼ÓÈÈÅÌÇý¶¯ºÍ¼ì²â
+ 115          uint16_t          HP_CNT_Int = 0;//¼ÓÈÈÅÌÖÐ¶Ï¼ì²â¼ÆÊý
+ 116          uint16_t          HP_CNT_Int_End_Rem = 0;//8S½áÊøÊ±¼ÓÈÈÅÌÖÐ¶Ï¼ì²â¼ÆÊý
+ 117          uint8_t         WireIn_State=0;      //¼ÓÈÈÏßIn×´Ì¬ 1-ÓÐ 0-ÎÞ
+ 118          uint8_t         WireOut_State=0;     //¼ÓÈÈÏßOut×´Ì¬    1-ÓÐ 0-ÎÞ
+ 119          uint8_t         HeaterPlate_State = 0; //¼ÓÈÈÅÌ×´Ì¬ 1-ÓÐ 0-ÎÞ
+ 120          
+ 121          uint8_t         Micro_Temp_Val=0;   //¼ÓÈÈÅÌ×î´óÎª201;×îÐ¡Îª0,1±íÊ¾10ms¼ÓÈÈÊ±¼ä
+ 122          uint16_t          Micro_Temp_In=0;    //½øÆøÖ§
+ 123          uint16_t          Micro_Temp_Out=0;   //³öÆøÖ§
+ 124          
+ 125          //¿ØÖÆ²ÎÊý
+ 126          static uint16_t   Aim_SHIDU=900;  //Ä¿±êÊª¶È 
+ 127          static int  xdata  JEP_Temp_Aim=400;           //¼ÓÈÈÅÌÄ¿±êÎÂ¶È
+ 128          static uint16_t Wire_Warm_Up_Sec;    //µ±<=300Ê±ÏÞÖÆ·¢ÈÈË¿×î´ó¼ÓÈÈ¹¦ÂÊ
+ 129          static uint16_t Plate_Warm_Up_Sec;   //µ±<=600Ê±ÏÞÖÆ·¢ÈÈÅÌ×î´ó¼ÓÈÈ¹¦ÂÊ
+ 130          static uint16_t Humidity_No_Change_Sec;//Êª¶È²»¸Ä±äµÄ¼ÆÊý£¬µ±´óÓÚ600Ê±¿ÉÄÜÌ½Í·Ê§Ð§£¬Êª¶È¿ØÖÆÊ§Ð§
+ 131          static uint16_t Low_Power_Mode_Flag = 0;//µÍ¹¦ÂÊÄ£Ê½Ê¹ÄÜ±êÖ¾
+ 132          
+ 133          uint8_t  xdata   Test_Mode_Dis_Jrp_Ctl=0; //´Ó²âÊÔÄ£Ê½½øÈëÕý³£Ä£Ê½¼´ÏÔÊ¾ËùÓÐ¹¤×÷Êý¾Ý  
+ 134          static uint8_t  xdata   Micro_Adj_Mode_Test;  //¼ÓÈÈµÄÄ£Ê½²âÊÔ
+ 135          uint16_t xdata     Working_Normal=0;//Õý³£¹¤×÷¶ÁÊý£¬Ã¿Ãë¼Ó1£¬¹ÊÕÏÖØÖÃ£¬¸Ä±äÉèÖÃÒ²ÖØÖÃ
+ 136          
+ 137          static struct PID
+ 138          {
+ 139            int Uk; //×ÜµÄ¿ØÖÆÁ¿
+ 140            int Uk1;//ÉÏ´ÎµÄ×Ü¿ØÖÆÁ¿
+ 141            int Sum_error;//Îó²î×ÜÁ¿
+ 142            int Ek;//µ±Ç°µÄÎó²îÁ¿
+ 143            int Ek1;//Ç°Ò»´ÎµÄÎó²îÁ¿
+ 144            int Ek2;//Ç°¶þ´ÎµÄÎó²îÁ¿       
+ 145          }PID_temp,PID_temp2,PID_temp3;//¶¨ÒåÒ»¸öÎÂ¶ÈPID½á¹¹
+ 146          
+ 147          
+ 148           //Ãë    ·Ö    Ê±    ÈÕ    ÔÂ  ÐÇÆÚ    Äê
+ 149          static BYTE   NowTime[7]= {0x00, 0x00, 0xB2, 0x01, 0x01, 0x05, 0x12};
+ 150          
+ 151          //uint8_t Alarm_time_det_10mS_cnt = 0;
+ 152          
+ 153          //================================================== 
+ 154          
+ 155          static void Store_Data(void);           //´æ·ÅÊý¾Ý
+ 156          static void Get_RunCount(void);         //´æ·ÅÊý¾Ý
+ 157          static void Init_Erase_Flash_Data(void);//³õÊ¼»¯Ê±²Á³ýÍâ²¿FLASHÊý¾Ý
+ 158          static void Init_port(void); //³õÊ¼»¯¶Ë¿Ú×´Ì¬£¬ÏÔÊ¾°æ±¾ºÅ£¬¶ÁÈ¡Êý¾Ý£¬ÆÁÄ»²âÊÔ£¬W25XÇåÊý¾Ý
+ 159          static void Main_Init(void);  //µÃµ½´æ·ÅÊý¾ÝµÄÌõÊý,»­¹¤×÷´°¿Ú,Ê¹ÄÜä¸Á÷³äµç,RTC¼ì²â,ÆäËü±äÁ¿³õÊ¼»¯
+ 160          static void Write_Default_Setting_to_flash(void); //°ÑÄ¬ÈÏ³ö³§Éè¶¨Ð´ÈëFLASH
+ 161          static void LCD_Show_Verion(void);//ÏÔÊ¾°æ±¾ºÅ
+ 162          static void PatientTemp_NoneHeatWire_Adj(void);//ÎÞ»ØÂ··¢ÈÈË¿Ê±µÄ»¼Õß¶ËÎÂ¶Èµ÷½Ú
+ 163          static void PID_Calc(void); //PIDËã·¨
+ 164          static void HeatPlateTemp_Aim_PID_Calc(void); //¼ÓÈÈÅÌÄ¿±êÎÂ¶ÈPIDËã·¨---
+ 165          static void HeatPlate_PID_Calc(void);//¼ÓÈÈÅÌµÄPIDËã·¨---
+ 166          
+ 167          
+ 168          
+ 169          static void  Interrupt_EXT1()  interrupt 2  //Íâ²¿ÖÐ¶ÏEXT1
+ 170          {
+ 171   1        HP_CNT_Int++; 
+ 172   1      }
+ 173          
+ 174          static void  Interrupt_Time0()  interrupt 1  using  2  //10msÖÐ¶ÏÒ»´Î //22.1184M
+ 175          {   
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 4   
+
+ 176   1         Timer_T0_INT_Main();
+ 177   1         Tick_20ms++;
+ 178   1         
+ 179   1      }
+ 180          
+ 181          static void  Serial (void) interrupt 4 using 1    //´®¿ÚÖÐ¶Ï
+ 182          {
+ 183   1          if(RI)
+ 184   1          {
+ 185   2            EUSART_Receive_ISR();
+ 186   2      
+ 187   2            RI = 0;
+ 188   2          }
+ 189   1          
+ 190   1          if(TI)
+ 191   1          {     
+ 192   2            EUSART_Transmit_ISR();
+ 193   2            TI = 0;
+ 194   2          }
+ 195   1      }
+ 196          
+ 197          
+ 198          
+ 199          static enum
+ 200          {
+ 201              UART_REC_STATE_READY = 0, //×¼±¸½ÓÊÕ,³õÊ¼»¯¼ÆÊý,  1
+ 202              UART_REC_STATE_HEADER_DET,//¼ì²âÃüÁîÍ· "NEUNIT=1," ¹²9¸ö×Ö·û 
+ 203              UART_REC_STATE_DATA_TAIL_DET,//½ÓÊÕÃüÁî(×î¶à9¸ö×Ö·û)£¬¼ì²âÃüÁîÎ²"\CR"¹²3¸ö×Ö·û 
+ 204              UART_REC_STATE_DONE, //½ÓÊÕÕýÈ·Íê³É
+ 205          }UART_RecState = UART_REC_STATE_READY;
+ 206          
+ 207          
+ 208           static uint8_t   UART_Rec_Buf[20];//½ÓÊÕ»º³åÇø 
+ 209           
+ 210          static void UART_RecBuf_Clear_Fun(void)  //Çå¿Õ»º³åÇø
+ 211           {
+ 212   1         uint8_t i;
+ 213   1         
+ 214   1         for(i=0;i<=19;i++)
+ 215   1          {
+ 216   2             UART_Rec_Buf[i] = 0;        
+ 217   2          } 
+ 218   1       }
+ 219          
+ 220          //½ÓÊÕÊý¾Ý
+ 221          static uint8_t   DataToPc[8];
+ 222          void UART_RecData_Func(void)
+ 223          {
+ 224   1          static uint8_t   UART_Rec_Cnt = 0;//½ÓÊÕÊý¾ÝÊýÁ¿ 
+ 225   1      //    static uint8_t UART_Len = 0;//½ÓÊÕµÄÊý¾Ý³¤¶È
+ 226   1          uint8_t   i;
+ 227   1          uint8_t   uart_data;    
+ 228   1          unsigned long   Adress;
+ 229   1      //    uint16_t    sum;
+ 230   1        
+ 231   1          while(EUSART_DataReady)//»º³åÇøÓÐÊý¾Ý
+ 232   1          {
+ 233   2            uart_data = EUSART_Read(); //´Ó»º³åÇø¶ÁÒ»¸öÊý¾Ý
+ 234   2            
+ 235   2            if(Work_State == UI_STATE_DATAREADER_MODE)
+ 236   2            {
+ 237   3                UART_Rec_Cnt++;//ÊýÁ¿Ôö¼Ó
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 5   
+
+ 238   3                if(UART_RecState == UART_REC_STATE_READY)//¿ªÊ¼
+ 239   3                {
+ 240   4                  UART_RecState = UART_REC_STATE_HEADER_DET;           
+ 241   4                  UART_RecBuf_Clear_Fun();//Çå¿Õ»º³åÇø
+ 242   4                  UART_Rec_Buf[0] = uart_data;//³õÊ¼½ÓÊÕ
+ 243   4                  UART_Rec_Cnt = 1; //ÊýÁ¿
+ 244   4                  //EUSART_Write('A');
+ 245   4                }
+ 246   3                else if(UART_RecState == UART_REC_STATE_HEADER_DET)//¼ì²â½ÓÊÕÍ·
+ 247   3                {//×¢Òâ:×îÖÕ8¸ö×Ö½Ú´æ·ÅµÄË³ÐòÊÇÏÈÊÕµ½µÄÔÚ×îµÍÎ»£¬Àý:ÊÕµ½µÄÊÇAXXLOGET£¬´æ·ÅµÄÊÇTEGOLXXA
+ 248   4                  UART_Rec_Buf[UART_Rec_Cnt-1] = uart_data;//´ÓµÍ×Ö½ÚÍù¸ß×Ö½Ú´æ·Å
+ 249   4                  if(UART_Rec_Cnt>=3)//½ÓÊÕµ½3¸öÊý¾Ý RD 13
+ 250   4                  {
+ 251   5                    if((UART_Rec_Buf[0] == 'R')//Í·±êÖ¾ÅÐ¶Ï
+ 252   5                      &&(UART_Rec_Buf[1] == 'D'))
+ 253   5                    {
+ 254   6        //              EUSART_Write_Str("HEAR_OK",7);
+ 255   6                      UART_RecState = UART_REC_STATE_DATA_TAIL_DET;//±êÖ¾OK£¬½ÓÊÕÊý¾Ý
+ 256   6                      UART_RecBuf_Clear_Fun();//Çå¿Õ»º³åÇø  
+ 257   6                      UART_Rec_Cnt = 0; //ÊýÁ¿
+ 258   6                    }
+ 259   5                    else
+ 260   5                    {
+ 261   6                      UART_Rec_Cnt--;//ÍùµÍÎ»ÒÆ
+ 262   6                      for(i=0;i<=18;i++) //Êý¾ÝÍùµÍÎ»ÒÆÒ»Î»
+ 263   6                      {
+ 264   7                         UART_Rec_Buf[i] = UART_Rec_Buf[i+1];        
+ 265   7                      }//×¢Òâ:×îÖÕ8¸ö×Ö½Ú´æ·ÅµÄË³ÐòÊÇÏÈÊÕµ½µÄÔÚ×îµÍÎ»£¬Àý:ÊÕµ½µÄÊÇAXXLOGET£¬´æ·ÅµÄÊÇTEGOLXXA            
+             -   
+ 266   6                    }
+ 267   5                  } 
+ 268   4                }
+ 269   3                else if(UART_RecState == UART_REC_STATE_DATA_TAIL_DET)//¼ì²âÊý¾ÝºÍ½áÎ²
+ 270   3                {
+ 271   4                  UART_Rec_Buf[UART_Rec_Cnt-1] = uart_data;//´ÓµÍ×Ö½ÚÍù¸ß×Ö½Ú´æ·Å
+ 272   4      
+ 273   4                  if(UART_Rec_Cnt>=2)//×î¶à´æ·Å15¸öÊý¾Ý
+ 274   4                  { 
+ 275   5                    UART_RecState = UART_REC_STATE_DONE;//½ÓÊÕÍê³É        
+ 276   5                  }
+ 277   4                }
+ 278   3                
+ 279   3                if(UART_RecState == UART_REC_STATE_DONE)//¼ì²âµ½Î²±êÖ¾
+ 280   3                {
+ 281   4                  UART_RecState = UART_REC_STATE_READY; //×¼±¸ÏÂÒ»´Î¼ì²â
+ 282   4                  
+ 283   4                  Adress=UART_Rec_Buf[0];
+ 284   4                  Adress=(Adress<<8)+UART_Rec_Buf[1]-1;
+ 285   4                  Adress=(Adress<<4)+0x2000;
+ 286   4                  SPI_Read_nBytes(Adress,16,&SaveData[0]);
+ 287   4                  EUSART_Write_Str(&SaveData[0],16);//·¢ËÍ16¸ö×Ö½Ú¸øPC
+ 288   4                }           
+ 289   3             }
+ 290   2          }
+ 291   1      }
+ 292          
+ 293          void HeaterWireModeDetFunc(void)
+ 294          {
+ 295   1            if(Wire_Mode_Sel == Wire_Sel_Double)//Ë«Ö§¼ÓÈÈ»ØÂ·µ«Êµ¼ÊÎ´¼ì²âµ½IN»òOUT          
+ 296   1          {
+ 297   2            if((WireIn_State == 0)||(WireOut_State == 0)) 
+ 298   2            {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 6   
+
+ 299   3              Wire_Mode_Mismatch = 1;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+ 300   3            }
+ 301   2            else
+ 302   2            {
+ 303   3              Wire_Mode_Mismatch = 0;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+ 304   3            }
+ 305   2          } 
+ 306   1          else if(Wire_Mode_Sel == Wire_Sel_In_Only)  //µ¥Ö§¼ÓÈÈ»ØÂ·µ«Êµ¼ÊÎ´¼ì²âµ½IN»ò¼ì²âµ½ÓÐOUT    
+ 307   1          {
+ 308   2            if((WireIn_State == 0)||(WireOut_State > 0))  
+ 309   2            {
+ 310   3              Wire_Mode_Mismatch = 1;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+ 311   3            }
+ 312   2            else
+ 313   2            {
+ 314   3              Wire_Mode_Mismatch = 0;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+ 315   3            }
+ 316   2          }
+ 317   1          else if(Wire_Mode_Sel == Wire_Sel_None) //ÎÞ¼ÓÈÈ»ØÂ·µ«Êµ¼Ê¼ì²âµ½ÓÐIN»òOUT
+ 318   1          {
+ 319   2            if((WireIn_State > 0)||(WireOut_State > 0)) 
+ 320   2            {
+ 321   3              Wire_Mode_Mismatch = 1;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+ 322   3            }
+ 323   2            else
+ 324   2            {
+ 325   3              Wire_Mode_Mismatch = 0;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+ 326   3            }
+ 327   2          } 
+ 328   1      }
+ 329          
+ 330          void RefreshTempHumidyFunc(uint8_t Refresh_En)//Ë¢ÐÂÏÔÊ¾ÎÂ¶ÈºÍÊª¶È
+ 331          {
+ 332   1        static uint8_t  xdata   Refresh_WenDu_Cnt = 0; 
+ 333   1        static uint8_t  xdata   Alarm_WenDu_Cnt = 0; 
+ 334   1      
+ 335   1        uint16_t Disp,color;
+ 336   1        uint16_t Temp_Dis_En = 0;//ÎÂ¶ÈÏÔÊ¾±êÖ¾
+ 337   1        bit Disp_Err;
+ 338   1      
+ 339   1        Refresh_WenDu_Cnt++;
+ 340   1        if(Refresh_WenDu_Cnt > 5)//1.2S
+ 341   1        {
+ 342   2          Refresh_WenDu_Cnt = 0;  
+ 343   2        } 
+ 344   1        
+ 345   1        Alarm_WenDu_Cnt++;
+ 346   1        if(Alarm_WenDu_Cnt > 1)
+ 347   1          Alarm_WenDu_Cnt = 0;
+ 348   1        
+ 349   1          Back_Color=WHITE18; 
+ 350   1          Disp_Err=0;
+ 351   1      
+ 352   1          Temp_Dis_En = 0;//ÎÂ¶ÈÏÔÊ¾±êÖ¾
+ 353   1          if(Refresh_En)Temp_Dis_En = 1;//Ç¿ÖÆË¢ÐÂÒ»´Î  
+ 354   1        
+ 355   1          color=BLACK18;
+ 356   1          if((Bit_is_one(ERR_Kind,Alarm_Const_HiTemp))   //»¼Õß¶Ë¸ßÎÂºìÉ«
+ 357   1            &&(Display_Temp_Kind==DISPLAY_Temperature_Patient))
+ 358   1          {
+ 359   2             Temp_Dis_En = 1;//ÎÂ¶ÈÏÔÊ¾±êÖ¾
+ 360   2             color=RED18; 
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 7   
+
+ 361   2              if(Alarm_WenDu_Cnt == 1)
+ 362   2              {
+ 363   3                color=WHITE18;
+ 364   3              }
+ 365   2          }
+ 366   1          else if(((Bit_is_one(ERR_Kind,Alarm_Const_LoTemp))&&(Display_Temp_Kind==0))  //»¼Õß¶ËµÍÎÂºìÉ«
+ 367   1                 ||((LoTemp_CQK_Count>120)&&(Display_Temp_Kind==1)))  //³öÆø¿ÚµÍÎÂºìÉ«
+ 368   1          {
+ 369   2             Temp_Dis_En = 1;//ÎÂ¶ÈÏÔÊ¾±êÖ¾
+ 370   2             color=RED18;
+ 371   2             if(Alarm_WenDu_Cnt == 1)
+ 372   2             color=WHITE18;
+ 373   2          }
+ 374   1          else
+ 375   1          {
+ 376   2            if(Refresh_WenDu_Cnt == 0)Temp_Dis_En = 1;//ÎÂ¶ÈÏÔÊ¾±êÖ¾
+ 377   2          }
+ 378   1          
+ 379   1          if(Temp_Dis_En == 1)
+ 380   1          {     
+ 381   2            if(Display_Temp_Kind==DISPLAY_Temperature_Chamber)//³öÆø¿ÚÎÂ¶È
+ 382   2            {
+ 383   3              Disp=CQK_Temp;
+ 384   3              Disp_Err=CQK_Sensor_Err; 
+ 385   3      
+ 386   3            }
+ 387   2            else if(Display_Temp_Kind==DISPLAY_Temperature_Patient) //ÈËÌå¶ËÎÂ¶È
+ 388   2            {
+ 389   3              Disp=Diplay_RTtemp;
+ 390   3              Disp_Err=RTD_Sensor_Err;
+ 391   3            }
+ 392   2            
+ 393   2            if(Disp_Err)
+ 394   2            {
+ 395   3               Draw_Rectangle_Real(POS_RT_TEMP_X+4,POS_RT_TEMP_Y,POS_RT_TEMP_X+56,POS_RT_TEMP_Y+103,WHITE18);     
+ 396   3               Draw_Rectangle_Real(POS_RT_TEMP_X,POS_RT_TEMP_Y,POS_RT_TEMP_X+3,POS_RT_TEMP_Y+29,RED18);
+ 397   3               Draw_Rectangle_Real(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,POS_RT_TEMP_X+3,POS_RT_TEMP_Y+63,RED18);
+ 398   3               Draw_Rectangle_Real(POS_RT_TEMP_X,POS_RT_TEMP_Y+73,POS_RT_TEMP_X+3,POS_RT_TEMP_Y+102,RED18);
+ 399   3               //Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,RED18); //»
+             -­µã  
+ 400   3            }
+ 401   2            else  if(Disp>=1000)//ÏÔÊ¾ÎÂ¶È
+ 402   2            {
+ 403   3              DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(Disp/1000)%10,color);  
+ 404   3              DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,(Disp%1000)/100,color);   
+ 405   3              DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+73,(Disp%100)/10,color);    
+ 406   3              Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,WHITE18); //È¥
+             -µôÐ¡Êýµã
+ 407   3            }
+ 408   2            else
+ 409   2            {
+ 410   3              DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(Disp/100)%10,color);  
+ 411   3              DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,Disp%100/10,color);   
+ 412   3              DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*2+5,Disp%10,color);    
+ 413   3              Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,color); //»­µã
+ 414   3            }
+ 415   2           }     
+ 416   1           
+ 417   1         //ÏÔÊ¾Êª¶È
+ 418   1          color=BLACK18;
+ 419   1          if(Bit_is_one(ERR_Kind,Alarm_Const_LoHumity))   //µÍÊª¶È±¨¾¯
+ 420   1          {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 8   
+
+ 421   2            Temp_Dis_En = 1;//ÎÂ¶ÈÏÔÊ¾±êÖ¾
+ 422   2            color=RED18;
+ 423   2            if(Alarm_WenDu_Cnt == 1)
+ 424   2            {
+ 425   3              color=WHITE18;
+ 426   3            }
+ 427   2          }
+ 428   1          else
+ 429   1          {
+ 430   2            if(Refresh_WenDu_Cnt == 0)Temp_Dis_En = 1;//ÎÂ¶ÈÏÔÊ¾±êÖ¾        
+ 431   2          }
+ 432   1            
+ 433   1          if(Temp_Dis_En == 1)
+ 434   1          {
+ 435   2            if(RTD_Sensor_Err)
+ 436   2            {     
+ 437   3               Draw_Rectangle_Real(POS_RT_RH_X+4 , POS_RT_RH_Y,POS_RT_RH_X+39,POS_RT_RH_Y+35,WHITE18);   
+ 438   3               Draw_Rectangle_Real(POS_RT_RH_X , POS_RT_RH_Y,POS_RT_RH_X+3,POS_RT_RH_Y+16,RED18);     
+ 439   3               Draw_Rectangle_Real(POS_RT_RH_X , POS_RT_RH_Y+19,POS_RT_RH_X+3,POS_RT_RH_Y+35,RED18);       
+ 440   3            }
+ 441   2            else
+ 442   2            { 
+ 443   3               DISP_RH_17X40(POS_RT_RH_X,POS_RT_RH_Y,RT_SHIDU%1000/100,color);
+ 444   3               DISP_RH_17X40(POS_RT_RH_X,POS_RT_RH_Y+19,RT_SHIDU%100/10,color);
+ 445   3            }
+ 446   2          } 
+ 447   1      }
+ 448          
+ 449          //---------Ë¢ÐÂÔËÐÐÊ±¼ä
+ 450          void RefreshRunTimeFunc(uint8_t Refresh_En)
+ 451          //Refresh_En 1-Ç¿ÖÆË¢ÐÂÒ»´Î£¬·ñÔòÃ¿·ÖÖÓË¢ÐÂÒ»´Î
+ 452          { 
+ 453   1        uint8_t t;
+ 454   1        static uint8_t Last_Sec = 60;   
+ 455   1        
+ 456   1        RX8010_GetTime(NowTime);  
+ 457   1        t = (NowTime[0]&0xF)%10;
+ 458   1        
+ 459   1        if(t != Last_Sec)//Ê±¼äÃëÓÐ±ä»¯
+ 460   1        {
+ 461   2           Last_Sec = t;
+ 462   2           if(Work_Sec<59)
+ 463   2           {
+ 464   3              Work_Sec++;
+ 465   3           }
+ 466   2           else
+ 467   2           {
+ 468   3             Work_Sec = 0;
+ 469   3             t = 0xff;//Ë¢ÐÂ±êÖ¾    
+ 470   3             if(Work_Min<59)
+ 471   3             {
+ 472   4                Work_Min++;
+ 473   4             }else
+ 474   3             {
+ 475   4                Work_Min=0;
+ 476   4                if(Work_Hour<23)
+ 477   4                {
+ 478   5                   Work_Hour++;
+ 479   5                }else
+ 480   4                {
+ 481   5                   Work_Hour=0;
+ 482   5                   if(Work_Day<99) Work_Day++;
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 9   
+
+ 483   5                }
+ 484   4             }
+ 485   3           }
+ 486   2        }
+ 487   1        
+ 488   1        if((Refresh_En)||(t == 0xff))
+ 489   1        {
+ 490   2          Refresh_En = 0;   
+ 491   2          if(Work_State != UI_STATE_SCREENSAVER_MODE)
+ 492   2          {
+ 493   3            Back_Color=WHITE18;
+ 494   3            DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y-5,Work_Day/10,BLACK18);
+ 495   3            DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+6,Work_Day%10,BLACK18);
+ 496   3            DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+22,Work_Hour/10,BLACK18);
+ 497   3            DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+33,Work_Hour%10,BLACK18);
+ 498   3            DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+47,Work_Min/10,BLACK18);
+ 499   3            DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+58,Work_Min%10,BLACK18);  
+ 500   3          }
+ 501   2        }
+ 502   1      }
+ 503          
+ 504          //---------Ë¢ÐÂRTCÊ±ÖÓ
+ 505          void RefreshRTCTimeFunc(void)
+ 506          {
+ 507   1        static uint8_t Last_Min;
+ 508   1        uint8_t color;
+ 509   1        uint8_t t;
+ 510   1        static uint8_t Last_Sec = 60;
+ 511   1      
+ 512   1        
+ 513   1      //Ê±¼ä×ª»»=================================================
+ 514   1        RX8010_GetTime(NowTime);  
+ 515   1        t = (NowTime[0]&0xF)%10;
+ 516   1        if(t != Last_Sec)//Ê±¼äÃëÓÐ±ä»¯
+ 517   1        {
+ 518   2          Last_Sec = t;
+ 519   2               
+ 520   2          if(Last_Min!=NowTime[1])
+ 521   2          {
+ 522   3           Last_Min=NowTime[1];
+ 523   3          }
+ 524   2          color=BLACK18;    
+ 525   2          DisPlayTime(NowTime,2); //ÏÔÊ¾Ê±¼ä
+ 526   2          DisPlayTime(NowTime,3); //ÏÔÊ¾Ê±¼ä
+ 527   2          DisPlayTime(NowTime,4); //ÏÔÊ¾Ê±¼ä
+ 528   2          DisPlayTime(NowTime,5); //ÏÔÊ¾Ê±¼ä
+ 529   2          DisPlayTime(NowTime,6); //ÏÔÊ¾Ê±¼ä
+ 530   2          DisPlayTime(NowTime,7); //ÏÔÊ¾Ê±¼ä
+ 531   2        }
+ 532   1      }
+ 533          
+ 534          void GetTempHumidity_PatientFunc(void)
+ 535          {
+ 536   1        static uint8_t Get_time_out = 0;//³¬Ê±£¬Êµ²â64mS£¬×î³¤¸øµ½100mS
+ 537   1        static BYTE   xdata    Read_Order=0;  
+ 538   1        uint8_t Read_SHT21_Err;
+ 539   1      
+ 540   1        bit Read_SCL_CONF;
+ 541   1        unsigned long TempLong;
+ 542   1        uint16_t  Temp2;
+ 543   1        
+ 544   1        static uint16_t RT_Temp_Mem_L1 = 0;
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 10  
+
+ 545   1        static uint16_t RT_Temp_Mem_L2 = 0;
+ 546   1        static uint16_t RT_Temp_Mem_L3 = 0;
+ 547   1        static uint8_t ReCnt;
+ 548   1        
+ 549   1        ReCnt++;
+ 550   1        if(ReCnt > 50)//1S
+ 551   1        {
+ 552   2          ReCnt = 0;  
+ 553   2          RT_Temp_Mem_L3 = RT_Temp_Mem_L2;
+ 554   2          RT_Temp_Mem_L2 = RT_Temp_Mem_L1;
+ 555   2          RT_Temp_Mem_L1 = RT_Temp; 
+ 556   2          Diplay_RTtemp = (RT_Temp_Mem_L3+RT_Temp_Mem_L2+RT_Temp_Mem_L1) / 3; 
+ 557   2        }
+ 558   1        
+ 559   1        //static int Ix=0;
+ 560   1      
+ 561   1        //Ix++;
+ 562   1        //LCD_ShowxNum(223,30,16,5,Ix,0x80,BLUE18);//   
+ 563   1      
+ 564   1      //  LCD_ShowxNum(223,10,16,3,RT_Temp_Not_Updated_10mS ,0x80,BLUE18);//  
+ 565   1      //  LCD_ShowxNum(223,70,16,3,No_ReadData_Temp_Times,0x80,BLUE18);//   
+ 566   1      //  LCD_ShowxNum(223,100,16,3,No_ReadData_SHIDU_Times,0x80,BLUE18);// 
+ 567   1      //  LCD_ShowxNum(223,130,16,3,ERR_RT_Temp_Times,0x80,BLUE18);// 
+ 568   1        
+ 569   1      //  EA = 0;
+ 570   1        if(RT_Temp_Not_Updated_10mS < 4000)RT_Temp_Not_Updated_10mS++;
+ 571   1      
+ 572   1        {
+ 573   2          if(Read_Order==0)   //·¢ÎÂ¶ÈÖ¸Áî      
+ 574   2          {
+ 575   3            Read_SHT21_Err = SHT21_WriteTemp(); 
+ 576   3            if(Read_SHT21_Err)
+ 577   3            {
+ 578   4              Read_Order = 0;//½ÓÊÕ´íÎó
+ 579   4            }
+ 580   3            else
+ 581   3            {       
+ 582   4              Read_Order = 1;
+ 583   4              Get_time_out = 0;
+ 584   4            }
+ 585   3          }
+ 586   2          else   if(Read_Order == 1)//ÎÂ¶ÈÊý¾Ý½ÓÊÕ
+ 587   2          {
+ 588   3            //SCL_INPUT_HIGH(); // set SCL I/O port as input
+ 589   3            Read_SCL_CONF=SCL_CONF;
+ 590   3            if(Read_SCL_CONF==1)
+ 591   3            {
+ 592   4              Get_time_out = 0;
+ 593   4              TempLong =  SHT21_ReadData();
+ 594   4              //RT_Temp_Test = TempLong;
+ 595   4                //LCD_ShowxNum(223,160,16,5,TempLong,0x80,BLUE18);//  
+ 596   4                
+ 597   4              if((TempLong == SHT21_ERROR) || (TempLong & 0x8000)) //¶ÁÈ¡³ö´í£¬ºóÃæÎªÊª¶È±êÖ¾Î»
+ 598   4              {
+ 599   5                //if(No_ReadData_Temp_Times<250) No_ReadData_Temp_Times++;  
+ 600   5                Read_Order = 0;   
+ 601   5              }
+ 602   4              else
+ 603   4              {         
+ 604   5                No_ReadData_Temp_Times = 0;
+ 605   5                Read_Order = 2; 
+ 606   5                          
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 11  
+
+ 607   5                if(Work_State != UI_STATE_SERVICE_MODE) //×¢Òâ,²âÊÔÄ£Ê½ÏÂÏÔÊ¾ÕæÊµÎÂ¶È
+ 608   5                {
+ 609   6      
+ 610   6                    if(WireIn_State!=0)    //ÓÐ¼ÓÈÈË¿Ïß½øÐÐÎÂ¶ÈÐÞÕý
+ 611   6                      TempLong=TempLong*101/100-4*TempLong/388;
+ 612   6                   else
+ 613   6                      TempLong=TempLong-4*TempLong/400;  
+ 614   6      
+ 615   6                    if(TempLong>=350)   //ÎÂ¶ÈÐÞÕý
+ 616   6                      TempLong=TempLong+6*(TempLong-350)/45;
+ 617   6                    
+ 618   6                    
+ 619   6                   if(TempLong>800) //Èç¹ûÈËÌå¶Ë´ïµ½80ËµÃ÷ÓÐÒì³££¬³ö´í±¨¾¯ //2014-07-07 
+ 620   6                   {
+ 621   7                      if(ERR_RT_Temp_Times<100) {ERR_RT_Temp_Times++;}
+ 622   7                   }else 
+ 623   6                   {
+ 624   7                      ERR_RT_Temp_Times=0;
+ 625   7                      RT_Temp=TempLong;
+ 626   7                      RT_Temp_Not_Updated_10mS = 0;
+ 627   7                     
+ 628   7                   }             
+ 629   6                }
+ 630   5                else
+ 631   5                {
+ 632   6                  RT_Temp=TempLong;
+ 633   6                  RT_Temp_Not_Updated_10mS = 0;
+ 634   6                }
+ 635   5              } 
+ 636   4            }
+ 637   3            else
+ 638   3            {
+ 639   4              //CONTROL_RT_SHIDU = 0;       
+ 640   4            }     
+ 641   3            //LCD_ShowxNum(223,150,16,3,RT_Temp,0x80,BLUE18);// 
+ 642   3      
+ 643   3          }
+ 644   2          else if(Read_Order==2)  //·¢Êª¶ÈÖ¸Áî
+ 645   2          {                    
+ 646   3            Read_SHT21_Err = SHT21_WriteRH();
+ 647   3            if(Read_SHT21_Err)
+ 648   3            {
+ 649   4              Read_Order = 2;//½ÓÊÕ´íÎó
+ 650   4            }
+ 651   3            else
+ 652   3            {       
+ 653   4              Read_Order = 3;
+ 654   4              Get_time_out = 0;
+ 655   4            }
+ 656   3          }     
+ 657   2          else  if(Read_Order == 3)//Êª¶ÈÊý¾Ý½ÓÊÕ
+ 658   2          {
+ 659   3            //SCL_INPUT_HIGH(); // set SCL I/O port as input
+ 660   3          Read_SCL_CONF=SCL_CONF;
+ 661   3          if(Read_SCL_CONF==1)
+ 662   3          { 
+ 663   4              //Read_Order = 0;
+ 664   4              Get_time_out = 0;
+ 665   4              TempLong =  SHT21_ReadData();
+ 666   4              //LCD_ShowxNum(223,210,16,5,TempLong,0x80,BLUE18);//  
+ 667   4             if((TempLong == SHT21_ERROR)||((TempLong & 0x8000) ==0)) //¶ÁÈ¡³ö´í
+ 668   4            {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 12  
+
+ 669   5              if(No_ReadData_SHIDU_Times<250) No_ReadData_SHIDU_Times++;
+ 670   5              CONTROL_RT_SHIDU = 0;
+ 671   5              Read_Order = 2; 
+ 672   5              
+ 673   5            }
+ 674   4            else
+ 675   4            {
+ 676   5              Read_Order = 0; 
+ 677   5              TempLong &= 0x7fff;//×î¸ßÎ»ÊÇ1²ÅÊÇÊª¶È
+ 678   5              No_ReadData_SHIDU_Times = 0;
+ 679   5              if(TempLong > 999)TempLong = 999;  
+ 680   5              RT_SHIDU=TempLong;
+ 681   5              CONTROL_RT_SHIDU=TempLong;  //¿ØÖÆÊª¶È
+ 682   5              //75%ÒÔÉÏ½øÐÐÐ£×¼
+ 683   5              if(Work_State != UI_STATE_SERVICE_MODE) //×¢Òâ,²âÊÔÄ£Ê½ÏÂÏÔÊ¾ÕæÊµÊª¶È
+ 684   5              {
+ 685   6                  if(RT_Temp>300)
+ 686   6                  {                  
+ 687   7                     if(TempLong>550)
+ 688   7                     {             
+ 689   8                        Temp2=(TempLong-550)*80/100; //16-05-06
+ 690   8                        if(Temp2>249) Temp2=249;    
+ 691   8                     }
+ 692   7                     else Temp2 = 0;
+ 693   7                     RT_SHIDU=TempLong + Temp2;  //2014-07-25
+ 694   7                  }
+ 695   6                  else
+ 696   6                  {                 
+ 697   7                     RT_SHIDU=TempLong;  //2014-07-18
+ 698   7                     //RT_SHIDU=TempLong+120;     
+ 699   7                  } 
+ 700   6                  
+ 701   6                  if(RT_Temp>350)
+ 702   6                  { 
+ 703   7                     RT_SHIDU=RT_SHIDU+180*(RT_Temp-350)/100;  //ÏÔÊ¾Êª¶È 16-05-06
+ 704   7                  }
+ 705   6              }
+ 706   5              else
+ 707   5              {
+ 708   6                
+ 709   6              } 
+ 710   5              RT_SHIDU += 5;  //ËÄÉáÎåÈë          
+ 711   5              if(RT_SHIDU>999) RT_SHIDU=999;//;  
+ 712   5            }
+ 713   4          }
+ 714   3          else
+ 715   3          {
+ 716   4              
+ 717   4          }
+ 718   3          //LCD_ShowxNum(223,130,16,3,RT_SHIDU,0x80,BLUE18);//
+ 719   3          
+ 720   3      
+ 721   3        } 
+ 722   2        
+ 723   2         if((Read_SHT21_Err)||(RT_SHIDU == 0))
+ 724   2         {  
+ 725   3           if(No_ReadData_SHIDU_Times<100) No_ReadData_SHIDU_Times++;
+ 726   3           if(No_ReadData_Temp_Times<100) No_ReadData_Temp_Times++;
+ 727   3           
+ 728   3         }else  
+ 729   2         {
+ 730   3              No_ReadData_SHIDU_Times=0;
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 13  
+
+ 731   3             No_ReadData_Temp_Times=0;
+ 732   3         } 
+ 733   2      
+ 734   2          Get_time_out++;
+ 735   2          if(Get_time_out > 100)//³¬¹ý100mS
+ 736   2          {
+ 737   3            Get_time_out = 0;
+ 738   3            if(Read_Order == 1)Read_Order = 0;
+ 739   3            else if(Read_Order == 3)Read_Order = 2;
+ 740   3            else Read_Order = 0;
+ 741   3          }        
+ 742   2        }
+ 743   1      }
+ 744          
+ 745          
+ 746          void GetTemp_HpChamberFunc(void)
+ 747          {
+ 748   1        bit HeaterSensorExist;
+ 749   1        bit CQKSensorExist;
+ 750   1        
+ 751   1      //  static uint16_t CQK_Temp_Not_Updated_40mS = 0;//Á¬ÐøÎ´²ÉÑùµ½Êý¾ÝµÄÊ±¼äS
+ 752   1      //  static uint16_t JRP_Temp_Not_Updated_S = 0;//Á¬ÐøÎ´²ÉÑùµ½Êý¾ÝµÄÊ±¼äS
+ 753   1      
+ 754   1        uint8_t T18B20_L;
+ 755   1        uint8_t T18B20_H;
+ 756   1        uint8_t CQK_T18B20_L;
+ 757   1        uint8_t CQK_T18B20_H; 
+ 758   1        
+ 759   1        uint8_t T18B20_H_GET;
+ 760   1        uint8_t T18B20_L_GET;
+ 761   1        uint8_t CQK_T18B20_H_GET;
+ 762   1        uint8_t CQK_T18B20_L_GET;
+ 763   1        
+ 764   1      
+ 765   1        static uint16_t CQK_Temp_Last;
+ 766   1        uint8_t CRC8_error;   //checksum
+ 767   1        uint8_t checksum;   //checksum
+ 768   1        uint8_t DS18B20_Cdata[8];    //data array for checksum verification 
+ 769   1      
+ 770   1        uint16_t temp;
+ 771   1        static uint16_t JRP_Temp_Last;
+ 772   1        
+ 773   1        static uint8_t Get_Temp_Cnt;
+ 774   1        
+ 775   1        Get_Temp_Cnt++;
+ 776   1        if(Get_Temp_Cnt > 3)Get_Temp_Cnt = 0;
+ 777   1        
+ 778   1        if(No_CQKSensor_Times<2000)No_CQKSensor_Times++;
+ 779   1        if(No_HeatSensor_Times<200)No_HeatSensor_Times++;
+ 780   1        
+ 781   1        if(Get_Temp_Cnt == 0)  //
+ 782   1         {
+ 783   2            HeatingPlateSensor_Port=0;                                //Ö÷»úÀ­ÖÁµÍµçÆ½
+ 784   2            ChamberOutletSensor_Port=0;
+ 785   2            delay_us(609);                                //609
+ 786   2            HeatingPlateSensor_Port=1;                                //ÊÍ·Å×ÜÏßµÈµç×èÀ­¸ß×ÜÏß,²¢±£³Ö15~60us
+ 787   2            ChamberOutletSensor_Port=1;
+ 788   2            delay_us(86);                           //ÑÓÊ±70us                     //ÑÓÊ±70us
+ 789   2            HeaterSensorExist=HeatingPlateSensor_Port;                //½ÓÊÕÓ¦´ðÐÅºÅ
+ 790   2            CQKSensorExist=ChamberOutletSensor_Port;
+ 791   2            delay_us(488);                                //403
+ 792   2            DS18B20_WriteByte(0xCC);                      //Ìø¹ýROMÃüÁî
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 14  
+
+ 793   2            DS18B20_WriteByte(0x44);                      //¿ªÊ¼×ª»»ÃüÁî
+ 794   2         }
+ 795   1         else if(Get_Temp_Cnt == 2) //
+ 796   1         //½øÐÐÎÂ¶È×ª»»
+ 797   1         {
+ 798   2            HeatingPlateSensor_Port=0;                                //Ö÷»úÀ­ÖÁµÍµçÆ½
+ 799   2            ChamberOutletSensor_Port=0;
+ 800   2            delay_us(609);                                //503us
+ 801   2            HeatingPlateSensor_Port=1;                                //ÊÍ·Å×ÜÏßµÈµç×èÀ­¸ß×ÜÏß,²¢±£³Ö15~60us
+ 802   2            ChamberOutletSensor_Port=1;
+ 803   2            delay_us(86);                           //ÑÓÊ±70us
+ 804   2            HeaterSensorExist=HeatingPlateSensor_Port;                //½ÓÊÕÓ¦´ðÐÅºÅ
+ 805   2            CQKSensorExist=ChamberOutletSensor_Port;
+ 806   2            delay_us(488);
+ 807   2            DS18B20_WriteByte(0xCC);                      //Ìø¹ýROMÃüÁî
+ 808   2            DS18B20_WriteByte(0xBE);                      //¶ÁÔÝ´æ´æ´¢Æ÷ÃüÁî
+ 809   2            delay_us(10);
+ 810   2            DS18B20_ReadByte();                           //¶ÁÎÂ¶ÈµÍ×Ö½Ú
+ 811   2            T18B20_L=Read_18B20_Value;
+ 812   2            CQK_T18B20_L=Read_18B20_Value2;
+ 813   2            DS18B20_ReadByte();                           //¶ÁÎÂ¶È¸ß×Ö½Ú
+ 814   2            T18B20_H=Read_18B20_Value;
+ 815   2            CQK_T18B20_H=Read_18B20_Value2;
+ 816   2        
+ 817   2            if((CQKSensorExist==0))//´íÎóÔò²»½øÐÐÐ£Ñé
+ 818   2            {
+ 819   3              DS18B20_Cdata[0] = CQK_T18B20_L;
+ 820   3              DS18B20_Cdata[1] = CQK_T18B20_H;
+ 821   3              DS18B20_ReadByte();  
+ 822   3              DS18B20_Cdata[2] = Read_18B20_Value2;
+ 823   3              DS18B20_ReadByte();  
+ 824   3              DS18B20_Cdata[3] = Read_18B20_Value2;
+ 825   3              DS18B20_ReadByte();  
+ 826   3              DS18B20_Cdata[4] = Read_18B20_Value2;
+ 827   3              DS18B20_ReadByte();  
+ 828   3              DS18B20_Cdata[5] = Read_18B20_Value2;
+ 829   3              DS18B20_ReadByte();  
+ 830   3              DS18B20_Cdata[6] = Read_18B20_Value2;
+ 831   3              DS18B20_ReadByte();  
+ 832   3              DS18B20_Cdata[7] = Read_18B20_Value2;
+ 833   3              DS18B20_ReadByte();  
+ 834   3              checksum = Read_18B20_Value2;     
+ 835   3              
+ 836   3      
+ 837   3              //Cdata[7] = 0x11; //test CRC
+ 838   3      
+ 839   3              CRC8_error = DS18B20_CheckCrc(DS18B20_Cdata,8,checksum); 
+ 840   3              
+ 841   3             if(CRC8_error == CHECKSUM_ERROR)
+ 842   3             {
+ 843   4               CQKSensorExist = 1;
+ 844   4             }           
+ 845   3             
+ 846   3             if((CQKSensorExist==0))//
+ 847   3             {
+ 848   4                  CQK_T18B20_H_GET = CQK_T18B20_H;
+ 849   4                  CQK_T18B20_L_GET = CQK_T18B20_L;
+ 850   4      
+ 851   4                 CQK_T18B20_H_GET = (CQK_T18B20_H_GET << 4) | (CQK_T18B20_L_GET >> 4);      //¼ÓÈÈÅÌÎÂ¶ÈÖµºÏ²¢¸ßµÍÎ»´æÈë
+             -ÕûÊýÎ»
+ 852   4               if(CQK_T18B20_H_GET&0x80)//ÊÇ¸ºÊý
+ 853   4               {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 15  
+
+ 854   5                      CQK_T18B20_L_GET =(((~CQK_T18B20_L_GET)&0x0F)*10)/16;
+ 855   5                      temp=(~CQK_T18B20_H_GET)*10+CQK_T18B20_L_GET;
+ 856   5               } else
+ 857   4               {
+ 858   5                    CQK_T18B20_L_GET = ((CQK_T18B20_L_GET&0x0F)*10)/16;
+ 859   5                    temp=CQK_T18B20_H_GET*10+CQK_T18B20_L_GET;
+ 860   5               }
+ 861   4          
+ 862   4               if((CQK_Temp_Last ==  temp) && (temp == 850))  //´íÎóÊ±Ò»Ö±ÏÔÊ¾85¶È 2014-07-18
+ 863   4               {
+ 864   5                  CQK_Sensor_Temp_No_Change_Times++;//2014-07-03 ³öÆø¿ÚÎÂ¶È´«¸ÐÆ÷ÎÂ¶ÈÏàÍ¬µÄ´ÎÊý
+ 865   5                  if(CQK_Sensor_Temp_No_Change_Times > 10000)CQK_Sensor_Temp_No_Change_Times =10000;
+ 866   5               }
+ 867   4               else
+ 868   4               {
+ 869   5                  CQK_Sensor_Temp_No_Change_Times = 0;    
+ 870   5               }
+ 871   4               
+ 872   4               if(temp > 800)
+ 873   4               {
+ 874   5      //           if(CQKSensor_Hithen800_Times < 2000) CQKSensor_Hithen800_Times++;            
+ 875   5               }
+ 876   4               else 
+ 877   4                 CQKSensor_Hithen800_Times = 0;
+ 878   4                 
+ 879   4             
+ 880   4                 if(((CQK_Temp_Last >=  temp) && (CQK_Temp_Last - temp < 200))
+ 881   4               ||((CQK_Temp_Last <=  temp) && (temp - CQK_Temp_Last  < 200)))//EFT¶Ô²ß£ºÎÂ¶È²»ÄÜË²±ä,1S±ä»¯²»ÄÜ³¬¹ý2
+             -0¶È
+ 882   4               {  
+ 883   5                  if((temp > 0)&&(temp < 850))//²»¶ÁÁã
+ 884   5                  {
+ 885   6                    CQK_Temp = temp;//ÊµÊ±ÏÔÊ¾ÎÂ¶È
+ 886   6                    if(Work_State != UI_STATE_SERVICE_MODE) //×¢Òâ,²âÊÔÄ£Ê½ÏÂÏÔÊ¾ÕæÊµÎÂ¶È
+ 887   6                     {
+ 888   7                        CQK_Temp=CQK_Temp*51/50;  
+ 889   7                     }
+ 890   6                  }
+ 891   5               }
+ 892   4                else
+ 893   4                {
+ 894   5                } 
+ 895   4                CQK_Temp_Last =  temp;  
+ 896   4              }
+ 897   3            }
+ 898   2           
+ 899   2            if(CQKSensorExist==1)// || CQK_Temp > 800)
+ 900   2            {
+ 901   3      //        if(No_CQKSensor_Times<2000)No_CQKSensor_Times++;          
+ 902   3            }else
+ 903   2                No_CQKSensor_Times=0;  
+ 904   2           
+ 905   2      
+ 906   2            T18B20_H_GET = T18B20_H;
+ 907   2            T18B20_L_GET = T18B20_L;
+ 908   2      
+ 909   2          if(Work_State == UI_STATE_SERVICE_MODE)//ÔÚ²âÊÔÄ£Ê½Ê±ÏÔÊ¾¶ÁÈ¡µÄÊý¾Ý
+ 910   2          {
+ 911   3      //      LCD_ShowxNum(10,220,24,3,T18B20_H_GET,0x80,BLACK18); //8±íÊ¾¸ßÎ»Îª0Ò²ÏÔÊ¾,0±íÊ¾·Çµþ¼ÓÏÔÊ¾ ¼ÓÈÈÅÌ
+ 912   3      //      LCD_ShowxNum(10,268,24,3,T18B20_L_GET,0x80,BLACK18); //8±íÊ¾¸ßÎ»Îª0Ò²ÏÔÊ¾,0±íÊ¾·Çµþ¼ÓÏÔÊ¾
+ 913   3          }    
+ 914   2      
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 16  
+
+ 915   2      
+ 916   2          T18B20_H_GET = (T18B20_H_GET << 4) | (T18B20_L_GET >> 4);     //¼ÓÈÈÅÌÎÂ¶ÈÖµºÏ²¢¸ßµÍÎ»´æÈëÕûÊýÎ»
+ 917   2          if(T18B20_H_GET&0x80)//ÊÇ¸ºÊý
+ 918   2          {
+ 919   3                T18B20_L_GET =(((~T18B20_L_GET)&0x0F)*10)/16;
+ 920   3                temp=(~T18B20_H_GET)*10+T18B20_L_GET;
+ 921   3          } 
+ 922   2          else
+ 923   2          {
+ 924   3              T18B20_L_GET = ((T18B20_L_GET&0x0F)*10)/16;
+ 925   3              temp=T18B20_H_GET*10+T18B20_L_GET;
+ 926   3          }
+ 927   2            
+ 928   2             
+ 929   2           if((JRP_Temp_Last ==  temp))// && (temp == 850))  //´íÎóÊ±Ò»Ö±ÏÔÊ¾85¶È 2014-07-18
+ 930   2           {
+ 931   3            JRP_Sensor_Temp_No_Change_Times++;//2014-07-03 ¼ÓÈÈÅÌÎÂ¶È´«¸ÐÆ÷ÎÂ¶ÈÏàÍ¬µÄ´ÎÊý
+ 932   3            if(JRP_Sensor_Temp_No_Change_Times > 6000)JRP_Sensor_Temp_No_Change_Times = 6000;
+ 933   3           }
+ 934   2           else
+ 935   2           {
+ 936   3            JRP_Sensor_Temp_No_Change_Times = 0;
+ 937   3           }
+ 938   2           JRP_Temp_Last =  temp;   
+ 939   2      
+ 940   2            JEP_Temp =  temp;   //ÊµÊ±ÏÔÊ¾ÎÂ¶È
+ 941   2      
+ 942   2        if(HeaterSensorExist==1 || JEP_Temp>=0x0FFF || JEP_Temp > 1250)
+ 943   2          {
+ 944   3      //       if(No_HeatSensor_Times<2000)No_HeatSensor_Times++; 
+ 945   3          }else
+ 946   2             No_HeatSensor_Times=0;
+ 947   2        } 
+ 948   1      } 
+ 949          
+ 950          static int  Temp1_Int = 260;
+ 951          static int  Temp2_Int = 400;
+ 952          static uint16_t NoneWire_Heat_Sec=0;
+ 953          static int  Set_CQK_Temp_Comp;//³öÆø¿ÚÐ£Õý¹ýºóµÄÄ¿±êÎÂ¶È
+ 954          void  HeaterPlateWireControlFunc(void)//ÎÂ¶È¿ØÖÆ
+ 955          {
+ 956   1      //    uint8_t  Temp3;
+ 957   1          uint16_t  Val_Calc;
+ 958   1      
+ 959   1          int  Humidity_Err; //Î´´ïµ½Ä¿±êÊª¶ÈµÄ²îÖµ
+ 960   1          int  Humidity_Comp;//³¬¹ýÄ¿±êÎÂ¶ÈµÄ²îÖµ 
+ 961   1          static uint16_t Last_Rem_Humidity;  
+ 962   1        
+ 963   1           static uint16_t WarmUp_S_Cnt;  
+ 964   1           //uint16_t  CQK_Vaul_Err;//²îÖµ
+ 965   1      
+ 966   1          if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == 1))
+ 967   1          { //8±íÊ¾¸ßÎ»Îª0Ò²ÏÔÊ¾,0±íÊ¾·Çµþ¼ÓÏÔÊ¾ ³öÆø¿Ú
+ 968   2            Back_Color=WHITE18;
+ 969   2            LCD_ShowxNum(POS_RT_RH_X-50,5,16,2,Micro_Adj_Mode_Test,0x80,BLACK18); //·¢ÈÈÅÌ¼ÓÈÈµÄÄ£Ê½ÏÔÊ¾
+ 970   2            LCD_ShowxNum(POS_RT_RH_X-50,34,16,4,JEP_Temp,0x80,BLACK18); //·¢ÈÈÅÌµÄÎÂ¶È
+ 971   2            LCD_ShowxNum(POS_RT_RH_X-50,73,16,3,CQK_Temp,0x80,BLACK18); //³öÆø¿ÚµÄÎÂ¶È
+ 972   2            LCD_ShowxNum(POS_RT_RH_X-50,107,16,3,Set_CQK_Temp,0x80,BLACK18); //³öÆø¿ÚÉè¶¨ÎÂ¶È
+ 973   2            LCD_ShowxNum(POS_RT_RH_X-50,141,16,3,Micro_Temp_Val,0x80,BLACK18); //·¢ÈÈÅÌµÄ¼ÓÈÈÊ±³¤
+ 974   2            
+ 975   2            LCD_ShowxNum(POS_RT_RH_X-50,185,16,3,CONTROL_RT_SHIDU,0x80,BLACK18); //ÕæÊµÏà¶ÔÊª¶È
+ 976   2            LCD_ShowxNum(POS_RT_RH_X-50,219,16,3,Aim_SHIDU,0x80,BLACK18); //Ä¿±êÊª¶È
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 17  
+
+ 977   2            LCD_ShowxNum(POS_RT_RH_X-50,253,16,3,Micro_Temp_In,0x80,BLACK18); //In¼ÓÈÈÊ±³¤
+ 978   2            LCD_ShowxNum(POS_RT_RH_X-50,287,16,3,Micro_Temp_Out,0x80,BLACK18); //Exp¼ÓÈÈÊ±³¤
+ 979   2            
+ 980   2            LCD_ShowxNum(POS_RT_RH_X-33,2,16,1,Wire_Mode_Sel,0x80,BLACK18); //¼ÓÈÈË¿Ä£Ê½      
+ 981   2            LCD_ShowxNum(POS_RT_RH_X-33,10,16,1,WireIn_State,0x80,BLACK18); //IN¼ÓÈÈË¿×´Ì¬
+ 982   2            LCD_ShowxNum(POS_RT_RH_X-33,18,16,1,WireOut_State,0x80,BLACK18); //EXP¼ÓÈÈË¿×´Ì¬  
+ 983   2            
+ 984   2            //LCD_ShowxNum(POS_RT_RH_X-20,185,16,1,SHT21_Heater_State,0x80,BLACK18); //SHT¼ÓÈÈ×´Ì¬
+ 985   2            LCD_ShowxNum(POS_RT_RH_X-33,253,16,3,Wire_Warm_Up_Sec,0x80,BLACK18); //600S¼ÆÊ± 
+ 986   2            LCD_ShowxNum(POS_RT_RH_X-33,107,16,3,Set_CQK_Temp_Comp,0x80,BLACK18); //Ð£Õý¹ýºóµÄ³öÆø¿ÚÄ¿±êÊª¶È
+ 987   2            //LCD_ShowxNum(POS_RT_RH_X-33,141,16,3,Plate_Warm_Up_Sec,0x80,BLACK18); //600S¼ÆÊ±  
+ 988   2            LCD_ShowxNum(POS_RT_RH_X-33,185,16,3,Humidity_No_Change_Sec,0x80,BLACK18); //600S¼ÆÊ±     
+ 989   2          
+ 990   2            if(WireIn_State!=0) //ÓÐ·¢ÈÈË¿
+ 991   2            {
+ 992   3                LCD_ShowxNum(POS_RT_RH_X-33,34,16,4,JEP_Temp_Aim,0x80,BLACK18); //·¢ÈÈÅÌµÄÄ¿±êÎÂ¶È
+ 993   3                LCD_ShowxNum(POS_RT_RH_X-16,34,16,3,WarmUp_S_Cnt,0x80,BLACK18); //ÎÞ·¢ÈÈË¿»ØÂ·Ê±¸Ä±äÊ±¼ä  
+ 994   3              
+ 995   3                if(PID_temp3.Sum_error >0)
+ 996   3                  LCD_ShowxNum(POS_RT_RH_X+41,20,16,1,1,0x80,BLACK18); //
+ 997   3                else
+ 998   3                  LCD_ShowxNum(POS_RT_RH_X+41,20,16,1,0,0x80,BLACK18); //
+ 999   3                
+1000   3                LCD_ShowxNum(POS_RT_RH_X+41,34,16,4,abs(PID_temp3.Sum_error),0x80,BLACK18); //
+1001   3                
+1002   3                
+1003   3                if(PID_temp2.Sum_error >0)
+1004   3                  LCD_ShowxNum(POS_RT_RH_X+41,80,16,1,1,0x80,BLACK18); //
+1005   3                else
+1006   3                  LCD_ShowxNum(POS_RT_RH_X+41,80,16,1,0,0x80,BLACK18); //
+1007   3                
+1008   3                LCD_ShowxNum(POS_RT_RH_X+41,94,16,4,abs(PID_temp2.Sum_error),0x80,BLACK18); //
+1009   3      
+1010   3            }
+1011   2            else
+1012   2            {
+1013   3                LCD_ShowxNum(POS_RT_RH_X-33,34,16,4,Temp2_Int,0x80,BLACK18); //ÎÞ·¢ÈÈË¿»ØÂ·Ê±·¢ÈÈÅÌµÄÄ¿±êÎÂ¶È
+1014   3                LCD_ShowxNum(POS_RT_RH_X-16,34,16,3,NoneWire_Heat_Sec,0x80,BLACK18); //ÎÞ·¢ÈÈË¿»ØÂ·Ê±¸Ä±äÊ±¼ä 
+1015   3            }
+1016   2            
+1017   2            LCD_ShowxNum(POS_RT_RH_X+40,170,16,3,Temp1_Int,0x80,BLACK18); //¿ª»ú½¥½øÊ½ÎÂ¶ÈÄ¿±ê
+1018   2            LCD_ShowxNum(POS_RT_RH_X+20,170,16,3,RT_Temp,0x80,BLACK18); //»¼Õß¶ËÎÂ¶È
+1019   2            LCD_ShowxNum(POS_RT_RH_X+20,210,16,4,Nochange_Times,0x80,BLACK18); //ÎÂÊª¶ÈÁ¬Ðø²»±ä¼ÆÊý   
+1020   2      
+1021   2            LCD_ShowxNum(2,2,16,5,Working_Normal,0x80,BLACK18); //Õý³£¹¤×÷Ê±¼ä¼ÆÊ±  
+1022   2            LCD_ShowxNum(2,60,16,5,HP_CNT_Int_End_Rem,0x80,BLACK18); //ÏÔÊ¾Ã¿4Ãë¼ÓÈÈÅÌ·½²¨µÄ´ÎÊý      
+1023   2          }
+1024   1      
+1025   1          if(        
+1026   1              (ERR_Kind & 0x01)!=0//´«¸ÐÆ÷´íÎó        
+1027   1              ||(ERR_Kind & 0x02)!=0 //¸ßÎÂ
+1028   1              ||(ERR_Kind & 0x10)!=0 //ÎÞË®   
+1029   1              || Wire_Mode_Mismatch == 1  //·¢ÈÈË¿Î´Ñ¡
+1030   1              || HeaterPlate_State==0)//Ë®¹ÞÎ´×°ºÃ
+1031   1          {
+1032   2              Micro_Temp_In=0;
+1033   2              Micro_Temp_Out=0;
+1034   2              Micro_Temp_Val=0;  //Í£Ö¹¼ÓÈÈ
+1035   2              Micro_Adj_Mode_Test = 1;//¼ÓÈÈÄ£Ê½²âÊÔ
+1036   2              Wire_Warm_Up_Sec = 0; //µ±<=300Ê±ÏÞÖÆ×î´ó¼ÓÈÈ¹¦ÂÊ  
+1037   2              //Plate_Warm_Up_Sec = 0;
+1038   2              Humidity_No_Change_Sec = 0;     
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 18  
+
+1039   2          }
+1040   1          else
+1041   1          {       
+1042   2              //¹ÜÄÚ·¢ÈÈË¿¹¤×÷,¿ØÖÆÎÂ¶Èµ÷½Ú==========================       
+1043   2            
+1044   2             if(Work_Mode==Noninvasive_Mode) //ÎÞ´´Ä£Ê½Ê±,ÈËÌå¶ËÎÂ¶È¶ÔÄ¿±êÊª¶ÈµÄ¿ØÖÆÂß¼­
+1045   2             {        
+1046   3                Aim_SHIDU=790;  
+1047   3             }else    //ÓÐ´´Ä£Ê½Ê±,ÈËÌå¶ËÎÂ¶È¶ÔÄ¿±êÊª¶ÈµÄÓ°Ïì
+1048   2             {
+1049   3                Aim_SHIDU=890; //2014-11-21 
+1050   3             }
+1051   2      
+1052   2            Val_Calc = 0;       
+1053   2            //if(Boot_Start_RT_Temp_Heating_Timer_Sec > 300) //»¼Õß¶Ë¿ª»ú½¥½øÊ½¼ÓÈÈ½áÊø
+1054   2            if(Low_Power_Mode_Flag == 0)//·ÇµÍ¹¦ÂÊÄ£Ê½²Å¿ÉÒÔ¿ØÖÆ
+1055   2            {//»ØÂ··¢ÈÈË¿µÄ¿ØÖÆ
+1056   3              if(WireIn_State!=0)   //µ±ÓÐ¹ÜÄÚIN·¢ÈÈË¿Ê±£¬¹ÜÄÚ·¢ÈÈË¿µÄ¼ÓÈÈÂß¼­
+1057   3              {
+1058   4            
+1059   4                if(Working_Normal >= 1200)
+1060   4                {
+1061   5                  Temp1_Int = Set_RT_Temp;//20·ÖÖÓÒÔºóÎªÉè¶¨ÎÂ¶È
+1062   5                }
+1063   4                else
+1064   4                {           
+1065   5                  Temp1_Int = CQK_Temp + 30;//20·ÖÖÓÒÔÇ°¸úËæ³öÆø¿ÚÎÂ¶È
+1066   5                }
+1067   4                if(Temp1_Int > Set_RT_Temp)Temp1_Int = Set_RT_Temp;
+1068   4                
+1069   4                
+1070   4                //PID_temp.Ek = Set_RT_Temp - RT_Temp;//µ±Ç°µÄÎó²îÁ¿ Éè¶¨ÎÂ¶È-µ±Ç°Êµ¼ÊÎÂ¶È
+1071   4                PID_temp.Ek = Temp1_Int - RT_Temp;//µ±Ç°µÄÎó²îÁ¿ Éè¶¨ÎÂ¶È-µ±Ç°Êµ¼ÊÎÂ¶È
+1072   4                PID_Calc(); 
+1073   4                Val_Calc = (uint8_t)PID_temp.Uk;  //¼ÆËã³ö¼ÓÈÈÊ±¼ä          
+1074   4                
+1075   4                  if(WireIn_State!=0)
+1076   4                  {
+1077   5                     if (RT_Temp<Set_RT_Temp-20)
+1078   5                     {
+1079   6                        
+1080   6                     }
+1081   5                     else if (RT_Temp<Set_RT_Temp-10)
+1082   5                     {
+1083   6            
+1084   6                     }
+1085   5                     else if (RT_Temp<=Set_RT_Temp)
+1086   5                     {
+1087   6          
+1088   6                     }
+1089   5                      else if (RT_Temp<=Set_RT_Temp+10)
+1090   5                     {
+1091   6      
+1092   6                     }
+1093   5                      else
+1094   5                         Val_Calc=0;  
+1095   5                  }
+1096   4                  else
+1097   4                  {
+1098   5                         Val_Calc=0;
+1099   5                  }
+1100   4              } 
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 19  
+
+1101   3              else    //µ±ÎÞ¹ÜÄÚ·¢ÈÈË¿Ê±
+1102   3              {
+1103   4                     Val_Calc=0;
+1104   4              }
+1105   3              
+1106   3              if(Working_Normal >= 1200)//Õý³£¹¤×÷20·ÖÖÓÖ®ºó
+1107   3              {
+1108   4      
+1109   4              }
+1110   3              else
+1111   3              {
+1112   4                if(Val_Calc > 160)Val_Calc = 160;//20·ÖÖÓÄÚÏÞÖÆ¼ÓÈÈ¹¦ÂÊ
+1113   4              }
+1114   3              
+1115   3              
+1116   3              Micro_Temp_In = Val_Calc;
+1117   3      
+1118   3              Val_Calc=0;
+1119   3              if(WireOut_State!=0)    //µ±ÓÐ¹ÜÄÚOUT·¢ÈÈË¿Ê±£¬¹ÜÄÚ·¢ÈÈË¿µÄ¼ÓÈÈÂß¼­
+1120   3              {
+1121   4                 {
+1122   5                   Val_Calc = Micro_Temp_In *(10+In_Exp_Ratio-1)/10;
+1123   5                   if(Val_Calc > 195)Val_Calc = 195;
+1124   5                   if(In_Exp_Ratio > 1)
+1125   5                   {  
+1126   6                      if(Val_Calc==0)
+1127   6                      {
+1128   7                        Val_Calc=40*(10+In_Exp_Ratio-1)/10;
+1129   7                      }
+1130   6      
+1131   6                   }
+1132   5                   if (RT_Temp >= Set_RT_Temp+10)//´óÓÚ1¶È,Í£Ö¹¼ÓÈÈ,±£»¤´ëÊ©
+1133   5                   {
+1134   6                     Val_Calc=0; 
+1135   6                   }
+1136   5                }          
+1137   4              }
+1138   3              else
+1139   3              { 
+1140   4                Val_Calc=0; 
+1141   4              }
+1142   3              Micro_Temp_Out = Val_Calc;
+1143   3            }
+1144   2      
+1145   2            //ÓÐÎÞ´´Ä£Ê½Ê±·¢ÈÈÅÌµÄ¼ÓÈÈÂß¼­
+1146   2            {
+1147   3              //²»Çø·Ö¼ÓÈÈÏß/////////////////////////////   
+1148   3                if(CONTROL_RT_SHIDU<=Aim_SHIDU)//Ö÷ÒªÊÇÕë¶Ô´óÁ÷Á¿Ê±µÄ²¹³¥
+1149   3                {
+1150   4                    Humidity_Err = (Aim_SHIDU - CONTROL_RT_SHIDU);///2;//Êª¶ÈÎó²î¼ÆËã
+1151   4                    if(Humidity_Err > 100)Humidity_Err = 100;//×î´óÏÞ¶¨Îª100
+1152   4                }   
+1153   3                else Humidity_Err = 0;  
+1154   3                
+1155   3                Humidity_Comp =  CONTROL_RT_SHIDU - Aim_SHIDU;  //¿ØÖÆÊª¶ÈÒÔ¼õÉÙÀäÄýË®    
+1156   3                if(Humidity_Comp > 100)Humidity_Comp  = 100;
+1157   3                
+1158   3                if(Last_Rem_Humidity != CONTROL_RT_SHIDU)//ÕæÊµÊª¶È¸Ä±äÔòÇåÁã
+1159   3                {
+1160   4                    Humidity_No_Change_Sec = 0;
+1161   4                }
+1162   3                Last_Rem_Humidity = CONTROL_RT_SHIDU;
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 20  
+
+1163   3                
+1164   3                if(Humidity_No_Change_Sec >= 900)//¿ÉÄÜ½øÈëÀäÄý×´Ì¬
+1165   3                {
+1166   4                    Humidity_No_Change_Sec = 901;
+1167   4                    Humidity_Err = 0;  //½øÈëÀäÄý×´Ì¬ÔòÊª¶È¿ØÖÆÎÞÐ§
+1168   4                    Humidity_Comp = 0;
+1169   4                }       
+1170   3                      
+1171   3              if((CQK_Temp>=660) ||(JEP_Temp>=HeatingTemperature_MAX))     //³öÆø¿ÚÎÂ¶È×î¸ß66¶È
+1172   3              {
+1173   4                 Micro_Temp_Val=0;//´óÓÚ65¶È±ØÐëÍ£Ö¹¼ÓÈÈ
+1174   4                 Micro_Adj_Mode_Test = 2;//¼ÓÈÈÄ£Ê½²âÊÔ          
+1175   4              }       
+1176   3              //´ø¼ÓÈÈÏßµÄÎÂ¶Èµ÷½Ú===========================
+1177   3              else if(WireIn_State!=0)
+1178   3              {
+1179   4                 if(Low_Power_Mode_Flag == 0)//·ÇµÍ¹¦ÂÊÄ£Ê½²Å¿ÉÒÔ¿ØÖÆ
+1180   4                 {
+1181   5                    if(JEP_Temp>=HeatingTemperature_MAX)   //105¶È
+1182   5                    {
+1183   6                      Val_Calc = 0;
+1184   6                      Micro_Adj_Mode_Test = 7;//¼ÓÈÈÄ£Ê½²âÊÔ              
+1185   6                    }
+1186   5                    else
+1187   5                    { 
+1188   6                      Set_CQK_Temp_Comp = Set_CQK_Temp; //³öÆø¿ÚÉè¶¨ÎÂ¶È
+1189   6                      
+1190   6                      if(Work_Mode==Invasive_Mode)//
+1191   6                      { 
+1192   7                          if(Humidity_Err >= 50)  //µ±Ä¿±êÊª¶ÈÏà²î5%ÒÔÉÏÇÒÎªÎÞ´´Ê±£¬ÔÊÐí×î¸ß³¬¹ý¶È
+1193   7                          {
+1194   8                            //Set_CQK_Temp_Comp += Humidity_Err/6;//×î¸ßÔÊÐí³¬¹ý1.6¶È
+1195   8                            Set_CQK_Temp_Comp += Humidity_Err/10;//×î¸ßÔÊÐí³¬¹ý1¶È
+1196   8                          } 
+1197   7                      } 
+1198   6                      else
+1199   6                      {
+1200   7                          if(Humidity_Err >= 50)  //µ±Ä¿±êÊª¶ÈÏà²î5%ÒÔÉÏÇÒÎªÎÞ´´Ê±£¬ÔÊÐí×î¸ß³¬¹ý¶È
+1201   7                          {
+1202   8                            Set_CQK_Temp_Comp += Humidity_Err/2;//×î¸ßÔÊÐí³¬¹ý5¶È 120L 28»·¾³ÎÂ¶È
+1203   8                          }
+1204   7                      } 
+1205   6      
+1206   6                      if(Humidity_Comp >= 10)
+1207   6                      {
+1208   7                        //Set_CQK_Temp_Comp = Set_CQK_Temp_Comp - Humidity_Comp/5;//Êª¶ÈÃ¿ÉÏ1%Ôò³öÆø¿ÚÎÂ¶ÈÏÂ½µ0.2¶È£¬×î¶à
+             -2¶È
+1209   7                        Set_CQK_Temp_Comp = Set_CQK_Temp_Comp - Humidity_Comp/10;//Êª¶ÈÃ¿ÉÏ1%Ôò³öÆø¿ÚÎÂ¶ÈÏÂ½µ0.1¶È£¬×î¶à1
+             -¶È
+1210   7                      }   
+1211   6      
+1212   6                      if(Work_Mode==Invasive_Mode)//
+1213   6                      { 
+1214   7                          //Set_CQK_Temp_Comp -= 5;//ÓÐ´´Ê±½µµÍ0.5¶È  
+1215   7                          if(Set_CQK_Temp_Comp < 320)Set_CQK_Temp_Comp = 320;//×î¼«ÏÞµÄÎÂ¶È
+1216   7                      }
+1217   6                      else
+1218   6                      { 
+1219   7                          if(Set_CQK_Temp_Comp < 300)Set_CQK_Temp_Comp = 300;//×î¼«ÏÞµÄÎÂ¶È
+1220   7                      } 
+1221   6      
+1222   6                      ////if(CQK_Temp < Set_CQK_Temp_Comp - 30) //  
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 21  
+
+1223   6      
+1224   6                      //Ëã·¨¿ªÊ¼
+1225   6                      if(JEP_Temp < (JEP_Temp_Aim - 20))//¼ÓÈÈÅÌÎÂ¶ÈÐ¡ÓÚ¼ÓÈÈÅÌÄ¿±êÎÂ¶È-2    
+1226   6                      {
+1227   7                        WarmUp_S_Cnt = 0;//ÇåÁã£¬µÈ´ý´ïµ½¼ÓÈÈÄ¿±ê
+1228   7                      } 
+1229   6                      else
+1230   6                      {
+1231   7                        WarmUp_S_Cnt++;
+1232   7                        if(WarmUp_S_Cnt >= 20)//Ã¿Á½·ÖÖÓµ÷ÕûÒ»´Î¼ÓÈÈÅÌÄ¿±êÎÂ¶È
+1233   7                        {
+1234   8                          WarmUp_S_Cnt = 0;
+1235   8                          PID_temp3.Ek = Set_CQK_Temp_Comp - CQK_Temp;//µ±Ç°µÄÎó²îÁ¿ Éè¶¨ÎÂ¶È-µ±Ç°Êµ¼ÊÎÂ¶È
+1236   8                          HeatPlateTemp_Aim_PID_Calc();                       
+1237   8      
+1238   8                          JEP_Temp_Aim = JEP_Temp_Aim + PID_temp3.Uk;//                       
+1239   8                          
+1240   8                          if(Work_Mode==Invasive_Mode)//
+1241   8                          {
+1242   9                            if(JEP_Temp_Aim < 500)JEP_Temp_Aim = 500;//×îÐ¡50¶È
+1243   9                          }
+1244   8                          else
+1245   8                          {
+1246   9                            if(JEP_Temp_Aim < 400)JEP_Temp_Aim = 400;//×îÐ¡50¶È
+1247   9                          } 
+1248   8                          
+1249   8                          if(Working_Normal >= 1200)
+1250   8      //                    if(Work_Min>=20||Work_Day>0 ||Work_Hour>0)//¿ª»ú20·ÖÖÓÖ®ºó
+1251   8                          {
+1252   9                            if(JEP_Temp_Aim > 1045)JEP_Temp_Aim = 1045;//×î´ó102¶È
+1253   9                          }
+1254   8                          else
+1255   8                          {
+1256   9                            if(JEP_Temp_Aim > 980)JEP_Temp_Aim = 980;//¿ª»ú20·ÖÖÓÒÔÄÚ×î´ó98¶È
+1257   9                          }
+1258   8                        }
+1259   7                      }
+1260   6                      
+1261   6                      
+1262   6                      PID_temp2.Ek = JEP_Temp_Aim - JEP_Temp;//µ±Ç°µÄÎó²îÁ¿ Éè¶¨ÎÂ¶È-µ±Ç°Êµ¼ÊÎÂ¶È
+1263   6                      HeatPlate_PID_Calc(); 
+1264   6                      Val_Calc = (uint8_t)PID_temp2.Uk; //¼ÆËã³ö¼ÓÈÈÊ±¼ä
+1265   6      
+1266   6                      if((CQK_Temp - Set_CQK_Temp_Comp) > 20)//³öÆø¿ÚÎÂ¶È±ÈÄ¿±êÎÂ¶È¸ß
+1267   6                      {
+1268   7                        if(Val_Calc > 20)Val_Calc = 20; 
+1269   7                        JEP_Temp_Aim = JEP_Temp;//¸ü¸Ä¼ÓÈÈÅÌÄ¿±êÎÂ¶È
+1270   7                      } 
+1271   6                      else if((CQK_Temp - Set_CQK_Temp_Comp) > 10)//³öÆø¿ÚÎÂ¶È±ÈÄ¿±êÎÂ¶È¸ß
+1272   6                      {
+1273   7      
+1274   7                      }
+1275   6                   }
+1276   5                 }           
+1277   4                
+1278   4                
+1279   4                if(Val_Calc > 195)Val_Calc = 195;         
+1280   4                if(Low_Power_Mode_Flag == 0)//·ÇµÍ¹¦ÂÊÄ£Ê½²Å¿ÉÒÔ¿ØÖÆ
+1281   4                    Micro_Temp_Val = Val_Calc;//±ãÓÚ¼ÆËã£¬ÒÔÃâ³¬¹ý190½øÈëÖÐ¶Ï   
+1282   4              }
+1283   3              else if(Low_Power_Mode_Flag == 0)//·ÇµÍ¹¦ÂÊÄ£Ê½²Å¿ÉÒÔ¿ØÖÆ
+1284   3              { 
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 22  
+
+1285   4                  PatientTemp_NoneHeatWire_Adj();
+1286   4                  //²»´ø¼ÓÈÈÏßµÄÎÂ¶Èµ÷½Ú==============================================================
+1287   4               }  
+1288   3            }   
+1289   2          }
+1290   1      } 
+1291          
+1292          
+1293          void   Store_Data(void)   //´æ·ÅÊý¾ÝµØÖ·´Ó1¿ªÊ¼
+1294          {
+1295   1          uint16_t i;
+1296   1          uint8_t N,j;
+1297   1          if (Run_Count<1) return;
+1298   1          i=(Run_Count-1)/8+1;     //¼ÆËãµØÖ·
+1299   1          N=Run_Count%8;       //¼ÆËãÎ»
+1300   1          if (Run_Count!=0 && N==0) N=8;
+1301   1          j=(0xFF<<N);
+1302   1          SPI_Write_nBytes(i,1,&j);
+1303   1         
+1304   1              //delay_us(100);
+1305   1      }
+1306          
+1307          void  Get_RunCount(void)   //µÃµ½´æ·ÅÊý¾ÝµÄÌõÊý
+1308          {
+1309   1          uint16_t Start1,Start2,StartAdr;
+1310   1          uint8_t N,K,j;
+1311   1          Start1=0x1;
+1312   1          Start2=0x2000;
+1313   1          for(j=0;j<14;j++) //²éÕÒ¼ÆÊýÎ»
+1314   1          {
+1315   2              StartAdr=(Start1+Start2)/2;
+1316   2              SPI_Read_nBytes(StartAdr,1,&N);
+1317   2              delay_us(100);
+1318   2              if(N==0xFF)
+1319   2              {
+1320   3                 Start2=StartAdr;
+1321   3              }else
+1322   2              {
+1323   3                 Start1=StartAdr;
+1324   3                 Start2=Start1+(2<<(12-j));
+1325   3                 SPI_Read_nBytes(StartAdr+1,1,&K);
+1326   3                 if(K==0xFF)
+1327   3                 {   break;  }
+1328   3                 else
+1329   3                 {
+1330   4                    StartAdr=StartAdr+1;
+1331   4                    N=K;
+1332   4                 }
+1333   3              }
+1334   2         }
+1335   1         Run_Count=(StartAdr-1)*8;//¼ÆËãÊ±1¸ö×Ö½Ú±í8
+1336   1         for(j=0;j<8;j++)
+1337   1         {
+1338   2           if(((0x01<<j) & N)!=0) break;
+1339   2         }
+1340   1         Run_Count=Run_Count+j;      //×î¶à¿É¼ÇÊý44896Ìõ,256ÌõÎª»º³å
+1341   1      
+1342   1         //Run_Count = 2000;//²âÊÔÊ¹ÓÃ 2014-12-26
+1343   1         //SPI_Read_nBytes(8000,1,&N);
+1344   1         // DS1302_GetTime(NowTime);
+1345   1         // if(NowTime[0]&0x80)         //·¢ÏÖµôµçÔòÖØÐÂ³õÊ¼»¯Ê±¼ä£¬ÊÇ·ñÒªÑ¯ÎÊ
+1346   1         //    DS1302_SetTime(initTime);    //³õÊ¼»¯Ê±¼ä
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 23  
+
+1347   1         /* if(N==1)                    //Ê±¼ä±ØÐë×ÔÐÐÉè¶¨
+1348   1         {
+1349   1            DS1302_SetTime(NowTime);
+1350   1            j=2;
+1351   1            SPI_Write_nBytes(8000,1,&j);
+1352   1            delay_ms(10);
+1353   1         }else if(N==2)
+1354   1         {
+1355   1      
+1356   1         }*/
+1357   1      
+1358   1         
+1359   1         /* 
+1360   1         DISP_TIME_10X16(POS_RT_RH_X-20,10,Run_Count/10000,BLACK18);
+1361   1         DISP_TIME_10X16(POS_RT_RH_X-20,18,Run_Count%10000/1000,BLACK18);
+1362   1         DISP_TIME_10X16(POS_RT_RH_X-20,26,Run_Count%1000/100,BLACK18);
+1363   1         DISP_TIME_10X16(POS_RT_RH_X-20,34,Run_Count%100/10,BLACK18);
+1364   1         DISP_TIME_10X16(POS_RT_RH_X-20,42,Run_Count%10,BLACK18);
+1365   1         */
+1366   1         //DISP_TIME_10X16(POS_RT_RH_X-20,POS_RT_RH_Y+150-90,Enable_Save_Data,BLACK18);
+1367   1      }
+1368          
+1369          static uint8_t  Wire_Mode_Sel_Rem = 0xff;//¼ÇÒä×´Ì¬
+1370          static uint8_t  Disp_ERR_VHB80_Code = 0xff;
+1371          
+1372          void Error_Base_HeaterWire_DISP_Enable(void)//ÆÁ±£Ê±ÖÃÏà¹Ø±êÖ¾,ÒÔ±ãÁÁÆÁÊ±ÏÔÊ¾Ö÷»úºÍÏßµÄÍ¼ÐÎ
+1373          {
+1374   1        Disp_ERR_VHB80_Code = 0xff;
+1375   1        Wire_Mode_Sel_Rem = 0xff;//¼ÇÒä×´Ì¬
+1376   1      }
+1377          
+1378          
+1379          void AlarmErrorFunc(void)    //´íÎóÊÂ¼þ
+1380          {
+1381   1        uint8_t color;
+1382   1        static uint8_t  xdata   Err_Event_Cnt;  //¼õÐ¡¹¤×÷´ÎÊý
+1383   1        uint8_t  xdata   Err_Event_1;
+1384   1        uint8_t  xdata   Err_Event_2;
+1385   1          
+1386   1        static uint8_t AlarmInfoRem = 0;//±¨¾¯×´Ì¬¼ÇÒä
+1387   1        {
+1388   2          Err_Event_Cnt++;//ÉÁË¸¼ÆÊý¼°¼õÉÙ³ÌÐòÔËÐÐÊ±¼ä
+1389   2          if(Err_Event_Cnt > 1)
+1390   2          { 
+1391   3            Err_Event_Cnt = 0;//ºì  
+1392   3          }
+1393   2          Err_Event_1 = 0;
+1394   2          Err_Event_2 = 1;      
+1395   2        
+1396   2          //LCD_ShowxNum(POS_RT_RH_X-40,5,16,4,RT_Temp,0x80,BLACK18); //8±íÊ¾¸ßÎ»Îª0Ò²ÏÔÊ¾,0±íÊ¾·Çµþ¼ÓÏÔÊ¾
+1397   2          //LCD_ShowxNum(POS_RT_RH_X-40,60,16,4,ERR_RT_Temp_Times,0x80,BLACK18); //
+1398   2        
+1399   2          if((No_CQKSensor_Times>1000 || CQK_Sensor_Temp_No_Change_Times > 6000) //³öÆø¿ÚÎÂ¶È´«¸ÐÆ÷´íÎó¼ì²â
+1400   2            ||(CQKSensor_Hithen800_Times > 250)//Á¬Ðø10S > 80¶È
+1401   2            ||((No_ReadData_Temp_Times>20))//¼ÓËÙÏÔÊ¾
+1402   2            )
+1403   2          {
+1404   3             CQK_Sensor_Err=1;
+1405   3             CQK_Temp = 0;  
+1406   3             LoTemp_CQK_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²âµÍÎÂ±¨¾¯
+1407   3             Working_Normal = 0;//Õý³£¹¤×÷Ê±¼äÇåÁã  
+1408   3             Set_bit(ERR_Kind,Alarm_Const_CQK_Sensor);        
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 24  
+
+1409   3          }
+1410   2          else
+1411   2          {
+1412   3             CQK_Sensor_Err=0;
+1413   3             Clear_bit(ERR_Kind,Alarm_Const_CQK_Sensor);        
+1414   3          }
+1415   2            
+1416   2          if(Nochange_Times>900 || No_ReadData_SHIDU_Times>20 || RT_Temp_Not_Updated_10mS > 3000)//ÈËÌå¶ËÊª¶È´«¸ÐÆ
+             -÷´íÎó¼ì²â
+1417   2          {
+1418   3             SHIDU_Sensor_Err=1;
+1419   3             RTD_Sensor_Err=1;
+1420   3             RT_SHIDU = 0; 
+1421   3             HiTemp_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²â¸ßÎÂ±¨¾¯
+1422   3             LoTemp_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²âµÍÎÂ±¨¾¯
+1423   3             LoHumity_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²âµÍÊª±¨¾¯
+1424   3             Working_Normal = 0;//Õý³£¹¤×÷Ê±¼äÇåÁã    
+1425   3             Set_bit(ERR_Kind,Alarm_Const_RTD_Sensor); 
+1426   3          }   
+1427   2          else
+1428   2          {
+1429   3              SHIDU_Sensor_Err=0;
+1430   3              Clear_bit(ERR_Kind,Alarm_Const_RTD_Sensor); 
+1431   3          }
+1432   2            
+1433   2          if(Nochange_Times>900 ||  No_ReadData_Temp_Times>20 
+1434   2            || ERR_RT_Temp_Times>20 || RT_Temp_Not_Updated_10mS > 3000)//ÈËÌå¶ËÎÂ¶È´«¸ÐÆ÷´íÎó¼ì²â 2014-07-03
+1435   2          {
+1436   3             RTD_Sensor_Err=1;
+1437   3             if(ERR_RT_Temp_Times<10)//¸ßÎÂÒì³£±¨¾¯Ê±ÎÂ¶È²»ÇåÁã
+1438   3              {
+1439   4                RT_Temp = 0;    
+1440   4                Diplay_RTtemp = 0;
+1441   4              }
+1442   3             HiTemp_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²â¸ßÎÂ±¨¾¯
+1443   3             LoTemp_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²âµÍÎÂ±¨¾¯
+1444   3             LoHumity_Count = 0;//´«¸ÐÆ÷´íÎó,²»¿É¼ì²âµÍÊª±¨¾¯
+1445   3             Working_Normal = 0;//Õý³£¹¤×÷Ê±¼äÇåÁã    
+1446   3          }
+1447   2          else
+1448   2               RTD_Sensor_Err=0;
+1449   2          
+1450   2          if( No_HeatSensor_Times>150 || JRP_Sensor_Temp_No_Change_Times > 600)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â  
+1451   2          {     
+1452   3            JRP_Sensor_Err=1;
+1453   3            Set_bit(ERR_Kind,Alarm_Const_JRP_Sensor); 
+1454   3          }
+1455   2          else
+1456   2          {
+1457   3              JRP_Sensor_Err=0;
+1458   3              Clear_bit(ERR_Kind,Alarm_Const_JRP_Sensor); 
+1459   3          }
+1460   2          if(HiTemp_Count>2)  //¸ßÎÂ´íÎó¼ì²â
+1461   2          {
+1462   3             Set_bit(ERR_Kind,Alarm_Const_HiTemp);     
+1463   3          }
+1464   2          else
+1465   2             Clear_bit(ERR_Kind,Alarm_Const_HiTemp);
+1466   2          if(LoTemp_Count>120)  //µÍÎÂ´íÎó¼ì²â
+1467   2             Set_bit(ERR_Kind,Alarm_Const_LoTemp);
+1468   2          else
+1469   2             Clear_bit(ERR_Kind,Alarm_Const_LoTemp);
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 25  
+
+1470   2      
+1471   2          if(LoHumity_Count>120) //µÍÊª¶È´íÎó¼ì²â
+1472   2          {
+1473   3               Set_bit(ERR_Kind,Alarm_Const_LoHumity);//ÉèÖÃµÍÊª¶È±¨¾¯±êÖ¾
+1474   3          }
+1475   2          else
+1476   2          {
+1477   3            if (Bit_is_one(ERR_Kind,Alarm_Const_LoHumity))
+1478   3            {
+1479   4              Clear_bit(ERR_Kind,Alarm_Const_LoHumity);//Çå³ýµÍÊª¶È±¨¾¯±êÖ¾
+1480   4            }
+1481   3          }
+1482   2      
+1483   2        //É«¿é±¨¾¯  VHB15A_FUNCTION_ALARM_COLOR_DISPLAY
+1484   2        /*ÈËÌåÌ½Í·³ö´í    ---ºì
+1485   2         ³öÆø¿ÚÌ½Í·³ö´í   ---ÂÌ
+1486   2         ¼ÓÈÈÅÌÌ½Í·³ö´í   ---À¶
+1487   2         ¸ßÎÂ±¨¾¯       ---ºÚ
+1488   2         µÍÎÂ±¨¾¯       ---»Ò
+1489   2         µÍÊª¶È±¨¾¯     ---»Æ
+1490   2         Ë®¹ÞÎ´°²×°ºÃ±¨¾¯   ---Çà
+1491   2         ·¢ÈÈÏßÎ´°²×°»ò¿ªÂ· ---×Ï
+1492   2         ÎÞË®/¸ÉÉÕ        ---ºÚ
+1493   2        */
+1494   2          
+1495   2        if(Work_State != UI_STATE_SCREENSAVER_MODE)//ÆÁ±£Ê±²»ÏÔÊ¾
+1496   2        {
+1497   3          if((SHIDU_Sensor_Err==1)||(RTD_Sensor_Err)) //ÈËÌå¶ËÌ½Í·
+1498   3          {
+1499   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+5,RED18);
+1500   4          }
+1501   3          if(CQK_Sensor_Err==1)//³öÆø¿ÚÌ½Í·
+1502   3          {
+1503   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+5,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+10,GREEN18);
+1504   4          }
+1505   3          if(JRP_Sensor_Err==1)//¼ÓÈÈÅÌÌ½Í·
+1506   3          {
+1507   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+10,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+15,BLUE18);
+1508   4          }
+1509   3          if(HiTemp_Count>2)//¸ßÎÂ
+1510   3          {
+1511   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+15,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+20,BLACK18);
+1512   4          }
+1513   3          if(LoTemp_Count>120)//µÍÎÂ
+1514   3          {
+1515   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+20,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+25,GRAY18);
+1516   4          }
+1517   3          if(LoHumity_Count>120)//µÍÊª¶È
+1518   3          {
+1519   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+25,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+30,YELLOW18);
+1520   4          }
+1521   3          if(HeaterPlate_State==0)//Ë®¹ÞÎ´×°ºÃ»ò·¢ÈÈÅÌ¿ªÂ·
+1522   3          {
+1523   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+30,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+35,BRIGHT_BLU
+             -E18);
+1524   4          }
+1525   3          if(Wire_Mode_Mismatch == 1)//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä 
+1526   3          {
+1527   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+35,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+40,PURPLE18);
+1528   4          }
+1529   3          if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)) //ÎÞË®(¸ÉÉÕ)±¨¾¯
+1530   3          {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 26  
+
+1531   4            Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+40,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+45,BLACK18);
+1532   4          } 
+1533   3        }
+1534   2      
+1535   2      
+1536   2          if(HeaterPlate_State==0)  //Ã»ÓÐ·ÅÈë¹Þ×Ó
+1537   2          {
+1538   3            AlarmInfoIndex = 1;
+1539   3          }
+1540   2          else if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)) //ÎÞË®´íÎó
+1541   2          {
+1542   3            AlarmInfoIndex = 2;
+1543   3          }
+1544   2          else if(CQK_Sensor_Err || RTD_Sensor_Err || SHIDU_Sensor_Err)
+1545   2          {
+1546   3            AlarmInfoIndex = 3;
+1547   3          } 
+1548   2          else if(Bit_is_one(ERR_Kind,Alarm_Const_HiTemp)) //¸ßÎÂ´íÎó
+1549   2          {
+1550   3            AlarmInfoIndex = 4;
+1551   3          }
+1552   2          else if(Bit_is_one(ERR_Kind,Alarm_Const_LoTemp)) //»¼Õß¶Ë³ÖÐøµÍÎÂ
+1553   2          {
+1554   3            AlarmInfoIndex = 5;
+1555   3          }
+1556   2          else if(LoTemp_CQK_Count>120)//³öÆø¿Ú³ÖÐøµÍÎÂ
+1557   2          {
+1558   3            AlarmInfoIndex = 6;
+1559   3          } 
+1560   2          else if(Bit_is_one(ERR_Kind,Alarm_Const_LoHumity))//³ÖÐøµÍÊª¶È´íÎó
+1561   2          {
+1562   3            AlarmInfoIndex = 7;
+1563   3          }
+1564   2          else if(Wire_Mode_Mismatch == 1)//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä  
+1565   2          {
+1566   3            AlarmInfoIndex = 8;
+1567   3          } 
+1568   2          else
+1569   2          {
+1570   3            AlarmInfoIndex = 0;
+1571   3            AlarmSoundPauseStatus = 0;//ÎÞ±¨¾¯£¬²»¿ÉÉùÒôÔÝÍ£
+1572   3          }
+1573   2          
+1574   2          if(AlarmInfoIndex !=  AlarmInfoRem)//±¨¾¯×´Ì¬¸Ä±ä
+1575   2          {
+1576   3            AlarmSoundPauseStatus = 0;//ÉùÒôÔÝÍ£È¡Ïû
+1577   3            Sound_Alarm_Pause_Disable();  
+1578   3          } 
+1579   2                
+1580   2          AlarmInfoRem = AlarmInfoIndex;
+1581   2          
+1582   2        
+1583   2          //´«¸ÐÆ÷´íÎó==============================================================
+1584   2         ERR_Kind&=0xFE;  ////Çå³ýµÚÒ»Î»ÊÇ´«¸ÐÆ÷´íÎó
+1585   2         if(CQK_Sensor_Err || RTD_Sensor_Err || JRP_Sensor_Err || SHIDU_Sensor_Err)
+1586   2         {
+1587   3            ERR_Kind|=0x01;//µÚÒ»Î»ÊÇ´«¸ÐÆ÷´íÎó
+1588   3         } 
+1589   2      
+1590   2         if(Work_State != UI_STATE_SCREENSAVER_MODE)//·ÇÆÁ±£Ä£Ê½£¬·ñÔòÒªÏÈÍË³öÆÁ±£Ä£Ê½
+1591   2         {  
+1592   3           if(HeaterPlate_State==0)    //ÎÞ¼ÓÈÈÅÌ£¬ÏÔÊ¾ËùÓÐµÄÍ¼Æ¬   Plate_State==0
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 27  
+
+1593   3           {
+1594   4             Working_Normal = 0;//Õý³£¹¤×÷Ê±¼äÇåÁã
+1595   4      
+1596   4             if(Work_State != UI_STATE_SCREENSAVER_MODE)
+1597   4             {
+1598   5               if(Disp_ERR_VHB80_Code!=1)
+1599   5               {
+1600   6                  Disp_ERR_VHB80_Code=1;
+1601   6                  DISP_VHB80_PIC(BLUE18); 
+1602   6      
+1603   6               if(Wire_Mode_Sel_Rem != Wire_Mode_Sel)
+1604   6               {
+1605   7                 if(Wire_Mode_Sel == Wire_Sel_None)
+1606   7                 { 
+1607   8                    if(Err_Event_Cnt == Err_Event_1) //ÎÞ¼ÓÈÈ
+1608   8                    { 
+1609   9                        Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,GRAY18);  //»­ÎüÆø¹ÜÉÏ²¿£¬ÏÂ²
+             -¿
+1610   9                        Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,GRAY18); 
+1611   9                    }
+1612   8                  } 
+1613   7      
+1614   7                  if((Wire_Mode_Sel==Wire_Sel_In_Only || Wire_Mode_Sel== Wire_Sel_None))
+1615   7                  {
+1616   8                      if(Err_Event_Cnt == Err_Event_1)
+1617   8                      {
+1618   9                        Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ²
+             -¿
+1619   9                        Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ
+             -²¿
+1620   9                        Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //»­·â¿Ú         
+             -      
+1621   9                      }
+1622   8                  }
+1623   7                }
+1624   6                Wire_Mode_Sel_Rem = Wire_Mode_Sel;                 
+1625   6               }
+1626   5               if(Err_Event_Cnt == Err_Event_1)    
+1627   5                   color=RED18;//¸ÄÑÕÉ«
+1628   5               else if(Err_Event_Cnt == Err_Event_2)
+1629   5                   color=GRAY18;
+1630   5               
+1631   5      //         if((Err_Event_Cnt == Err_Event_1)||(Err_Event_Cnt == Err_Event_2))
+1632   5                DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color); 
+1633   5              }
+1634   4              else
+1635   4              {
+1636   5                Disp_ERR_VHB80_Code = 0;        
+1637   5              }     
+1638   4           }
+1639   3            else  if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)) //ÎÞË®(¸ÉÉÕ)±¨¾¯
+1640   3            // if(0)
+1641   3           {
+1642   4               //ÏÔÊ¾ÎÞË®´íÎó================================
+1643   4               if(Disp_ERR_VHB80_Code!=2)
+1644   4               {
+1645   5                  Disp_ERR_VHB80_Code=2; 
+1646   5                  DISP_VHB80_PIC(BLUE18);
+1647   5               }
+1648   4               if(Err_Event_Cnt == Err_Event_1)
+1649   4                  color=RED18;          //ÎÞË®´íÎó¸ÄÎªºìÉ«
+1650   4               else if(Err_Event_Cnt == Err_Event_2)
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 28  
+
+1651   4                  color=WHITE18;
+1652   4               Draw_Rectangle_Real(POS_HEAT_X,POS_HEAT_Y+2,POS_HEAT_X+8,POS_HEAT_Y+33,color);
+1653   4                    
+1654   4           }
+1655   3           else if(CQK_Sensor_Err || RTD_Sensor_Err || SHIDU_Sensor_Err  ||HiTemp_Count>2 || LoTemp_Count>120 ||Lo
+             -Temp_CQK_Count>120) //Ì½Í·´íÎó»ò¸ßµÍÎÂ±¨¾¯
+1656   3        //   || Heat_ERR
+1657   3           //else if(0)
+1658   3           {
+1659   4             //ÏÔÊ¾Í¼ÐÎ£¬ÉÁË¸´íÎó²¿·Ö==========================================
+1660   4             if(Disp_ERR_VHB80_Code!=3)
+1661   4             {
+1662   5                Disp_ERR_VHB80_Code=3; 
+1663   5                DISP_VHB80_PIC(GRAY18);
+1664   5             }      
+1665   4      
+1666   4             if(Err_Event_Cnt == Err_Event_1)
+1667   4             {
+1668   5                  color=RED18;  //ºì
+1669   5             }
+1670   4              else if(Err_Event_Cnt == Err_Event_2)
+1671   4             {
+1672   5                  color=GRAY18; //»Ò
+1673   5             }
+1674   4      
+1675   4      
+1676   4             {
+1677   5      
+1678   5               if(CQK_Sensor_Err||LoTemp_CQK_Count>120)//ÏÔÊ¾³öÆø¿Ú´íÎó///
+1679   5               {
+1680   6                    DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,color);
+1681   6               }else
+1682   5               {
+1683   6                    DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,GRAY18);
+1684   6               } 
+1685   5               if(RTD_Sensor_Err||HiTemp_Count>2 || LoTemp_Count>120)  //ÈËÌå¶ËÌ½Í·´íÎó
+1686   5               { 
+1687   6                    DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,color);
+1688   6               }else
+1689   5               {
+1690   6                    DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,GRAY18);
+1691   6               } 
+1692   5               if(JRP_Sensor_Err) //¼ÓÈÈÅÌÌ½Í·
+1693   5               {
+1694   6                    //DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color);  
+1695   6                    DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,GRAY18);
+1696   6                    //DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,RED18); 
+1697   6               }else
+1698   5               {
+1699   6                    DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,GRAY18); 
+1700   6                    //DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,RED18);          
+1701   6               } 
+1702   5            }
+1703   4      
+1704   4          }
+1705   3          else if(Wire_Mode_Mismatch == 1)//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä  
+1706   3            //else if(0)
+1707   3          {
+1708   4                Working_Normal = 0;//Õý³£¹¤×÷Ê±¼äÇåÁã 
+1709   4      
+1710   4                 {
+1711   5                   if(Disp_ERR_VHB80_Code!=4)
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 29  
+
+1712   5                   {
+1713   6                      Disp_ERR_VHB80_Code=4; 
+1714   6                      DISP_VHB80_PIC(BLUE18);
+1715   6                   }
+1716   5                   
+1717   5                   //»­In¼ÓÈÈÏß¶Î
+1718   5                  if(WireIn_State > 0)//ÓÐIn»ØÂ··¢ÈÈË¿£¬ÏÔÊ¾À¶É«
+1719   5                  {
+1720   6                    color=BLUE18;
+1721   6                  }
+1722   5                  else
+1723   5                  {
+1724   6                    color=GRAY18;//ÎÞIn»ØÂ··¢ÈÈË¿£¬ÏÔÊ¾»ÒÉ«
+1725   6                  }
+1726   5                  if(Err_Event_Cnt <= Err_Event_1)//ÏÔÊ¾µ±Ç°×´Ì¬£¬ÓÐ»òÕßÎÞ£¬À¶É«»ò»ÒÉ«
+1727   5                  {//°´ÉÏÃæµÄÑÕÉ«ÏÔÊ¾
+1728   6                  }               
+1729   5                  else if(Err_Event_Cnt <= Err_Event_2)//¸ù¾ÝÄ£Ê½È·¶¨ÏÔÊ¾ºìÉ«±¨¾¯»¹ÊÇµ±Ç°×´Ì¬ÑÕÉ«
+1730   5                  {
+1731   6                    if(((WireIn_State == 0)&&(Wire_Mode_Sel == Wire_Sel_None))//ÎÞIn»ØÂ··¢ÈÈË¿ÇÒÊÇNoneÄ£Ê½²»ÐèÒª±¨¾¯
+1732   6                      ||((WireIn_State == 1)&&(Wire_Mode_Sel == Wire_Sel_Double))//ÓÐIn»ØÂ··¢ÈÈË¿ÇÒÊÇË«Ö§Ä£Ê½²»ÐèÒª±¨¾¯
+1733   6                      ||((WireIn_State == 1)&&(Wire_Mode_Sel == Wire_Sel_In_Only)))//ÓÐIn»ØÂ··¢ÈÈË¿ÇÒÊÇµ¥Ö§Ä£Ê½²»ÐèÒª±¨¾
+             -¯
+1734   6                    
+1735   6                    {
+1736   7                    }
+1737   6                    else//³ýÒÔÉÏÇé¿ö¾ùÐèÒª±¨¾¯:ÈçÎÞInÊ±µ¥/Ë«Ö§/Un,ÓÐInÊ±None/Un
+1738   6                    {
+1739   7                      color=RED18;
+1740   7                    }
+1741   6                  }
+1742   5                  
+1743   5                  Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,color);  //»­ÎüÆø¹ÜÉÏ²¿£¬ÏÂ²¿
+1744   5                  Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,color);       
+1745   5              
+1746   5                  
+1747   5                   //»­Exp¼ÓÈÈÏß¶Î
+1748   5                  if(WireOut_State > 0)//ÓÐOut»ØÂ··¢ÈÈË¿£¬ÏÔÊ¾À¶É«
+1749   5                  {
+1750   6                    color=BLUE18;
+1751   6                  }
+1752   5                  else
+1753   5                  {
+1754   6                    color=GRAY18;//ÎÞOut»ØÂ··¢ÈÈË¿£¬ÏÔÊ¾»ÒÉ«
+1755   6                  }
+1756   5                  if(Err_Event_Cnt <= Err_Event_1)//ÏÔÊ¾µ±Ç°×´Ì¬£¬ÓÐ»òÕßÎÞ£¬À¶É«»ò»ÒÉ«
+1757   5                  {//°´ÉÏÃæµÄÑÕÉ«ÏÔÊ¾
+1758   6                  }               
+1759   5                  else if(Err_Event_Cnt <= Err_Event_2)//¸ù¾ÝÄ£Ê½È·¶¨ÏÔÊ¾ºìÉ«±¨¾¯»¹ÊÇµ±Ç°×´Ì¬ÑÕÉ«
+1760   5                  {
+1761   6                    if(((WireOut_State == 0)&&(Wire_Mode_Sel == Wire_Sel_None))//ÎÞOut»ØÂ··¢ÈÈË¿ÇÒÊÇNoneÄ£Ê½²»ÐèÒª±¨¾¯
+1762   6                      ||((WireOut_State == 0)&&(Wire_Mode_Sel == Wire_Sel_In_Only))//ÎÞOut»ØÂ··¢ÈÈË¿ÇÒÊÇµ¥Ö§Ä£Ê½²»ÐèÒª±¨
+             -¾¯
+1763   6                      ||((WireOut_State == 1)&&(Wire_Mode_Sel == Wire_Sel_Double)))//ÓÐIn»ØÂ··¢ÈÈË¿ÇÒÊÇË«Ö§Ä£Ê½²»ÐèÒª±¨¾
+             -¯              
+1764   6                    
+1765   6                    {
+1766   7                    }
+1767   6                    else//³ýÒÔÉÏÇé¿ö¾ùÐèÒª±¨¾¯:ÈçÎÞOutÊ±Ë«Ö§/Un,ÓÐOutÊ±µ¥/None/Un
+1768   6                    {
+1769   7                      color=RED18;
+1770   7                    }
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 30  
+
+1771   6                  }
+1772   5                  
+1773   5                  Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,color);  //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ²¿
+1774   5                  Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,color);   //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ²¿
+1775   5                  Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,color);  //»­·â¿Ú 
+1776   5                }        
+1777   4           }
+1778   3           else if(JRP_Sensor_Err)//¼ÓÈÈÅÌÌ½Í·´íÎó
+1779   3           {
+1780   4             Working_Normal = 0;//Õý³£¹¤×÷Ê±¼äÇåÁã    
+1781   4             //ÏÔÊ¾Í¼ÐÎ£¬ÉÁË¸´íÎó²¿·Ö==========================================
+1782   4             if(Disp_ERR_VHB80_Code!=5)
+1783   4             {
+1784   5                Disp_ERR_VHB80_Code=5; 
+1785   5                DISP_VHB80_PIC(GRAY18);
+1786   5             }  
+1787   4             if(Err_Event_Cnt == Err_Event_1)
+1788   4             {
+1789   5                  //color=RED18;  //ºì
+1790   5               color=BLUE18;  //»Ò
+1791   5             }
+1792   4             //else
+1793   4               else if(Err_Event_Cnt == Err_Event_2)
+1794   4             {
+1795   5                  color=GRAY18; //»Ò
+1796   5             }
+1797   4             DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color);  
+1798   4           
+1799   4           }
+1800   3           else if((Wire_Mode_Sel==Wire_Sel_In_Only || Wire_Mode_Sel== Wire_Sel_None))//¾­¹ýÈ·ÈÏºóµÄµ¥Ö§¼ÓÈÈ»òÎÞ¼Ó
+             -ÈÈ»ØÂ·  
+1801   3          { 
+1802   4      
+1803   4             if(Work_State != UI_STATE_SCREENSAVER_MODE)  //Ã»ÓÐÆÁÄ»±£»¤Ê±²ÅÄÜÏÔÊ¾¼ÓÈÈÄ£Ê½
+1804   4             {
+1805   5                   if(Disp_ERR_VHB80_Code!=6)
+1806   5                   {
+1807   6                      Disp_ERR_VHB80_Code=6; 
+1808   6                      DISP_VHB80_PIC(BLUE18);
+1809   6                   }
+1810   5      
+1811   5               //»­¼ÓÈÈÏß 
+1812   5              if(Err_Event_Cnt == Err_Event_1) //   
+1813   5              { 
+1814   6               if(Wire_Mode_Sel_Rem != Wire_Mode_Sel)
+1815   6               {         
+1816   7                 if(Wire_Mode_Sel == Wire_Sel_None)//ÎÞ¼ÓÈÈË¿
+1817   7                 { 
+1818   8                        Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,GRAY18);  //»­ÎüÆø¹ÜÉÏ²¿£¬ÏÂ²
+             -¿
+1819   8                        Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,GRAY18); 
+1820   8                      
+1821   8                        Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ²
+             -¿
+1822   8                        Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ
+             -²¿
+1823   8                        Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //»­·â¿Ú        
+1824   8                  } 
+1825   7                  else if(Wire_Mode_Sel==Wire_Sel_In_Only)
+1826   7                  {
+1827   8                        Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,BLUE18);  //»­ÎüÆø¹ÜÉÏ²¿£¬ÏÂ²
+             -¿
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 31  
+
+1828   8                        Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,BLUE18); 
+1829   8                        
+1830   8                        Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ²
+             -¿
+1831   8                        Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //»­³öÆø¹ÜÉÏ²¿£¬ÏÂ
+             -²¿
+1832   8                        Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //»­·â¿Ú 
+1833   8                  }
+1834   7                }
+1835   6                Wire_Mode_Sel_Rem = Wire_Mode_Sel;
+1836   6               }  
+1837   5             }      
+1838   4           }
+1839   3           else   //Ïû³ýËùÓÐ´íÎóÏÔÊ¾
+1840   3           {
+1841   4               if(Disp_ERR_VHB80_Code!=0)
+1842   4               {
+1843   5                  Disp_ERR_VHB80_Code=0;
+1844   5                  DISP_VHB80_PIC(WHITE18);        
+1845   5               }     
+1846   4           }
+1847   3         }
+1848   2         //DISP_TIME_10X16(POS_RT_RH_X,POS_RT_RH_Y+145,Disp_ERR_VHB80_Code,BLACK18);
+1849   2       }
+1850   1      }   
+1851          
+1852          //void Event_1s(void)       //1ÃëÖÓÊÂ¼þ ÄÚ²¿¶¨Ê±ÖÐ¶ÏÖÃ±êÖ¾
+1853          void LowTempDet1SFunc(void)
+1854          {
+1855   1        uint16_t a,b,c;//³öÆø¿ÚÎÂ¶È´ïµ½Éè¶¨ÎÂ¶È-1
+1856   1        static uint8_t  xdata   No_Water_Times=0; 
+1857   1        static uint8_t RT_SHIDU_More_then_90_Cnt = 0;//Á¬Ðø³¬¹ý90%´ïµ½10´Î(1Ãë1´Î)  
+1858   1        static uint16_t    xdata Last1s_RThumity;
+1859   1        static uint16_t    xdata Last1s_RTtemp;
+1860   1        
+1861   1        if(Working_Normal < 65000)Working_Normal++;
+1862   1        
+1863   1        
+1864   1        if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == 1))
+1865   1        {
+1866   2          LCD_ShowxNum(105,180,16,3,RT_Temp_Reach_Set_Cnt,0x80,BLACK18); //
+1867   2          LCD_ShowxNum(105,215,16,3,LoTemp_Count,0x80,BLACK18); //  
+1868   2        }
+1869   1      
+1870   1      
+1871   1        if(Wire_Warm_Up_Sec < 900)Wire_Warm_Up_Sec++;
+1872   1      
+1873   1        if(Plate_Warm_Up_Sec < 900)Plate_Warm_Up_Sec++;
+1874   1        Humidity_No_Change_Sec++;//Êª¶È²»¸Ä±äµÄ¼ÆÊý£¬µ±´óÓÚ600Ê±¿ÉÄÜÌ½Í·Ê§Ð§£¬Êª¶È¿ØÖÆÊ§Ð§
+1875   1        
+1876   1        if(HeaterPlate_State)  //
+1877   1        { 
+1878   2          if(Last1s_RThumity==CONTROL_RT_SHIDU && Last1s_RTtemp==RT_Temp) //ÈËÌå¶ËÎÂ¶ÈºÍÊª¶ÈÍ¬Ê±²»¸Ä±ä
+1879   2          {
+1880   3              if(Nochange_Times<1000) Nochange_Times++;
+1881   3          }
+1882   2          else
+1883   2          { 
+1884   3               Nochange_Times=0;
+1885   3          } 
+1886   2          
+1887   2      
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 32  
+
+1888   2          //Last1s_RThumity=RT_SHIDU;
+1889   2          Last1s_RThumity=CONTROL_RT_SHIDU;
+1890   2          Last1s_RTtemp=RT_Temp;
+1891   2        }
+1892   1        else
+1893   1        {
+1894   2            Nochange_Times=0;
+1895   2        }
+1896   1       
+1897   1         //ÎÞË®±¨¾¯,Ó¦Í¨¹ý¼ÓÈÈÅÌµÄ¼ÓÈÈÉÏÉýËÙ¶ÈÅÐ¶ÏË®Á¿======================================
+1898   1         //´ÓÓÐË®µ½ÎÞË®£¬ÈËÌå¶ËÎÂ¶ÈÓ¦¸Ã»á½µµÍ,½µµÍµÄ·ù¶È¹À¼ÆÔÚ3¶ÈÒÔÉÏ
+1899   1         //ÓÐ¼ÓÈÈË¿µÄÎÞË®ÅÐ¶Ï£¬³öÆø¿ÚÎÂ¶È¸ßÓÚÈËÌå¶ËÎÂ¶È£¬¼ÓÈÈÅÌÎÂ¶ÈÔÚ100¶ÈÒÔÉÏ£¬ÈËÌå¶ËÊª¶ÈµÍÓÚ80%£¬»òÕßÓÐ20%×óÓÒµ
+             -ÄÏÂ½µ
+1900   1         //ÎÞ¼ÓÈÈË¿µÄÅÐ¶Ï£¬Èç¹ûË®·Ö²»¹»£¬¹À¼ÆÊÇÈËÌå¶ËÎÂ¶È½ÏµÍ£¬¼ÓÈÈÅÌÎÂ¶ÈÔÚ100¶ÈÒÔÉÏ
+1901   1         if(HeaterPlate_State)
+1902   1         {
+1903   2      
+1904   2         }
+1905   1         else
+1906   1         {    
+1907   2              Clear_bit(ERR_Kind,Alarm_Const_NoWater);    
+1908   2         } 
+1909   1         
+1910   1         if(RT_SHIDU >= 900) //±ãÓÚ¿ìËÙ¼ì²â£¬Ö»ÒªÊª¶È´ïµ½90%³ÖÐø10S£¬È»ºóÁ¬Ðø2·ÖÖÓÐ¡ÓÚ60%Ôò±¨¾¯
+1911   1         {     
+1912   2           RT_SHIDU_More_then_90_Cnt++;
+1913   2           if(RT_SHIDU_More_then_90_Cnt >= 10)//Á¬Ðø10Ãë³¬¹ý90%
+1914   2           {
+1915   3             RT_SHIDU_More_then_90_Cnt = 10;
+1916   3           }
+1917   2         }
+1918   1         else
+1919   1         {
+1920   2           if(RT_SHIDU_More_then_90_Cnt < 10)//Ð¡ÓÚ90%ÇÒÔÚ10´ÎÒÔÄÚÔòÇåÁã,10´ÎÒÔÉÏÔò²»ÇåÁã
+1921   2           {
+1922   3             RT_SHIDU_More_then_90_Cnt = 0;
+1923   3           }
+1924   2         }     
+1925   1      
+1926   1         //¸ÉÉÕ±¨¾¯ <60% 
+1927   1         //if(Work_Min>=20||Work_Day>0 ||Work_Hour>0) //|| RT_SHIDU_More_then_90_Cnt >= 10)
+1928   1         if(Working_Normal >= 1200)
+1929   1         {
+1930   2             if(RT_SHIDU<600) //Á¬Ðø2·ÖÖÓÉÙÓÚ60%±¨¾¯   ÈÏÎªÊÇ¸ÉÉÕ£¬±ØÐëÖØÆô»úÆ÷
+1931   2             {            
+1932   3                 if(No_Water_Times<240)  No_Water_Times++;
+1933   3               if(RTD_Sensor_Err || SHIDU_Sensor_Err) //´«¸ÐÆ÷´íÎó²»¿ÉÒÀÊª¶ÈÀ´¼ì²âÎÞË®±¨¾¯
+1934   3               {
+1935   4                  No_Water_Times = 0;
+1936   4               }
+1937   3             }else
+1938   2             {
+1939   3                  No_Water_Times=0;
+1940   3             }
+1941   2             if( No_Water_Times>=120)
+1942   2             {
+1943   3                Set_bit(ERR_Kind,Alarm_Const_NoWater);
+1944   3             } 
+1945   2         }
+1946   1         
+1947   1         if(RT_SHIDU>650)//ÎÂ¶È´óÓÚ65%£¬È¡ÏûÎÞË®±¨¾¯
+1948   1         {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 33  
+
+1949   2           No_Water_Times=0;
+1950   2           Clear_bit(ERR_Kind,Alarm_Const_NoWater);
+1951   2         }
+1952   1      
+1953   1         //============================================================
+1954   1         //ÈËÌå¶ËÎÂ¶È´ïµ½Ê¶±ð180S 
+1955   1         //if(Work_Mode==Invasive_Mode) //ÓÐ´´Ä£Ê½
+1956   1         if(1) //
+1957   1         {
+1958   2          if(RT_Temp >= Set_RT_Temp - 15) //±ãÓÚ¿ìËÙ¼ì²â£¬Ö»Òª´ïµ½Éè¶¨ÎÂ¶È-1.5¶È10S£¬È»ºóÁ¬Ðø2·ÖÖÓÐ¡ÓÚ60%Ôò±¨¾¯
+1959   2          {    
+1960   3             RT_Temp_Reach_Set_Cnt++;
+1961   3             if(RT_Temp_Reach_Set_Cnt >= 180)//Á¬Ðø180Ãë³¬¹ýÉè¶¨-1
+1962   3             {
+1963   4               RT_Temp_Reach_Set_Cnt = 180;
+1964   4             }
+1965   3          }
+1966   2          else
+1967   2          {
+1968   3             if(RT_Temp_Reach_Set_Cnt < 180)//Ð¡ÓÚÉè¶¨ÇÒÔÚ10´ÎÒÔÄÚÔòÇåÁã,10´ÎÒÔÉÏÔò²»ÇåÁã
+1969   3             {
+1970   4               RT_Temp_Reach_Set_Cnt = 0;
+1971   4             }
+1972   3          }
+1973   2        } 
+1974   1          
+1975   1         if(Work_Mode==Noninvasive_Mode)//ÎÞ´´Ä£Ê½
+1976   1         {
+1977   2           a = Const_NoninvasivePatientTemperature_Max+10;//¸ßÎÂ±¨¾¯ÏÞÖµ
+1978   2           if(WireIn_State!=0)//ÓÐ¼ÓÈÈË¿µ¥Ö§»òË«Ö§
+1979   2           {
+1980   3            b = Const_NoninvasivePatientTemperature_Min-10;//ÎÞ´´µÍÎÂ±¨¾¯ÏÞÖµ 29¶È
+1981   3           }
+1982   2           else 
+1983   2           {
+1984   3             b = 260;//ÎÞ»ØÂ·¼ÓÈÈË¿Ê±ÎÞ´´µÍÎÂ±¨¾¯Îª26¶È
+1985   3           }
+1986   2           //c = 700;//µÍÊª±¨¾¯ÏÞÖµ V2.0
+1987   2           c = 300;//µÍÊª±¨¾¯ÏÞÖµ V2.02 ÎÞ´´Ä£Ê½È¡ÏûµÍÊª¶È±¨¾¯
+1988   2         }
+1989   1         else if(Work_Mode==Invasive_Mode) //ÓÐ´´Ä£Ê½
+1990   1         {
+1991   2           a = Const_InvasivePatientTemperature_Max+10;
+1992   2           if(WireIn_State!=0)//ÓÐ¼ÓÈÈË¿µ¥Ö§»òË«Ö§
+1993   2           {
+1994   3             b = Const_InvasivePatientTemperature_Min-10;//ÓÐ´´µÍÎÂ±¨¾¯ÏÞÖµ 34¶È
+1995   3           }
+1996   2           else
+1997   2           {
+1998   3             b = 290;//ÎÞ»ØÂ·¼ÓÈÈË¿Ê±ÓÐ´´±¨¾¯Îª29¶È
+1999   3           }
+2000   2          
+2001   2           c = 800;//µÍÊª±¨¾¯ÏÞÖµ
+2002   2         }
+2003   1      
+2004   1          if(Diplay_RTtemp>a)
+2005   1          {
+2006   2              if(HiTemp_Count<240)  HiTemp_Count++;
+2007   2          }else
+2008   1          {
+2009   2               HiTemp_Count=0;
+2010   2          } 
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 34  
+
+2011   1          
+2012   1      /*    
+2013   1          ÎªÓ¦¶ÔÈÈ±ÈìÊ£¬Ôö¼ÓÐÂµÄµÍÎÂ±¨¾¯Âß¼­£¬ÐèÒªÍ¬Ê±Âú×ãÒÔÏÂÌõ¼þ´¥·¢µÍÎÂ±¨¾¯
+2014   1            1£¬ÓÐ´´Ä£Ê½
+2015   1            2£¬µ¥Ö§»òË«Ö§¼ÓÈÈ»ØÂ·Ä£Ê½
+2016   1            3£¬»¼Õß¶Ë´ïµ½Éè¶¨ÎÂ¶È-1¶È Á¬Ðø180S£¬·ÀÖ¹Îó¶¯×÷
+2017   1            4£¬»¼Õß¶ËµÍÓÚÉè¶¨ÎÂ¶È-2¶ÈÇÒ»ØÂ·¼ÓÈÈ¹¦ÂÊÎªÈ«¹¦ÂÊ(190)Á¬Ðø10S*/
+2018   1      
+2019   1      //ÈËÌå¶ËµÍÎÂ±¨¾¯    
+2020   1          //if(Work_Min>=20||Work_Day>0 ||Work_Hour>0)// || RT_Temp_Reach_Set_Cnt >= 180)  //ÈËÌåµÍÎÂ±¨¾¯
+2021   1          if(Working_Normal >= 1200)//20·ÖÖÓ
+2022   1          {
+2023   2             if((RT_Temp_Reach_Set_Cnt >= 180)//´ïµ½ÎÂ¶ÈÁ¬Ðø180S
+2024   2              //&&(WireIn_State!=0)//ÓÐ¼ÓÈÈË¿µ¥Ö§»òË«Ö§
+2025   2              &&(Diplay_RTtemp <= Set_RT_Temp - 30))//ÎÂ¶ÈµÍÓÚÉè¶¨ÎÂ¶È3¶È //ÆøÔ´ÖÐ¶Ï»òÌ½Í·ÍÑÂä      
+2026   2             {
+2027   3               if(((WireIn_State!=0) && (Micro_Temp_In >= 190)))//ÓÐ¼ÓÈÈË¿µ¥Ö§»òË«Ö§
+2028   3                 //||(WireIn_State==0))//ÎÞ·¢ÈÈË¿²»Ò»¶¨ÊÇÈ«¹¦ÂÊ¼ÓÈÈ ÎÞ·¢ÈÈË¿²»Ê¹ÓÃ 
+2029   3              
+2030   3               {
+2031   4                  if(LoTemp_Count<240) LoTemp_Count+= 12; //µ±ÎÂ¶È´ïµ½Éè¶¨ÎÂ¶Èºó£¬Á¬Ðø10SÏÂ½µµ½Éè¶¨ÎÂ¶È-2.5¶È£¬µÍÎÂ±¨¾
+             -¯  
+2032   4               }
+2033   3               else 
+2034   3               {
+2035   4                 //if(LoTemp_Count<240) LoTemp_Count++; //µ±ÎÂ¶È´ïµ½Éè¶¨ÎÂ¶Èºó£¬Á¬Ðø10SÏÂ½µµ½Éè¶¨ÎÂ¶È-2.5¶È£¬µÍÎÂ±¨¾¯
+             -  
+2036   4               }
+2037   3             }
+2038   2             else if(Diplay_RTtemp<b)//55·ÖÖÓ¿ªÊ¼¼ì²âÎÂ¶È¹ýµÍ±¨¾¯
+2039   2             {
+2040   3               if(Working_Normal >= 3300)
+2041   3               {
+2042   4                 if(LoTemp_Count<240) 
+2043   4                 {
+2044   5                    LoTemp_Count++;
+2045   5                 }
+2046   4              }
+2047   3             }
+2048   2             else
+2049   2             {
+2050   3               LoTemp_Count=0;
+2051   3             }
+2052   2          }
+2053   1          else
+2054   1          {
+2055   2             LoTemp_Count=0;
+2056   2          }
+2057   1      
+2058   1      //ÈËÌå¶ËµÍÊª±¨¾¯      
+2059   1          //if(Work_Min>=20||Work_Day>0 ||Work_Hour>0)// || RT_SHIDU_More_then_90_Cnt >= 10)   //ÈËÌåµÍÊª±¨¾¯
+2060   1          if(Working_Normal >= 1200)
+2061   1          {
+2062   2             if(RT_SHIDU<c)   //2014-07-23    µÍÊª¶È±¨¾¯
+2063   2             {
+2064   3                if(LoHumity_Count<250)   LoHumity_Count++;
+2065   3             }
+2066   2             else
+2067   2                LoHumity_Count=0;
+2068   2        
+2069   2          }else
+2070   1          {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 35  
+
+2071   2      
+2072   2             LoHumity_Count=0;
+2073   2          }  
+2074   1         
+2075   1      //³öÆø¿ÚµÍÎÂ±¨¾¯
+2076   1          //if(CQK_Temp >= Set_CQK_Temp - 10) //±ãÓÚ¿ìËÙ¼ì²â£¬Ö»Òª´ïµ½Éè¶¨ÎÂ¶È10S£¬È»ºóÁ¬Ðø2·ÖÖÓÐ¡ÓÚ60%Ôò±¨¾¯
+2077   1          if(CQK_Temp >= 300) //±ãÓÚ¿ìËÙ¼ì²â£¬Ö»Òª´ïµ½Éè¶¨ÎÂ¶È10S£¬È»ºóÁ¬Ðø2·ÖÖÓÐ¡ÓÚ60%Ôò±¨¾¯
+2078   1          {    
+2079   2             CQK_Temp_Reach_Set_Cnt++;
+2080   2             if(CQK_Temp_Reach_Set_Cnt >= 10)//Á¬Ðø10Ãë´ïµ½
+2081   2             {
+2082   3               CQK_Temp_Reach_Set_Cnt = 10;
+2083   3             }
+2084   2          }
+2085   1          else
+2086   1          {
+2087   2             if(CQK_Temp_Reach_Set_Cnt < 10)//10´ÎÒÔÄÚÔòÇåÁã,10´ÎÒÔÉÏÔò²»ÇåÁã
+2088   2             {
+2089   3               CQK_Temp_Reach_Set_Cnt = 0;
+2090   3             }
+2091   2          } 
+2092   1      
+2093   1          if(Working_Normal >= 1200)
+2094   1          {
+2095   2             if((CQK_Temp < Const_NoninvasiveChamberTemperature_Min - 10)
+2096   2               &&(Work_Mode==Invasive_Mode))//ÓÐ´´Ä£Ê½²ÅÓÐ³öÆø¿ÚµÍÎÂ±¨¾¯
+2097   2             {
+2098   3               if(LoTemp_CQK_Count<240)
+2099   3               {
+2100   4                  if(CQK_Temp_Reach_Set_Cnt>= 10)//Èô´ïµ½¹ýÎÂ¶ÈÔò¼Ó¿ìËÙ¶È
+2101   4                  {
+2102   5                    //LoTemp_CQK_Count += 12;
+2103   5                    LoTemp_CQK_Count++;
+2104   5                  }
+2105   4                  else
+2106   4                    LoTemp_CQK_Count++;
+2107   4               }
+2108   3             }else
+2109   2             {
+2110   3               LoTemp_CQK_Count=0;
+2111   3             }      
+2112   2          }else
+2113   1          {
+2114   2             LoTemp_CQK_Count=0;
+2115   2          }
+2116   1      }
+2117          
+2118          void SaveDateToFlashFunc(void)
+2119          {
+2120   1         static uint8_t   xdata  Enable_Save_Data=0;  //±£´æÊý¾Ý¼ÆÊý
+2121   1         uint16_t a,b,c;//
+2122   1         unsigned long Adress;  
+2123   1         if(Enable_Save_Data>=1)
+2124   1         {
+2125   2            Enable_Save_Data++;
+2126   2            if(Enable_Save_Data>=10) Enable_Save_Data=0;
+2127   2      
+2128   2         }
+2129   1         if(Enable_Save_Data==2)
+2130   1         {
+2131   2           if((Run_Count-1)%256==0)//Ò»¸öÉÈÇøÎª4K£¬Ã¿´Î´æ´¢µÄÊý¾ÝÎª16×Ö½Ú£¬¼´256×éÊý¾Ý¼´Îª4K 256*16=4096;
+2132   2           {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 36  
+
+2133   3             //Çå³ýÏÂÃæ256µÄÊý¾Ý
+2134   3              Adress=Run_Count-1;  //¼ÙÉèÎª257-1=256
+2135   3              Adress=(Adress<<4);  //  256*16= 4096
+2136   3              Adress=Adress+0x2000;//ÆðÊ¼µØÖ·Îª0X2000£¬¼´8192Îª±£Áô×Ö½Ú
+2137   3              SPI_Erase_Sector(Adress);
+2138   3           }
+2139   2         }else  if(Enable_Save_Data==3)//´æ·ÅÊý¾Ý
+2140   1         {
+2141   2          Adress=Run_Count-1;
+2142   2          Adress=(Adress<<4);
+2143   2          Adress=Adress+0x2000; 
+2144   2           
+2145   2            {
+2146   3               RX8010_GetTime(SaveData);
+2147   3              
+2148   3              //LCD_ShowxNum(POS_RT_RH_X-40,5,16,3,SaveData[2],0x80,BLACK18); //
+2149   3              
+2150   3               a = (SaveData[2]&0x0F)%10 + ((SaveData[2]>>4)& 0x03)*10;
+2151   3               SaveData[2] = a;//×ª»»Îª24Ð¡Ê±ÖÆÐ¡Ê±
+2152   3              
+2153   3              //LCD_ShowxNum(POS_RT_RH_X-40,45,16,3,SaveData[2],0x80,BLACK18); //
+2154   3              
+2155   3               if(SaveData[2] >= 12)
+2156   3               {
+2157   4                 a = 0x80 | 0x20;//PM
+2158   4                 SaveData[2] -= 12;
+2159   4               }
+2160   3               else
+2161   3               {
+2162   4                 a = 0x80;//AM
+2163   4               }
+2164   3               b = SaveData[2]/10;
+2165   3               c = SaveData[2]%10;
+2166   3               SaveData[2] = ((b << 4) + c) | a;//Ê±¼ä×ª»»ÎªDS1302¸ñÊ½
+2167   3               
+2168   3               //LCD_ShowxNum(POS_RT_RH_X-40,95,16,3,SaveData[2],0x80,BLACK18); //
+2169   3      
+2170   3            }
+2171   2              
+2172   2          SaveData[7]=ERR_Kind;
+2173   2          if(RTD_Sensor_Err) SaveData[7]|=0x20;
+2174   2          if(CQK_Sensor_Err) SaveData[7]|=0x40;
+2175   2          if(JRP_Sensor_Err) SaveData[7]|=0x80;       
+2176   2          SaveData[8]=RT_Temp/256;
+2177   2          SaveData[9]=RT_Temp%256;
+2178   2          SaveData[10]=RT_SHIDU/256;
+2179   2          SaveData[11]=RT_SHIDU%256; 
+2180   2          //SaveData[10]=CONTROL_RT_SHIDU/256;  //2015-06-04 ´æ´¢ÕæÊµµÄÊª¶È
+2181   2          //SaveData[11]=CONTROL_RT_SHIDU%256; 
+2182   2          
+2183   2          SaveData[12]=CQK_Temp/256;    
+2184   2          SaveData[13]=CQK_Temp%256;
+2185   2          SaveData[14]=JEP_Temp/256;
+2186   2          SaveData[15]=JEP_Temp%256;
+2187   2          SPI_Write_nBytes(Adress,16,&SaveData[0]);
+2188   2      
+2189   2         }else if(Enable_Save_Data==4)  //´æ·ÅÊý¾ÝµØÖ·
+2190   1         {
+2191   2             Store_Data();     
+2192   2         }else if(Enable_Save_Data==5)  //²Áµ÷Êý¾Ý
+2193   1         {
+2194   2             //Çå³ýËùÓÐÊý¾Ý,ÖØÐÂ¼ÆÊý
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 37  
+
+2195   2             if(Run_Count>=44896) 
+2196   2              SPI_Erase_Sector(0x000);
+2197   2        
+2198   2         }else if(Enable_Save_Data==6)  //²Áµ÷Êý¾Ý
+2199   1         {
+2200   2             //Çå³ýËùÓÐÊý¾Ý,ÖØÐÂ¼ÆÊý
+2201   2             if(Run_Count>=44896) 
+2202   2             {  
+2203   3               SPI_Erase_Sector(0x1000);        
+2204   3               Run_Count=0;
+2205   3             }  
+2206   2         } else if(Enable_Save_Data==9)  //²ÁÊý¾Ý
+2207   1         {
+2208   2      
+2209   2         } 
+2210   1      }
+2211          
+2212          
+2213          void  Init_port(void) //³õÊ¼»¯¶Ë¿Ú×´Ì¬--------------------------------
+2214          {
+2215   1        uint16_t j=0;
+2216   1        
+2217   1        P1M1=0x08;  //P13Îª¸ß×èÊäÈë Wire_out_FB
+2218   1        P1M0=0x0;
+2219   1        P2M1=0x70;//P24-P26È«Éè¶¨³É¿ªÂ©Êä³ö
+2220   1        P2M0=0xF0;
+2221   1        P3M1=0x18;  //P34,P33Îª¸ß×èÊäÈë Wire_In_FB  Plant_FB 
+2222   1        P3M0=0x64;  //P35,P36,P32ÎªÇ¿Êä³ö  Heat_Plant_Out  Heat_Wire_In  Heat_JRP_EN_OUT  
+2223   1        P4M1=0x00;  //IO Port initialization
+2224   1        P4M0=0x09;  //P40,P43ÎªÇ¿Êä³ö
+2225   1        P4SW=0x70;  
+2226   1      
+2227   1        WDT_CONTR = 0x3F; //WDT Enable(4.55S)   
+2228   1        LCD_LIGHT_CLOSE;  
+2229   1        Rec_Count=0;
+2230   1        Buzzer_Port=0;
+2231   1        Heat_JRP_Port=0;
+2232   1        Heat_WireIn_Port=0;
+2233   1        Heat_WireOut_Port=0;
+2234   1        Heat_WIRE_EN_OUT = 1;
+2235   1        EX1=1;
+2236   1        IT1=1;   
+2237   1        LCD_1DIR_L;     
+2238   1        JEP_Temp=0;
+2239   1        EA=1;  //
+2240   1         
+2241   1        EUSART_Initialize();//Uart initialization
+2242   1        SPI_init();//SPI Flash initialization
+2243   1        LCD_Initial();//TFT LCD initialization  
+2244   1         
+2245   1        //Holding down these two keys for three seconds at boot time will enter service mode. 
+2246   1        if((KEY_LEFT_UP_IN==0)&&(KEY_LEFT_DOWN_IN==0))
+2247   1        {
+2248   2          Work_State = UI_STATE_SERVICE_MODE;
+2249   2        }
+2250   1        else
+2251   1        {
+2252   2          Work_State = UI_STATE_POST_MODE;
+2253   2        }
+2254   1        
+2255   1      //Holding down these two keys for three seconds at boot time will enter Data Reading Interface. 
+2256   1        if((KEY_LEFT_DOWN_IN==0) &&(KEY_RIGHT_DOWN_IN==0))
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 38  
+
+2257   1        {
+2258   2          Work_State = UI_STATE_DATAREADER_MODE;//Êý¾Ý´«Êä½çÃæ
+2259   2          ET0=0;
+2260   2          TR0=0;
+2261   2          Back_Color=WHITE18; 
+2262   2      
+2263   2          Draw_Rectangle_Real(0,0,239,319,WHITE18);
+2264   2      //Display Data Reading Interface=============== DATA OUTPUT...
+2265   2          for(j=4;j<8;j++)
+2266   2          {
+2267   3              DISP_FNT10X24(115,100+(j-4)*12,j,BLUE18);
+2268   3          }
+2269   2          for(j=j;j<14;j++)
+2270   2          {
+2271   3              DISP_FNT10X24(115,100+(j-3)*12,j,BLUE18);
+2272   3          }   
+2273   2          DISP_FNT10X24(115,100+11*12,14,BLUE18);
+2274   2          DISP_FNT10X24(115,100+12*12,14,BLUE18);
+2275   2          DISP_FNT10X24(115,100+13*12,14,BLUE18); 
+2276   2      
+2277   2      //Display soft version
+2278   2          LCD_Show_Verion();  
+2279   2          LCD_LIGHT_OPEN;
+2280   2        }
+2281   1        
+2282   1        Test_Mode_Dis_Jrp_Ctl = DISPLAY_TEST_DATA_EN_DIS_DEF; //LCD Displays Working Data at Runningtime
+2283   1      }
+2284          
+2285          void  Main_Init(void) //Ö÷³ÌÐò³õÊ¼»¯
+2286          {
+2287   1        Get_RunCount();  //µÃµ½´æ·ÅÊý¾ÝµÄÌõÊý  
+2288   1      
+2289   1        Diplay_RTtemp = RT_Temp;
+2290   1        
+2291   1        CQK_Sensor_Err=0;
+2292   1        RTD_Sensor_Err=0;
+2293   1        JRP_Sensor_Err=0;
+2294   1        SHIDU_Sensor_Err=0;
+2295   1      
+2296   1        Back_Color=BRIGHT_BLUE18 ;
+2297   1      
+2298   1        WireOut_State=0;
+2299   1        WireIn_State=0;   
+2300   1      
+2301   1        Wire_Mode_Sel = Wire_Sel_Double;//Ä¬ÈÏÎªË«Ö§¼ÓÈÈ»ØÂ·
+2302   1        Wire_Mode_Mismatch = 0;//»ØÂ··¢ÈÈË¿Ä£Ê½ºÍÊµ¼Ê²»Æ¥Åä±êÖ¾
+2303   1      
+2304   1        Wire_Warm_Up_Sec = 0; //µ±<=300Ê±ÏÞÖÆ×î´ó¼ÓÈÈ¹¦ÂÊ
+2305   1        Plate_Warm_Up_Sec = 0;
+2306   1      
+2307   1        Set_CQK_Temp_Comp = 360;//³õÊ¼»¯
+2308   1        Humidity_No_Change_Sec = 0;//Êª¶È²»¸Ä±äµÄ¼ÆÊý 
+2309   1        
+2310   1        JEP_Temp_Aim = Set_CQK_Temp + 100;     //¼ÓÈÈÅÌÄ¿±êÎÂ¶È 400 - 530
+2311   1        PID_temp3.Sum_error = 0;
+2312   1        PID_temp3.Ek = 0;
+2313   1        PID_temp3.Ek1 = 0;
+2314   1        PID_temp3.Ek2 = 0;
+2315   1      }
+2316          
+2317          
+2318          
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 39  
+
+2319          //²âÊÔÄ£Ê½Ê±ÏÔÊ¾ÎÂ¶È
+2320          //ºÍÕý³£¹¤×÷Ê±µÄÇø±ðÔÚÓÚÊµÊ±ÐÔ
+2321          void ServiceMode_TempHumidy_Disp(void)
+2322          {
+2323   1        uint16_t Disp,color;
+2324   1        bit Disp_Err;
+2325   1        Back_Color=WHITE18; 
+2326   1        Disp_Err=0;   
+2327   1      
+2328   1          if(CQK_Temp>=0x0FFF || No_CQKSensor_Times>20 ) //³öÆø¿ÚÎÂ¶È´«¸ÐÆ÷´íÎó¼ì²â
+2329   1          {
+2330   2           CQK_Sensor_Err=1;
+2331   2           CQK_Temp = 0;
+2332   2          }
+2333   1          else
+2334   1               CQK_Sensor_Err=0;
+2335   1          
+2336   1          if(No_ReadData_SHIDU_Times>10)//ÈËÌå¶ËÊª¶È´«¸ÐÆ÷´íÎó¼ì²â
+2337   1           {
+2338   2             SHIDU_Sensor_Err=1;
+2339   2            RT_SHIDU = 0; 
+2340   2          }   
+2341   1          else
+2342   1              SHIDU_Sensor_Err=0;
+2343   1          
+2344   1          if(No_ReadData_Temp_Times>20 || ERR_RT_Temp_Times>10)//ÈËÌå¶ËÎÂ¶È´«¸ÐÆ÷´íÎó¼ì²â 2014-07-03
+2345   1           {   
+2346   2              RTD_Sensor_Err=1;
+2347   2              RT_Temp = 0;    
+2348   2              Diplay_RTtemp = 0;
+2349   2            }
+2350   1            else
+2351   1               RTD_Sensor_Err=0;
+2352   1            
+2353   1          if( No_HeatSensor_Times>20)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â
+2354   1          {
+2355   2                JRP_Sensor_Err=1;
+2356   2              JEP_Temp = 0;
+2357   2          }
+2358   1      
+2359   1          else
+2360   1              JRP_Sensor_Err=0;
+2361   1      
+2362   1        //ÈËÌå¶ËÎÂ¶È
+2363   1        {
+2364   2          Disp=RT_Temp;
+2365   2          Disp_Err=RTD_Sensor_Err;      
+2366   2        }
+2367   1        color=BLACK18;   
+2368   1      
+2369   1        if(Disp>=1000)
+2370   1        {
+2371   2          DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y,(Disp/1000)%10,color);  
+2372   2          DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34,(Disp%1000)/100,color);   
+2373   2          DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+73,(Disp%100)/10,color);    
+2374   2          Draw_Rectangle_Real(POS_RT_TEMP_X+1-8,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8-8,POS_RT_TEMP_Y+71,WHITE18); //
+             -È¥µôÐ¡Êýµã
+2375   2        }else
+2376   1        {
+2377   2          DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y,(Disp/100)%10,color);  
+2378   2          DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34,Disp%100/10,color);   
+2379   2          DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34*2+5,Disp%10,color);    
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 40  
+
+2380   2          Draw_Rectangle_Real(POS_RT_TEMP_X+1-8,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8-8,POS_RT_TEMP_Y+71,color); //»­
+             -µã
+2381   2        }     
+2382   1      
+2383   1        //³öÆø¿ÚÎÂ¶È
+2384   1        Disp=CQK_Temp; 
+2385   1        if(Disp>=1000)
+2386   1        {
+2387   2          DISP_RH_17X40(55,POS_RT_TEMP_Y,(Disp/1000)%10,color);  
+2388   2          DISP_RH_17X40(55,POS_RT_TEMP_Y+20,(Disp%1000)/100,color);   
+2389   2          DISP_RH_17X40(55,POS_RT_TEMP_Y+20*2+5,(Disp%100)/10,color);    
+2390   2          Draw_Rectangle_Real(56,POS_RT_TEMP_Y+40,61,POS_RT_TEMP_Y+43,WHITE18); //È¥µôÐ¡Êýµã
+2391   2        }else
+2392   1        {
+2393   2          DISP_RH_17X40(55,POS_RT_TEMP_Y,(Disp/100)%10,color);  
+2394   2          DISP_RH_17X40(55,POS_RT_TEMP_Y+20,Disp%100/10,color);   
+2395   2          DISP_RH_17X40(55,POS_RT_TEMP_Y+20*2+5,Disp%10,color);    
+2396   2          Draw_Rectangle_Real(56,POS_RT_TEMP_Y+40,61,POS_RT_TEMP_Y+43,color); //»­µã
+2397   2        }
+2398   1         
+2399   1        //¼ÓÈÈÅÌÎÂ¶È
+2400   1        Disp=JEP_Temp;
+2401   1        if(Disp>=1000)
+2402   1        {
+2403   2        DISP_RH_17X40(5,POS_RT_TEMP_Y,(Disp/1000)%10,color);  
+2404   2        DISP_RH_17X40(5,POS_RT_TEMP_Y+20,(Disp%1000)/100,color);   
+2405   2        DISP_RH_17X40(5,POS_RT_TEMP_Y+20*2+5,(Disp%100)/10,color);    
+2406   2        Draw_Rectangle_Real(51,POS_RT_TEMP_Y+40,56,POS_RT_TEMP_Y+43,WHITE18); //È¥µôÐ¡Êýµã
+2407   2        }else
+2408   1        {
+2409   2        DISP_RH_17X40(5,POS_RT_TEMP_Y,(Disp/100)%10,color);  
+2410   2        DISP_RH_17X40(5,POS_RT_TEMP_Y+20,Disp%100/10,color);   
+2411   2        DISP_RH_17X40(5,POS_RT_TEMP_Y+20*2+5,Disp%10,color);    
+2412   2        Draw_Rectangle_Real(6,POS_RT_TEMP_Y+40,11,POS_RT_TEMP_Y+43,color); //»­µã
+2413   2        } 
+2414   1      
+2415   1        //ÏÔÊ¾Êª¶È
+2416   1        { 
+2417   2         DISP_RH_17X40(POS_RT_RH_X+2,POS_RT_RH_Y,RT_SHIDU%1000/100,color);
+2418   2         DISP_RH_17X40(POS_RT_RH_X+2,POS_RT_RH_Y+19,RT_SHIDU%100/10,color);
+2419   2        }   
+2420   1      }
+2421          
+2422          //½«Éè¶¨µÄ²ÎÊýÐ´Èëµ½STC EEPROM
+2423          //×¢Òâ£º¿ª»úÊ±±ØÐë°ÑFLASHµÄÊý¾Ý¶ÁÈëµ½RAMÄÚ
+2424          void Setting_write_to_flash(void)
+2425          { 
+2426   1          STC_IAP_Sector_Erase(DATA_FLASH_ADDRESS_Set_RT_YCTemp);           //²Á³ýÕû¸öÉÈÇø
+2427   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_First, data_flash.First);//½« DEBUG_DATA Ð´Èë EEPROM
+2428   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_Work_Mode, data_flash.Work_Mode);//
+2429   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_Set_RT_WCTemp, data_flash.Set_RT_WCTemp);//
+2430   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_Set_RT_YCTemp, data_flash.Set_RT_YCTemp);//
+2431   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_In_Exp_Ratio, data_flash.In_Exp_Ratio);//
+2432   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_Set_CQK_WCTemp, data_flash.Set_CQK_WCTemp);//
+2433   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_Set_CQK_YCTemp, data_flash.Set_CQK_YCTemp);//
+2434   1          STC_IAP_Byte_Program(DATA_FLASH_ADDRESS_Language, data_flash.Language);//
+2435   1      }
+2436          
+2437          //½«Ä¬ÈÏµÄ²ÎÊýÐ´Èëµ½STC EEPROM
+2438          void Write_Default_Setting_to_flash(void) //°ÑÄ¬ÈÏ³ö³§Éè¶¨Ð´ÈëFLASH
+2439          {
+2440   1              data_flash.First = 'Z';
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 41  
+
+2441   1            data_flash.Work_Mode = Invasive_Mode;//ÓÐ´´
+2442   1            data_flash.Set_RT_WCTemp = (340/5);//
+2443   1            data_flash.Set_RT_YCTemp = (390/5);//
+2444   1            data_flash.In_Exp_Ratio = 4;//1:1.3
+2445   1            data_flash.Set_CQK_WCTemp = (310/5);//
+2446   1            data_flash.Set_CQK_YCTemp = (360/5);//
+2447   1            //data_flash.Language = Lan_English;
+2448   1      
+2449   1            Setting_write_to_flash();//Ð´Èëµ½FLASH
+2450   1      }
+2451          
+2452          
+2453          void Mem_Flash_Recall(void) //¶ÁÈ¡ÉÏ´ÎµÄ¼ÇÒä²¢ÑéÖ¤Êý¾Ý
+2454          {
+2455   1        data_flash.First = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_First);    //¶ÁEEPROMµÄÖµ
+2456   1        data_flash.Work_Mode = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Work_Mode);    
+2457   1        data_flash.Set_RT_WCTemp = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Set_RT_WCTemp);    
+2458   1        data_flash.Set_RT_YCTemp = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Set_RT_YCTemp);    
+2459   1        data_flash.In_Exp_Ratio = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_In_Exp_Ratio);  
+2460   1        data_flash.Set_CQK_WCTemp = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Set_CQK_WCTemp);    
+2461   1        data_flash.Set_CQK_YCTemp = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Set_CQK_YCTemp); 
+2462   1        data_flash.Language = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Language); 
+2463   1        
+2464   1        if( //Ð£ÑéÊý¾ÝÊÇ·ñÕýÈ·
+2465   1            (data_flash.First != 'Z')
+2466   1            ||(data_flash.Work_Mode > 1) 
+2467   1            ||(data_flash.Set_RT_WCTemp > Const_NoninvasivePatientTemperature_Max/5) //370/5 = 74;  
+2468   1            ||(data_flash.Set_RT_WCTemp < Const_NoninvasivePatientTemperature_Min/5) //300/5 = 60;  
+2469   1            ||(data_flash.Set_RT_YCTemp > Const_InvasivePatientTemperature_Max/5) //400/5 = 80; 
+2470   1            ||(data_flash.Set_RT_YCTemp < Const_InvasivePatientTemperature_Min/5) //350/5 = 70;
+2471   1            ||(data_flash.In_Exp_Ratio > 6)
+2472   1            ||(data_flash.In_Exp_Ratio < 1)
+2473   1            ||(data_flash.Set_CQK_WCTemp > Const_NoninvasiveChamberTemperature_Max/5) //360/5 = 74;  
+2474   1            ||(data_flash.Set_CQK_WCTemp < Const_NoninvasiveChamberTemperature_Min/5) //310/5 = 60;  
+2475   1            ||(data_flash.Set_CQK_YCTemp > Const_InvasiveChamberTemperature_Max/5)  //400/5 = 80; 
+2476   1            ||(data_flash.Set_CQK_YCTemp < Const_InvasiveChamberTemperature_Min/5)  //350/5 = 70;
+2477   1            ||(data_flash.Language > Lan_French)//×î¶à4ÖÖÓïÑÔ
+2478   1          )
+2479   1          {
+2480   2            data_flash.Language = Lan_English;
+2481   2            Write_Default_Setting_to_flash();//°ÑÄ¬ÈÏ³ö³§Éè¶¨Ð´ÈëFLASH
+2482   2          }
+2483   1      }
+2484          
+2485          
+2486          
+2487          void Load_Settings_Before_Choice(void)//ÔÚÑ¡Ôñ·½¿ò³öÏÖÖ®Ç°£¬Òª´¦ÀíµÄÊý¾Ý£¬ÒÔÍ¬Ê±¼æÈÝÓÐÎÞÑ¡Ôñ¼ÇÒä½çÃæ³ÌÐò
+2488          {
+2489   1        if(defalut_mode == Load_Fac_MODE)  //ÈôÊÇ¹¤³§Ä¬ÈÏÉè¶¨  
+2490   1        {
+2491   2          Write_Default_Setting_to_flash();//°ÑÄ¬ÈÏ³ö³§Éè¶¨Ð´ÈëFLASH
+2492   2        }
+2493   1      
+2494   1          Work_Mode = data_flash.Work_Mode;  //¹¤×÷Ä£Ê½
+2495   1          Set_RT_WCTemp = data_flash.Set_RT_WCTemp * 5;//
+2496   1          Set_RT_YCTemp = data_flash.Set_RT_YCTemp * 5;//
+2497   1          Set_CQK_WCTemp = data_flash.Set_CQK_WCTemp * 5;//
+2498   1          Set_CQK_YCTemp = data_flash.Set_CQK_YCTemp * 5;//
+2499   1          In_Exp_Ratio = data_flash.In_Exp_Ratio;  //
+2500   1      
+2501   1          if(Work_Mode==0)  
+2502   1          {     
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 42  
+
+2503   2            Set_RT_Temp=Set_RT_WCTemp;
+2504   2            Set_CQK_Temp=Set_CQK_WCTemp;
+2505   2          }
+2506   1          else
+2507   1          {
+2508   2            Set_RT_Temp=Set_RT_YCTemp; 
+2509   2            Set_CQK_Temp=Set_CQK_YCTemp; 
+2510   2          }
+2511   1      }
+2512          
+2513          /*µÍ¹¦ÂÊÄ£Ê½
+2514          ¹¦ÄÜ---½øÈë´ý»úÄ£Ê½Ê±£¬a,¼ÓÈÈÅÌ¼ÓÈÈÊ±³¤±»ÏÞ¶¨ÔÚ50ÇÒÎÂ¶È²»³¬¹ý50¶È
+2515                                 b,»ØÂ··¢ÈÈË¿¼ÓÈÈÊ±³¤±»ÏÞ¶¨ÔÚ40
+2516          Ä¿µÄ---µ±³öÏÖÈËÌå¶Ë»ò³öÆø¿ÚµÍÎÂ±¨¾¯Ê±£¬³ýÁËÆøÔ´£¬»ØÂ·±»¶ÂµÈÔ­ÒòÍâ£¬»¹ÓÐ¿ÉÄÜÊÇÌ½Í·ÍÑÂä£¬
+2517                  ÈôÍêÈ«²»¼ÓÈÈ£¬ÔòÔÚÓÃ»§Î´¸ÉÔ¤Ê±ÍêÈ«²»¼ÓÈÈÖÁÀäÈ´µ½ÊÒÎÂ£¬ÓÃ»§¿ÉÄÜ»áÈÏÎª»úÆ÷ÓÐÑÏÖØ¹ÊÕÏ
+2518                  Èô°´Õý³£Ä£Ê½¼ÓÈÈ£¬Ôò¿ÉÄÜ»áÓÉÓÚÌ½Í·ÍÑÂäµ¼ÖÂ´ó¹¦ÂÊ¼ÓÈÈ£¬ÒýÆð³¬ÎÂ¶ø²úÉú·çÏÕ¡£
+2519          ½øÈë´ý»úÄ£Ê½Ìõ¼þ---ÈËÌå¶Ë»ò³öÆø¿Ú³öÏÖµÍÎÂ±¨¾¯£¬ÇÒÓÐ±¨¾¯ÒôÊ±
+2520          ÍË³ö´ý»úÄ£Ê½Ìõ¼þ---µÍÎÂ±¨¾¯½â³ý£¬»ò°´ÏûÒô¼ü¿ÉÔÝÊ±ÍË³ö90S
+2521          */
+2522          void LowPowerModeFunc(void)  
+2523          { 
+2524   1        if((LoTemp_Count > 120 || LoTemp_CQK_Count > 120)||(Bit_is_one(ERR_Kind,Alarm_Const_NoWater))) //ÎÞË®(¸ÉÉ
+             -Õ)±¨¾¯
+2525   1        {
+2526   2            if(   
+2527   2                 (ERR_Kind & 0x01)!=0//´«¸ÐÆ÷´íÎó
+2528   2              || (ERR_Kind & 0x02)!=0//¸ßÎÂ
+2529   2              || Wire_Mode_Mismatch == 1  //·¢ÈÈË¿Î´Ñ¡
+2530   2              || HeaterPlate_State==0)//Ë®¹ÞÎ´×°ºÃ
+2531   2            { 
+2532   3            }
+2533   2            else  
+2534   2            {     
+2535   3              if(AlarmSoundPauseStatus == 0)//Î´°´ÏÂ¾²Òô¼ü
+2536   3              {
+2537   4                Low_Power_Mode_Flag = 1;//µÍ¹¦ÂÊÄ£Ê½±êÖ¾
+2538   4                if(JEP_Temp<=450)
+2539   4                {       
+2540   5                  Micro_Temp_Val=50;  //Í£Ö¹¼ÓÈÈ
+2541   5                }
+2542   4                else
+2543   4                {
+2544   5                  Micro_Temp_Val=0;  //Í£Ö¹¼ÓÈÈ
+2545   5                }
+2546   4                Micro_Temp_In=40;
+2547   4                Micro_Temp_Out=Micro_Temp_In;     
+2548   4                Micro_Adj_Mode_Test = 4;//¼ÓÈÈÄ£Ê½²âÊÔ
+2549   4              }
+2550   3              else
+2551   3                Low_Power_Mode_Flag = 0;
+2552   3            }
+2553   2        }
+2554   1        else
+2555   1          Low_Power_Mode_Flag = 0;
+2556   1      }
+2557          
+2558          
+2559          
+2560          
+2561          //ÔöÁ¿PIDËã·¨
+2562          //¦¤U = U(k)-U(k-1) = Kp*[e(k)-e(k-1)]+Ki*e(k)+Kd*[e(k)-2*e(k-1)+e(k-2)]
+2563          //* ÆäÖÐ£ºKp¡¢Ki¡¢Kd·Ö±ðÎª±ÈÀý¡¢»ý·ÖºÍÎ¢·Ö·Å´óÏµÊý£¬u(k)±íÊ¾µÚk¸ö²ÉÑùÊ±¿Ì
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 43  
+
+2564          //µÄ¿ØÖÆÁ¿,e(k)±íÊ¾µÚk¸ö²ÉÑùÊ±¿ÌµÄº½ÏòÊäÈëÆ«²î.
+2565          //PIE_UK = Kp*(Ek-Ek1)+Ki*EK+Kd*(Ek+Ek2-EK1)
+2566          
+2567          //struct PID
+2568          //    {
+2569          //      int Uk; //×ÜµÄ¿ØÖÆÁ¿
+2570          //      int Uk1;//ÉÏ´ÎµÄ×Ü¿ØÖÆÁ¿
+2571          //      int Sum_error;//Îó²î×ÜÁ¿
+2572          //      int Ek;//µ±Ç°µÄ×ÜÎó²îÁ¿
+2573          //      int Ek1;//Ç°Ò»´ÎµÄÎó²îÁ¿
+2574          //      int Ek2;//Ç°¶þ´ÎµÄÎó²îÁ¿       
+2575          //       }PID_temp;//
+2576          
+2577          //ÓÐ·¢ÈÈË¿Ê±µÄ»¼Õß¶ËÎÂ¶È¿ØÖÆPIDËã·¨---¸ù¾Ý»¼Õß¶ËÄ¿±êÎÂ¶ÈºÍÊµ¼ÊÎÂ¶È£¬¼ÆËã³ö¼ÓÈÈ»ØÂ·Çý¶¯Öµ  Ã¿1Ãë¹¤×÷Ò»´Î
+2578          void PID_Calc(void) //Éè¶¨ÎÂ¶È×î¸ß400,×îµÍ000,Êµ¼Ê0-800,  
+2579          {
+2580   1      
+2581   1        int Vlaue1,tmp;
+2582   1        static int PID_Kp = 40;//±ÈÀýÏµÊý 5¶ÈÎª1500;1¶ÈÎª300;0.1¶ÈÎª30
+2583   1        static int PID_Ki = 8;//»ý·ÖÏµÊý
+2584   1        static int PID_Kd = 20;//Î¢·ÖÏµÊý   
+2585   1      
+2586   1        if(PID_temp.Ek > 100)//10¶ÈÎª¼«ÏÞ 
+2587   1        {
+2588   2          PID_temp.Ek = 100;
+2589   2        }
+2590   1        if(PID_temp.Ek < -100)
+2591   1        {
+2592   2          PID_temp.Ek = -100;
+2593   2        }
+2594   1        
+2595   1        PID_temp.Sum_error += PID_temp.Ek;//Îó²î×ÜÁ¿
+2596   1        if(PID_temp.Sum_error > 3500) //0.1¶ÈÄÚ×î¶àÊÇ250Ò»ÖÜÆÚ
+2597   1        {
+2598   2          PID_temp.Sum_error = 3500;
+2599   2        }
+2600   1        if(PID_temp.Sum_error < -3500)
+2601   1        {
+2602   2          
+2603   2        }
+2604   1        Vlaue1 = PID_Kp * PID_temp.Ek;//±ÈÀý ×î´ó100*30=3000;  Îó²î*±ÈÀýÏµÊý(¼Ù¶¨Ïà²î5¶È¼´50*25=1250)
+2605   1        
+2606   1        tmp = PID_temp.Sum_error * PID_Ki / 50; //»ý·Ö ×î´ó3000*2/100=60,Ò»¸ö¼ÓÈÈÖÜÆÚÊÇ250´Î  250*5/15*3=250;
+2607   1        Vlaue1 += tmp;
+2608   1        tmp = (PID_temp.Ek - (2 * PID_temp.Ek1) + PID_temp.Ek2) * PID_Kd;//Î¢·Ö 
+2609   1        PID_temp.Sum_error = PID_temp.Sum_error + tmp;//2015-06-16 °ÑÎ¢·Ö¼ÆÈë»ý·ÖºÍ
+2610   1        Vlaue1 += tmp;
+2611   1        PID_temp.Uk = Vlaue1;// PID_temp.Uk1 + Vlaue1;       // ½á¹û /100×î´óÎª250´Î
+2612   1        if(PID_temp.Uk > 780) 
+2613   1          PID_temp.Uk = 780;
+2614   1        else if(PID_temp.Uk < 0)
+2615   1          PID_temp.Uk = 0;//²»ÄÜÎª¸ºÊý
+2616   1      
+2617   1        PID_temp.Uk /= 4;//×î¸ß190;   
+2618   1          
+2619   1        PID_temp.Ek2 = PID_temp.Ek1;        // ±£´æÐÂµÄK-1´ÎÊäÈëÖµ
+2620   1        PID_temp.Ek1 = PID_temp.Ek;
+2621   1      }
+2622          
+2623          
+2624          //¼ÓÈÈÅÌÇý¶¯µÄPIDËã·¨--- ¸ù¾Ý¼ÓÈÈÅÌµÄÄ¿±êÎÂ¶ÈºÍÊµ¼ÊÎÂ¶È£¬¼ÆËã³ö¼ÓÈÈ»ØÂ·Çý¶¯Öµ  Ã¿1Ãë¹¤×÷Ò»´Î
+2625          void HeatPlate_PID_Calc(void) //Éè¶¨ÎÂ¶È×î¸ß400,×îµÍ000,Êµ¼Ê0-800,  
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 44  
+
+2626          {
+2627   1      
+2628   1        int Vlaue1,tmp;
+2629   1      //  uint16_t  Val_Calc;
+2630   1        static int PID_Kp2 = 38;//±ÈÀýÏµÊý //±ÈÀýÏµÊý 10¶ÈÎª4000/20=200;1¶ÈÎª400/20=20;0.1¶ÈÎª2
+2631   1        static int PID_Ki2 = 8;//»ý·ÖÏµÊý
+2632   1        static int PID_Kd2 = 20;//Î¢·ÖÏµÊý  
+2633   1      
+2634   1        if(PID_temp2.Ek > 100)//10¶ÈÎª¼«ÏÞ 
+2635   1        {
+2636   2          PID_temp2.Ek = 100;
+2637   2        }
+2638   1        if(PID_temp2.Ek < -100)
+2639   1        {
+2640   2          PID_temp2.Ek = -100;
+2641   2        }
+2642   1        
+2643   1        PID_temp2.Sum_error += PID_temp2.Ek;//Îó²î×ÜÁ¿
+2644   1        if(PID_temp2.Sum_error > 3500) //0.1¶ÈÄÚ×î¶àÊÇ250Ò»ÖÜÆÚ
+2645   1        {
+2646   2          PID_temp2.Sum_error = 3500;
+2647   2        }
+2648   1        if(PID_temp2.Sum_error < -3500)
+2649   1        {
+2650   2          PID_temp2.Sum_error = -3500;
+2651   2        }   
+2652   1      
+2653   1        Vlaue1 = PID_Kp2 * PID_temp2.Ek;//±ÈÀý ×î´ó100*30=3000;  Îó²î*±ÈÀýÏµÊý(¼Ù¶¨Ïà²î5¶È¼´50*25=1250)
+2654   1        
+2655   1        tmp = PID_temp2.Sum_error * PID_Ki2/50; //»ý·Ö ×î´ó3000*2/100=60,Ò»¸ö¼ÓÈÈÖÜÆÚÊÇ250´Î  250*5/15*3=250;
+2656   1        Vlaue1 += tmp;
+2657   1        tmp = (PID_temp2.Ek - (2 * PID_temp2.Ek1) + PID_temp2.Ek2) * PID_Kd2;//Î¢·Ö 
+2658   1        PID_temp2.Sum_error = PID_temp2.Sum_error + tmp;//2015-06-16 °ÑÎ¢·Ö¼ÆÈë»ý·ÖºÍ
+2659   1        Vlaue1 += tmp;
+2660   1        PID_temp2.Uk = Vlaue1;//;       // ½á¹û /100×î´óÎª250´Î
+2661   1        if(PID_temp2.Uk > 780) 
+2662   1          PID_temp2.Uk = 780;
+2663   1        else if(PID_temp2.Uk < 0)
+2664   1          PID_temp2.Uk = 0;//²»ÄÜÎª¸ºÊý
+2665   1      
+2666   1        PID_temp2.Uk /= 4;//×î¸ß195;    
+2667   1      
+2668   1        PID_temp2.Ek2 = PID_temp2.Ek1;        // ±£´æÐÂµÄK-1´ÎÊäÈëÖµ
+2669   1        PID_temp2.Ek1 = PID_temp2.Ek;
+2670   1      }
+2671          
+2672          
+2673          //¼ÓÈÈÅÌÄ¿±êÎÂ¶ÈµÄPIDËã·¨--- ¸ù¾Ý³öÆø¿ÚµÄÄ¿±êÎÂ¶ÈºÍÊµ¼ÊÎÂ¶È£¬¼ÆËã³ö¼ÓÈÈÅÌÄ¿±êÎÂ¶ÈµÄÆ«²î, Ã¿20Ãë¹¤×÷Ò»´Î
+2674          static void HeatPlateTemp_Aim_PID_Calc(void) // 
+2675          {
+2676   1        int Vlaue1,tmp;
+2677   1      //  uint16_t  Val_Calc;
+2678   1        static int PID_Kp3 = 40;//±ÈÀýÏµÊý 10¶ÈÎª4000/100=40;1¶ÈÎª400/100=4;0.1¶ÈÎª0.4
+2679   1        static int PID_Ki3 = 1;//»ý·ÖÏµÊý
+2680   1        static int PID_Kd3 = 80;//Î¢·ÖÏµÊý  
+2681   1      
+2682   1        if(PID_temp3.Ek > 100)//10¶ÈÎª¼«ÏÞ 
+2683   1        {
+2684   2          PID_temp3.Ek = 100;
+2685   2        }
+2686   1        if(PID_temp3.Ek < -100)
+2687   1        {
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 45  
+
+2688   2          PID_temp3.Ek = -100;
+2689   2        }
+2690   1        
+2691   1        PID_temp3.Sum_error += PID_temp3.Ek;//Îó²î×ÜÁ¿
+2692   1        if(PID_temp3.Sum_error > 1000) //0.1¶ÈÄÚ×î¶àÊÇ250Ò»ÖÜÆÚ
+2693   1        {
+2694   2          PID_temp3.Sum_error = 1000;
+2695   2        }
+2696   1        if(PID_temp3.Sum_error < -1000)
+2697   1        {
+2698   2          PID_temp3.Sum_error = -1000;
+2699   2        }   
+2700   1      
+2701   1        Vlaue1 = PID_Kp3 * PID_temp3.Ek;//±ÈÀý ×î´ó100*40=4000;  Îó²î*±ÈÀýÏµÊý(¼Ù¶¨Ïà²î5¶È¼´50*25=1250)
+2702   1      
+2703   1        
+2704   1        tmp = PID_temp3.Sum_error * PID_Ki3; //»ý·Ö ×î´ó3500*8/100=280
+2705   1        Vlaue1 += tmp;
+2706   1        //tmp = (PID_temp3.Ek - (2 * PID_temp3.Ek1) + PID_temp3.Ek2) * PID_Kd3;//Î¢·Ö 
+2707   1        tmp = (2 * PID_temp3.Ek - PID_temp3.Ek1 - PID_temp3.Ek2) * PID_Kd3;//Î¢·Ö 
+2708   1        PID_temp3.Sum_error = PID_temp3.Sum_error + tmp;//°ÑÎ¢·Ö¼ÆÈë»ý·ÖºÍ
+2709   1        Vlaue1 += tmp;
+2710   1        PID_temp3.Uk = Vlaue1;// PID_temp.Uk1 + Vlaue1;       // ½á¹û /100×î´óÎª250´Î
+2711   1        if(PID_temp3.Uk > 5000) 
+2712   1          PID_temp3.Uk = 5000;
+2713   1        else if(PID_temp3.Uk < -5000)
+2714   1          PID_temp3.Uk = -5000;//¸ºÊý
+2715   1      
+2716   1        PID_temp3.Uk /= 100;//×î¸ß50;     
+2717   1      
+2718   1        PID_temp3.Ek2 = PID_temp3.Ek1;        // ±£´æÐÂµÄK-1´ÎÊäÈëÖµ
+2719   1        PID_temp3.Ek1 = PID_temp3.Ek;
+2720   1      }
+2721          
+2722          
+2723          //ÎÞ»ØÂ··¢ÈÈË¿Ê±µÄ»¼Õß¶ËÎÂ¶Èµ÷½Ú
+2724          static uint16_t NoneWire_Warm_Up_Sec=0;
+2725          static void PatientTemp_NoneHeatWire_Adj(void)
+2726          {
+2727   1          static int err_sum=0;
+2728   1          static int RT_Temp_Mem = 0;
+2729   1      //  static uint16_t WarmUpstate=0;
+2730   1          int Calc_int=0;
+2731   1          uint16_t Val_Calc;      
+2732   1      
+2733   1          {
+2734   2              if(CQK_Temp < 330)//Èô³öÆø¿ÚÎÂ¶ÈµÍÓÚ33¶ÈÔòÈ«¹¦ÂÊ¼ÓÈÈ
+2735   2              {
+2736   3                //Micro_Temp_Val = 190;
+2737   3                //ÒÔÏÂÎª·¢ÈÈÅÌÎÂ¶ÈµÄPID¿ØÖÆ
+2738   3                
+2739   3                PID_temp2.Ek = 980 - JEP_Temp;//µ±Ç°µÄÎó²îÁ¿ Éè¶¨ÎÂ¶È-µ±Ç°Êµ¼ÊÎÂ¶È
+2740   3                HeatPlate_PID_Calc(); 
+2741   3                Val_Calc = (uint8_t)PID_temp2.Uk; //¼ÆËã³ö¼ÓÈÈÊ±¼ä
+2742   3                Micro_Temp_Val = Val_Calc;//±ãÓÚ¼ÆËã£¬ÒÔÃâ³¬¹ý190½øÈëÖÐ¶Ï 
+2743   3                
+2744   3                Temp2_Int = JEP_Temp;
+2745   3                
+2746   3              }
+2747   2              else
+2748   2              { 
+2749   3                NoneWire_Warm_Up_Sec++;
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 46  
+
+2750   3                if(NoneWire_Warm_Up_Sec > 2000)NoneWire_Warm_Up_Sec = 2000;
+2751   3                if(NoneWire_Warm_Up_Sec < 3)//00)//10·ÖÖÓÄÚÉè¶¨
+2752   3                {
+2753   4                  //Temp2_Int = 500 + Set_RT_Temp - 300;//·¢ÈÈÅÌÎÂ¶ÈÉè¶¨ÔÚ50¶È-60¶È
+2754   4                  if(Temp2_Int < (550 + (Set_RT_Temp - 300)*2))//·¢ÈÈÅÌÎÂ¶ÈÉè¶¨ÔÚ50¶È-60¶È
+2755   4                    Temp2_Int = 550 + (Set_RT_Temp - 300)*2;
+2756   4                    RT_Temp_Mem = RT_Temp;
+2757   4                }
+2758   3                else
+2759   3                { 
+2760   4                  err_sum = err_sum + Set_RT_Temp - RT_Temp;//»ý·Ö
+2761   4                  if(err_sum > 180)err_sum=180;
+2762   4                  else if(err_sum < -180)err_sum=-180;//Ã¿Ãë10¶È(100)£¬30000/100=300,¼´Îª5·ÖÖÓÊý¾Ý
+2763   4                  
+2764   4                  //if((RT_Temp - Set_RT_Temp) >= 1){if(err_sum > 0)err_sum = 0;}//´ïµ½Éè¶¨ÎÂ¶È£¬Îó²î²»ÄÜÎªÕý
+2765   4                  //else if((Set_RT_Temp - RT_Temp) >= 1){if(err_sum < 0)err_sum = 0;}//Î´´ïµ½Éè¶¨ÎÂ¶È£¬Îó²î²»ÄÜÎª¸º
+2766   4                  
+2767   4                  if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == 1))
+2768   4                  { //8±íÊ¾¸ßÎ»Îª0Ò²ÏÔÊ¾,0±íÊ¾·Çµþ¼ÓÏÔÊ¾ ³öÆø¿Ú
+2769   5                    Back_Color=WHITE18;
+2770   5                    if(err_sum >=0)LCD_ShowxNum(220,10,16,1,1,0x80,BLACK18); //1-±íÊ¾ÎªÕýÊý
+2771   5                              else LCD_ShowxNum(220,10,16,1,0,0x80,BLACK18); //0-±íÊ¾Îª¸ºÊý
+2772   5                    LCD_ShowxNum(220,20,16,5,abs(err_sum),0x80,BLACK18); //·¢ÈÈÅÌ¼ÓÈÈµÄÄ£Ê½ÏÔÊ¾
+2773   5                  }           
+2774   4      
+2775   4                  NoneWire_Heat_Sec++;
+2776   4                  if(NoneWire_Heat_Sec >= 180)//3·ÖÖÓµ÷ÕûÒ»´ÎÎÂ¶È
+2777   4                  {
+2778   5                    NoneWire_Heat_Sec = 0;//-Temp2_Int
+2779   5                    
+2780   5                    Calc_int = err_sum;
+2781   5                    //if(Calc_int > 6000)Calc_int=6000;
+2782   5                    //else if(Calc_int< -6000)Calc_int=-6000;//Ã¿Ãë5¶È(50)£¬2·ÖÖÓÊý¾ÝÎª6000
+2783   5                    
+2784   5                    Temp2_Int = Temp2_Int + (Set_RT_Temp - RT_Temp)/6 + (RT_Temp_Mem-RT_Temp)/2 + Calc_int/40;//(400-3
+             -00)/10
+2785   5                    //if(Temp2_Int > 1050)Temp2_Int = 1050;
+2786   5                    if(Temp2_Int > 980)Temp2_Int = 980;
+2787   5      
+2788   5                    RT_Temp_Mem = RT_Temp;
+2789   5                  }
+2790   4                }           
+2791   3      
+2792   3                //ÒÔÏÂÎª·¢ÈÈÅÌÎÂ¶ÈµÄPID¿ØÖÆ
+2793   3                PID_temp2.Ek = Temp2_Int - JEP_Temp;//µ±Ç°µÄÎó²îÁ¿ Éè¶¨ÎÂ¶È-µ±Ç°Êµ¼ÊÎÂ¶È
+2794   3                HeatPlate_PID_Calc(); 
+2795   3                Val_Calc = (uint8_t)PID_temp2.Uk; //¼ÆËã³ö¼ÓÈÈÊ±¼ä
+2796   3                if(RT_Temp > (Set_RT_Temp + 10))
+2797   3                {
+2798   4                  Micro_Temp_Val = 0;//³¬¹ý1¶È 
+2799   4                  
+2800   4                }
+2801   3                else  
+2802   3                  Micro_Temp_Val = Val_Calc;//±ãÓÚ¼ÆËã£¬ÒÔÃâ³¬¹ý190½øÈëÖÐ¶Ï 
+2803   3            }       
+2804   2          }
+2805   1      }
+2806          
+2807          //Õý³£ÔËÐÐ½çÃæ,°´ÏÂÈ·ÈÏ¼üÈ·¶¨»ØÂ·µÄÄ£Ê½
+2808          void WireInOut_State_Confirm(void)
+2809          {
+2810   1            if((WireIn_State > 0) && (WireOut_State > 0)) //Ë«¹Ü¼ÓÈÈÄ£Ê½
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 47  
+
+2811   1            {
+2812   2                Wire_Mode_Sel = Wire_Sel_Double;  
+2813   2            } 
+2814   1            else if((WireIn_State > 0) && (WireOut_State == 0)) //µ¥¹Ü¼ÓÈÈÄ£Ê½
+2815   1            {
+2816   2                Wire_Mode_Sel = Wire_Sel_In_Only; 
+2817   2            }
+2818   1            else if((WireIn_State == 0) && (WireOut_State == 0)) //ÎÞ¼ÓÈÈË¿Ä£Ê½
+2819   1            {
+2820   2                Wire_Mode_Sel = Wire_Sel_None;  
+2821   2            } 
+2822   1      }
+2823          
+2824          void HeaterPlateWireDriveFbTask(void)//16
+2825          {
+2826   1        static uint8_t Micro_Temp_CLK = 0;
+2827   1        static uint8_t xdata   Check_WireInTimes = 0;
+2828   1        static uint8_t xdata   Check_WireOutTimes =0 ;
+2829   1        static uint8_t WireIn_FB_Count = 0;     //¼ì²â¼ÓÈÈÏßIn·´À¡ÐÅºÅ
+2830   1        static uint8_t WireOut_FB_Count = 0;     //¼ì²â¼ÓÈÈÏßOut·´À¡ÐÅºÅ
+2831   1        static uint8_t NoHpCheck_Times = 0;//ÎÞ¼ÓÈÈÅÌµÄ´ÎÊý.
+2832   1        
+2833   1        Micro_Temp_CLK++;
+2834   1        if(Micro_Temp_CLK > 200)//Ê±»ù
+2835   1        {   
+2836   2            Micro_Temp_CLK = 0;
+2837   2          
+2838   2      //Ã¿¸öÖÜÆÚ¼ì²â¼ÓÈÈÅÌÊÇ·ñ´æÔÚ
+2839   2             HP_CNT_Int_End_Rem = HP_CNT_Int;
+2840   2            if(HP_CNT_Int < 1)//Î´¼ì²âµ½
+2841   2            {
+2842   3              NoHpCheck_Times++;
+2843   3              if(NoHpCheck_Times >=2)
+2844   3              {
+2845   4                NoHpCheck_Times = 2;
+2846   4                HeaterPlate_State=0; //Î´¼ì²âµ½¼ÓÈÈÅÌ
+2847   4              }
+2848   3            }
+2849   2            else
+2850   2            {
+2851   3              NoHpCheck_Times = 0;
+2852   3              HeaterPlate_State=1; //¼ì²â¼ÓÈÈÅÌ´æÔÚ         
+2853   3            }
+2854   2            HP_CNT_Int = 0;//ÇåÁã
+2855   2         }
+2856   1         
+2857   1      //¼ÓÈÈÅÌÇý¶¯  
+2858   1         if (Micro_Temp_Val>Micro_Temp_CLK)
+2859   1         {
+2860   2            Heat_JRP_Port=1;
+2861   2         }   
+2862   1         else
+2863   1         {
+2864   2            Heat_JRP_Port=0;
+2865   2         }
+2866   1        
+2867   1      //INSP½øÖ§Æø¼ÓÈÈÇý¶¯ºÍ¼ì²â
+2868   1        if (Micro_Temp_In>Micro_Temp_CLK)
+2869   1        {
+2870   2             Heat_WireIn_Port=1;
+2871   2             Heat_WIRE_EN_OUT=0;//·ÀÖ¹µ¥Ò»¹ÊÕÏ  
+2872   2        }
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 48  
+
+2873   1        else  //²»¼ÓÈÈÊ±µÄ¼ì²â
+2874   1        {     
+2875   2            if(Heat_WireIn_Port!=0)
+2876   2            {
+2877   3               Heat_WireIn_Port=0;
+2878   3               Heat_WIRE_EN_OUT=1;//·ÀÖ¹µ¥Ò»¹ÊÕÏ      
+2879   3               Check_WireInTimes=0;
+2880   3               WireIn_FB_Count=0;
+2881   3            }
+2882   2            else
+2883   2            {
+2884   3              Check_WireInTimes++;
+2885   3              if(WireIn_Exist_Port==0) WireIn_FB_Count++;
+2886   3              if(Check_WireInTimes>4)
+2887   3              {
+2888   4                 if(WireIn_FB_Count<3)   //Á¬Ðø¼ì²âµ½Îå´Î²»¼ÓÈÈ±¨´í
+2889   4                 {
+2890   5                   WireIn_State=0; //Î´¼ì²âµ½·¢ÈÈË¿            
+2891   5                 }
+2892   4                 else
+2893   4                 {             
+2894   5                   WireIn_State=1; //Ã»¼ÓÈÈ£¬´ú±í¼ì²âµ½·¢ÈÈË¿
+2895   5                 }
+2896   4                 Check_WireInTimes=0;
+2897   4                 WireIn_FB_Count=0;
+2898   4             }
+2899   3           }
+2900   2        }     
+2901   1        
+2902   1      //EXP³öÖ§Æø¼ÓÈÈÇý¶¯ºÍ¼ì²â
+2903   1        if (Micro_Temp_Out>Micro_Temp_CLK)
+2904   1        {
+2905   2             Heat_WireOut_Port=1;
+2906   2             Heat_WIRE_EN_OUT = 0;//·ÀÖ¹µ¥Ò»¹ÊÕÏ    
+2907   2         }
+2908   1         else
+2909   1         {
+2910   2            if(Heat_WireOut_Port!=0)
+2911   2            {
+2912   3               Heat_WireOut_Port=0;
+2913   3               Heat_WIRE_EN_OUT = 1;//·ÀÖ¹µ¥Ò»¹ÊÕÏ    
+2914   3               Check_WireOutTimes=0;
+2915   3               WireOut_FB_Count=0;
+2916   3            }else
+2917   2            {
+2918   3              Check_WireOutTimes++;
+2919   3              if(WireOut_Exist_Port==0) WireOut_FB_Count++;
+2920   3              if(Check_WireOutTimes>4  )
+2921   3              {
+2922   4                 if(WireOut_FB_Count<3)   //Á¬Ðø¼ì²âµ½Îå´Î²»¼ÓÈÈ±¨´í
+2923   4                 {
+2924   5                    WireOut_State=0; //Ã»¼ÓÈÈ£¬´ú±í¼ì²âµ½·¢ÈÈË¿
+2925   5                 }
+2926   4                 else
+2927   4                 {
+2928   5                    WireOut_State=1;
+2929   5                 }
+2930   4                 Check_WireOutTimes=0;
+2931   4                 WireOut_FB_Count=0;
+2932   4             }
+2933   3           }
+2934   2         }   
+C51 COMPILER V9.52.0.0   ACTIVITYFUNCTIONS                                                 03/30/2019 01:20:48 PAGE 49  
+
+2935   1      }
+2936          
+2937                
+2938                                
+2939                                
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =  16307    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    298      74
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      6       5
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,23 @@
+"..\OBJ\stc_eeprom.obj",
+"..\OBJ\delay.obj",
+"..\OBJ\Main_Tik_Tok.obj",
+"..\OBJ\WS_Task_Manage.obj",
+"..\OBJ\Main_Tik_Function.obj",
+"..\OBJ\Sub_Tik_Function.obj",
+"..\OBJ\Normal_Task.obj",
+"..\OBJ\ActivityFunctions.obj",
+"..\OBJ\Sound_Type.obj",
+"..\OBJ\main.obj",
+"..\OBJ\StcRomCrc16.obj",
+"..\OBJ\lcd.obj",
+"..\OBJ\w25x.obj",
+"..\OBJ\sht21.obj",
+"..\OBJ\RX8010.obj",
+"..\OBJ\ds18b20.obj",
+"..\OBJ\key_datas.obj",
+"..\OBJ\Key_Multifun.obj",
+"..\OBJ\GUI.obj",
+"..\OBJ\uart_fun.obj" 
+TO "..\OBJ\VHB15A" 
+
+PRINT(".\VHB15A.map")

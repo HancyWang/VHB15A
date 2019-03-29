@@ -1,0 +1,313 @@
+C51 COMPILER V9.52.0.0   SHT21                                                             03/30/2019 01:20:49 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE SHT21
+OBJECT MODULE PLACED IN ..\OBJ\sht21.obj
+COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\HARDWARE\sht21\sht21.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORD
+                    -ER NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWAR
+                    -E\sht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\sht21.lst) TABS(2) OBJECT
+                    -(..\OBJ\sht21.obj)
+
+line level    source
+
+   1           #include "STC12C32AD.h"
+   2           #include "all.h"
+   3           #include "sht21.h"
+   4           #include "delay.h" 
+   5           //#include "lcd.h" 
+   6           
+   7          #define WriteCmd  0x80
+   8          #define ReadCmd   0x81
+   9          #define TempCmd   0xE3
+  10          #define RHCmd     0xE5
+  11          
+  12           /***************************************************************************/
+  13          
+  14          #define SDA_CONF     P11
+  15          #define SCL          P12
+  16          #define SDA          P11
+  17          #define ASK            0
+  18          #define NO_ASK         1
+  19          #define OUT_LOW        0
+  20          #define INPUT_HIGH     1
+  21          #define SCL_INPUT_HIGH()   P1M1 |= 0x04;P1M0 &= 0xFB        //10 仅为输入
+  22          #define SDA_INPUT_HIGH()   P1M1 |= 0x02;P1M0 &= 0xFD        //10 仅为输入
+  23          #define SCL_OUTPUT_LOW()   P1M1 |= 0x04;P1M0 |= 0x04;SCL=OUT_LOW    //11 开漏 Set port as output for confi
+             -guration
+  24          #define SDA_OUTPUT_LOW()   P1M1 |= 0x02;P1M0 |= 0x02;SDA=OUT_LOW    //11 开漏 Set port as output for confi
+             -guration
+  25          //=============================================================
+  26          
+  27          
+  28          void SHT21_Start(void);
+  29          void SHT21_Stop(void);
+  30          u8t SHT2x_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum);
+  31          unsigned char SHT21_Write8Bit(unsigned char input);
+  32          unsigned char SHT21_Read8Bit(bit ask);
+  33          
+  34          extern unsigned char  Test_Mode_Dis_Data_Flag; //测试模式显示数据DATA的标志 外部变量
+  35          
+  36          
+  37          //2019.03.29
+  38          sfr P1M0 = 0x92; // 
+  39          sfr P1M1 = 0x91;
+  40          sbit P11 = 0x90^1;
+  41          sbit P12 = 0x90^2;
+  42          
+  43          static void SHT21_Start(void)
+  44          {
+  45   1          SCL_INPUT_HIGH(); 
+  46   1          SDA_INPUT_HIGH();
+  47   1          delay_us(10);   
+  48   1          SDA_OUTPUT_LOW();
+  49   1          delay_us(10); //
+  50   1          SCL_OUTPUT_LOW();   
+C51 COMPILER V9.52.0.0   SHT21                                                             03/30/2019 01:20:49 PAGE 2   
+
+  51   1      }
+  52          
+  53          
+  54          static void SHT21_Stop(void)
+  55           {
+  56   1          SCL_OUTPUT_LOW();
+  57   1          SDA_OUTPUT_LOW();   
+  58   1          SCL_INPUT_HIGH();
+  59   1          delay_us(10); //
+  60   1          SDA_INPUT_HIGH();
+  61   1          delay_us(10); //
+  62   1      }
+  63          
+  64          
+  65          /***************************************************************************/
+  66          /***************************************************************************/
+  67          static unsigned char SHT21_Write8Bit(unsigned char i_input)
+  68          {
+  69   1          unsigned int  i;
+  70   1      
+  71   1          for(i=0x80; i>0; i>>=1)           //shift bit for masking (8 times)
+  72   1          {
+  73   2            SCL_OUTPUT_LOW();
+  74   2            if ((i & i_input))
+  75   2              { SDA_INPUT_HIGH();   }     
+  76   2            else
+  77   2              {   SDA_OUTPUT_LOW();   }                 //masking txByte, write bit to SDA-Line
+  78   2      
+  79   2            delay_us(10);                        //data set-up time (t_SU;DAT)
+  80   2            SCL_INPUT_HIGH();                                //generate clock pulse on SCL
+  81   2            delay_us(10);                        //SCL input_high time (t_HIGH)
+  82   2          }
+  83   1          SCL_OUTPUT_LOW();
+  84   1          delay_us(10); 
+  85   1          SDA_INPUT_HIGH();                       //release SDA-line
+  86   1        
+  87   1          SCL_INPUT_HIGH();                       //clk #9 for ack
+  88   1          delay_us(10);                         //data set-up time (t_SU;DAT)
+  89   1          
+  90   1          i = 0;
+  91   1          while(SDA_CONF)
+  92   1          {
+  93   2            if(++i>2400){SCL_OUTPUT_LOW();return(1);}
+  94   2          }
+  95   1          SCL_OUTPUT_LOW();
+  96   1          return 0;
+  97   1      }
+  98          
+  99          /***************************************************************************/
+ 100          static unsigned char SHT21_Read8Bit(bit ask)
+ 101          {
+ 102   1          unsigned char  mask,rxByte=0;     
+ 103   1      
+ 104   1          SDA_INPUT_HIGH(); //release SDA-line
+ 105   1      
+ 106   1          for (mask=0x80; mask>0; mask>>=1) //shift bit for masking (8 times)
+ 107   1          {
+ 108   2            SCL_INPUT_HIGH();                   //sht21_start clock on SCL-line
+ 109   2            delay_us(10);                     //SCL input_high time (t_HIGH)
+ 110   2            if (SDA_CONF==1) rxByte=(rxByte | mask); //read bit
+ 111   2            SCL_OUTPUT_LOW();
+ 112   2            delay_us(10);                     //data hold time(t_HD;DAT)
+C51 COMPILER V9.52.0.0   SHT21                                                             03/30/2019 01:20:49 PAGE 3   
+
+ 113   2          }
+ 114   1          if(ask)
+ 115   1          {
+ 116   2            SDA_INPUT_HIGH();
+ 117   2          }
+ 118   1          else
+ 119   1          {
+ 120   2            SDA_OUTPUT_LOW();
+ 121   2          }                      //send acknowledge if necessary
+ 122   1          delay_us(10);                       //data set-up time (t_SU;DAT)
+ 123   1          SCL_INPUT_HIGH();                     //clk #9 for ack
+ 124   1          delay_us(10);                       //SCL input_high time (t_HIGH)
+ 125   1          SCL_OUTPUT_LOW();
+ 126   1          delay_us(10);
+ 127   1          SDA_INPUT_HIGH();                      //release SDA-line
+ 128   1          SDA_OUTPUT_LOW();
+ 129   1          delay_us(10);   
+ 130   1          return  rxByte;
+ 131   1      }
+ 132          
+ 133          
+ 134          
+ 135          /***************************************************************************/
+ 136          unsigned char SHT21_WriteTemp(void)
+ 137          {
+ 138   1        unsigned char  Read_SHT21_Err;
+ 139   1        SHT21_Start();
+ 140   1        Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
+ 141   1        Read_SHT21_Err=SHT21_Write8Bit(TempCmd);
+ 142   1        SHT21_Start();
+ 143   1        Read_SHT21_Err=SHT21_Write8Bit(ReadCmd);
+ 144   1        SCL_INPUT_HIGH();    // set SCL I/O port as input 
+ 145   1      
+ 146   1        return Read_SHT21_Err;
+ 147   1      }
+ 148          
+ 149          unsigned char SHT21_WriteRH(void)
+ 150          {
+ 151   1        unsigned char  Read_SHT21_Err;
+ 152   1        SHT21_Start();
+ 153   1        Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
+ 154   1        Read_SHT21_Err=SHT21_Write8Bit(RHCmd);
+ 155   1        SHT21_Start();
+ 156   1        Read_SHT21_Err=SHT21_Write8Bit(ReadCmd);
+ 157   1        SCL_INPUT_HIGH(); // set SCL I/O port as input
+ 158   1        
+ 159   1      
+ 160   1          return Read_SHT21_Err;
+ 161   1      }
+ 162          
+ 163          
+ 164          /*
+ 165          //打开或关闭SHT21内部加热功能
+ 166          void  SHT21_Heater_On_Off(unsigned char Heater_State)
+ 167          {
+ 168            unsigned char  Read_SHT21_Err;
+ 169            unsigned char UserReg;
+ 170            SHT21_Start();
+ 171            Read_SHT21_Err = SHT21_Write8Bit(WriteCmd); 
+ 172            Read_SHT21_Err = SHT21_Write8Bit(0xE7);  //读用户寄存器指令
+ 173            SHT21_Start();
+ 174            Read_SHT21_Err = SHT21_Write8Bit(0x81); 
+C51 COMPILER V9.52.0.0   SHT21                                                             03/30/2019 01:20:49 PAGE 4   
+
+ 175            UserReg =  SHT21_Read8Bit(NO_ASK);//读取用户寄存器
+ 176            UserReg &= 0x38;//保留3-4-5预留位
+ 177            UserReg |= 0x02;//不能启动OTP加载，RH 12bit T 14bit
+ 178            if(Heater_State)
+ 179            {
+ 180              UserReg |= 0x04;//启动片上加热器  
+ 181            } 
+ 182          
+ 183            SHT21_Start();
+ 184            Read_SHT21_Err = SHT21_Write8Bit(WriteCmd);
+ 185            Read_SHT21_Err = SHT21_Write8Bit(0xE6);  //写用户寄存器指令
+ 186            Read_SHT21_Err = SHT21_Write8Bit(UserReg);   //写用户寄存器指令
+ 187            SHT21_Stop();
+ 188          }
+ 189          */
+ 190          
+ 191          
+ 192          /***************************************************************************/
+ 193          //返回SHT21_ERROR --- 未收到正确的数据
+ 194          //返回温度数据
+ 195          //返回湿度数据
+ 196          unsigned int SHT21_ReadData(void)
+ 197          {
+ 198   1        unsigned char TempH,TempL;
+ 199   1        unsigned long  TempLong; 
+ 200   1        u8t  checksum;   //checksum
+ 201   1          u8t  Cdata[2];    //data array for checksum verification
+ 202   1        u8t  CRC8_error;   //checksum
+ 203   1      
+ 204   1        TempH=SHT21_Read8Bit(ASK);
+ 205   1        //delay_us(50);
+ 206   1          TempL=SHT21_Read8Bit(ASK);
+ 207   1        //delay_us(50);
+ 208   1        checksum=SHT21_Read8Bit(NO_ASK); //读到CRC8数据
+ 209   1        //checksum+=1;   //测试CRC
+ 210   1        SHT21_Stop();
+ 211   1      
+ 212   1        Cdata[0] =  TempH;
+ 213   1        Cdata[1] =  TempL;
+ 214   1        CRC8_error = SHT2x_CheckCrc(Cdata,2,checksum);
+ 215   1        if(CRC8_error == CHECKSUM_ERROR)//
+ 216   1        {
+ 217   2          return SHT21_ERROR;//CRC校验失败
+ 218   2        }
+ 219   1      
+ 220   1        TempLong=TempH;
+ 221   1        TempLong=(TempLong<<8)+(TempL & 0xFC);
+ 222   1      
+ 223   1      //  if(Work_State == UI_STATE_SERVICE_MODE)
+ 224   1        {
+ 225   2      
+ 226   2        ////   LCD_ShowxNum(150,220,24,3,TempH,0x80,BLACK18); //8表示高位为0也显示,0表示非叠加显示
+ 227   2        ////   LCD_ShowxNum(150,268,24,3,TempL,0x80,BLACK18); //8表示高位为0也显示,0表示非叠加显示
+ 228   2        }
+ 229   1        
+ 230   1        //if(TempL& 0x01==0x01) return SHT21_ERROR;
+ 231   1        if(TempLong==0x0) return SHT21_ERROR;//数据为0
+ 232   1      
+ 233   1        if((TempL&0x02)==0x0)  //温度
+ 234   1        {
+ 235   2           TempLong=((1757*TempLong)>>16)-468; 
+ 236   2           //if(TempLong > 1250)  return SHT21_ERROR; //温度不能超过125
+C51 COMPILER V9.52.0.0   SHT21                                                             03/30/2019 01:20:49 PAGE 5   
+
+ 237   2           //else 
+ 238   2          return  TempLong;
+ 239   2      
+ 240   2        }
+ 241   1        else  //湿度
+ 242   1        {
+ 243   2          TempLong=((1250*TempLong)>>16)-60;
+ 244   2          //if(TempLong > 1000) return SHT21_ERROR;  //湿度不能超过100
+ 245   2          //else//20141228发现错误
+ 246   2          
+ 247   2          TempLong |= 0x8000;//区别温度和湿度数据,温度最高位为1
+ 248   2          return  TempLong; 
+ 249   2        }
+ 250   1      } 
+ 251          
+ 252          u8t SHT2x_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum)
+ 253          //==============================================================================
+ 254          {
+ 255   1        u8t crc = 0;  
+ 256   1        u8t byteCtr;
+ 257   1        u8t bit8;
+ 258   1        //calculates 8-Bit checksum with given polynomial
+ 259   1        for (byteCtr = 0; byteCtr < nbrOfBytes; ++byteCtr)
+ 260   1        { 
+ 261   2          crc ^= (Cdata[byteCtr]);
+ 262   2          for (bit8 = 8; bit8 > 0; --bit8)
+ 263   2          {
+ 264   3          if (crc & 0x80) crc = (crc << 1) ^ POLYNOMIAL;
+ 265   3            else crc = (crc << 1);
+ 266   3          }
+ 267   2        }
+ 268   1        if(crc != checksum) 
+ 269   1        {
+ 270   2          return CHECKSUM_ERROR;
+ 271   2        }
+ 272   1        else return 0;
+ 273   1      } 
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    869    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      19
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
