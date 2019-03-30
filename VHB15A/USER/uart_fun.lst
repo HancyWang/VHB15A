@@ -1,0 +1,149 @@
+C51 COMPILER V9.52.0.0   UART_FUN                                                          03/30/2019 11:40:35 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE UART_FUN
+OBJECT MODULE PLACED IN ..\OBJ\uart_fun.obj
+COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\uart_fun.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER NOAR
+                    -EGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\sht31
+                    -;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\uart_fun.lst) TABS(2) OBJECT(..\
+                    -OBJ\uart_fun.obj)
+
+line level    source
+
+   1          /**
+   2            ******************************************************************************
+   3          
+   4            ******************************************************************************
+   5            */ 
+   6          
+   7          /* Includes ------------------------------------------------------------------*/
+   8          #include "uart_fun.h"
+   9          #include "all.h"
+  10          
+  11          //2019.03.29
+  12          sfr TMOD = 0x89;
+  13          sfr TH1  = 0x8D;
+  14          sbit TI  = 0x98^1;
+  15          sbit TR1 = 0x88^6;
+  16          
+  17          /**
+  18            Section: Macro Declarations
+  19          */
+  20          //#define EUSART_TX_BUFFER_SIZE 64
+  21          #define EUSART_RX_BUFFER_SIZE 128
+  22          
+  23          static uint8_t eusartRxHead = 0; //从头计数
+  24          static uint8_t eusartRxTail = 0;
+  25          static uint8_t eusartRxBuffer[EUSART_RX_BUFFER_SIZE];
+  26          volatile uint8_t eusartRxCount;
+  27          
+  28          static uint8_t Send_uart_busy = 0;// 发送忙标志
+  29          
+  30          /**
+  31            Section: EUSART APIs
+  32          */
+  33          
+  34          //2019.03.29
+  35          sfr ACC  = 0xE0; 
+  36          sfr PCON   = 0x87;
+  37          sfr SBUF = 0x99;
+  38          sfr IE = 0xA8;
+  39          sfr SCON = 0x98;
+  40          
+  41          //串口初始化
+  42          void EUSART_Initialize(void)
+  43          { 
+  44   1      
+  45   1          SCON  = 0x50;       //SCON: serail mode 3, 9-bit UART, enable ucvr
+  46   1          TMOD |= 0x20;       //TMOD: timer 1, mode 2, 8-bit reload
+  47   1          PCON |= 0x24;        //SMOD=1; 24
+  48   1          TH1  = 0xFD;       //fosc=11.0592MHz //9600:FD 22.1184 19200*2
+  49   1          IE   |= 0x90;       //Enable Serial Interrupt
+  50   1          TR1   = 1;          // timer 1 run
+  51   1      
+  52   1          eusartRxHead = 0;
+C51 COMPILER V9.52.0.0   UART_FUN                                                          03/30/2019 11:40:35 PAGE 2   
+
+  53   1          eusartRxTail = 0;
+  54   1          eusartRxCount = 0;  
+  55   1      }
+  56          
+  57          //从串口接收缓冲区读一个字节
+  58          uint8_t EUSART_Read(void)
+  59          {
+  60   1          uint8_t readValue  = 0; 
+  61   1          readValue = eusartRxBuffer[eusartRxTail++];//读出计数
+  62   1          if(sizeof(eusartRxBuffer) <= eusartRxTail) //读出从头计数
+  63   1          {
+  64   2              eusartRxTail = 0;
+  65   2          }
+  66   1          eusartRxCount--;
+  67   1          return readValue;
+  68   1      }
+  69          
+  70          //发送一个字节到串口
+  71          static void send_char_com(unsigned char  Send_ch)
+  72          {
+  73   1          ACC=Send_ch;
+  74   1          SBUF=ACC; 
+  75   1          Send_uart_busy = 1;
+  76   1      }
+  77          
+  78          //写一个字节到串口发送缓冲区
+  79          void EUSART_Write(uint8_t txData)
+  80          {
+  81   1        while(Send_uart_busy);
+  82   1        send_char_com(txData);
+  83   1      }
+  84          
+  85          //发送cnt个字符到发送缓冲区
+  86          void EUSART_Write_Str(const unsigned char *stra,unsigned char cnt)//发送字符串或数组到串口
+  87          {
+  88   1          unsigned char i;    
+  89   1          for(i=0;i<cnt;i++)
+  90   1          {
+  91   2            EUSART_Write(*(stra+i));  
+  92   2          }   
+  93   1      }
+  94          
+  95          void EUSART_Transmit_ISR(void)
+  96          {   
+  97   1          TI=0; 
+  98   1          Send_uart_busy = 0;
+  99   1      }
+ 100          
+ 101          //串口中断接收服务程序
+ 102          void EUSART_Receive_ISR(void)
+ 103          {      
+ 104   1      
+ 105   1          eusartRxBuffer[eusartRxHead++] = SBUF;
+ 106   1      
+ 107   1          if(sizeof(eusartRxBuffer) <= eusartRxHead)//从头计数
+ 108   1          {
+ 109   2              eusartRxHead = 0;
+ 110   2          }
+ 111   1          eusartRxCount++;
+ 112   1      }
+ 113           
+ 114          
+C51 COMPILER V9.52.0.0   UART_FUN                                                          03/30/2019 11:40:35 PAGE 3   
+
+ 115          /************************ (C) COPYRIGHT *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    183    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    132       3
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

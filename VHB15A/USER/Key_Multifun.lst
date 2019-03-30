@@ -1,0 +1,106 @@
+C51 COMPILER V9.52.0.0   KEY_MULTIFUN                                                      03/30/2019 11:40:35 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE KEY_MULTIFUN
+OBJECT MODULE PLACED IN ..\OBJ\Key_Multifun.obj
+COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\Key_Multifun.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER 
+                    -NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\s
+                    -ht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\Key_Multifun.lst) TABS(2) OB
+                    -JECT(..\OBJ\Key_Multifun.obj)
+
+line level    source
+
+   1          #include "all.h"
+   2          //******************************************************************************
+   3          //定义长短按键判断函数
+   4          //******************************************************************************
+   5          unsigned char  step_step_times=0;//加快速度
+   6          void Key_Multifun(const struct Key_Multifun_Element Element,struct Multifun_Key *Variate)
+   7          {
+   8   1          switch(Variate->ProcessStep)
+   9   1          {
+  10   2          //检测按键是否按下，如果按下进入第2步，如果没有，继续1步，等待按键第一次按下
+  11   2          case 1:
+  12   2              if(*(Variate->KeyValueNow) == Element.PressValue)//按下按键
+  13   2              {
+  14   3                  Variate->ProcessStep = 2;//已按下键
+  15   3                  *(Variate->KeyTik) = 0;//按键时标
+  16   3              }
+  17   2              else
+  18   2              {
+  19   3                  Variate->ProcessStep = 1;//未按下键
+  20   3                  *(Variate->KeyTik) = 0;
+  21   3              }
+  22   2              break;   
+  23   2          case 2: 
+  24   2              if(*(Variate->KeyValueNow) == Element.ReleaseValue)//弹起按键
+  25   2              {     
+  26   3                  Variate->ProcessStep = 1;
+  27   3                  *(Variate->KeyTik) = 0;
+  28   3                  (*(Element.Key_Fun_Short_Low_High))();  //按下并弹起短按函数           
+  29   3              }
+  30   2              else if(*(Variate->KeyValueNow) == Element.PressValue)//持续按下
+  31   2              {            
+  32   3                  if(*(Variate->KeyTik)>=Element.TimOfSe)
+  33   3            {
+  34   4              Variate->ProcessStep = 3;
+  35   4                    *(Variate->KeyTik) = 0;
+  36   4                    (*(Element.Key_Fun_Long_High_Low))();//达到设定时长的首次响应函数
+  37   4            }     
+  38   3                  else
+  39   3                  {
+  40   4                    Variate->ProcessStep = 2;//等待
+  41   4                  }
+  42   3              }        
+  43   2              else
+  44   2                  Variate->ProcessStep = 1;//出错
+  45   2              break;  
+  46   2          case 3:       
+  47   2              if(*(Variate->KeyValueNow) == Element.ReleaseValue) //如果按键松开，回到1步
+  48   2              {
+  49   3                  Variate->ProcessStep = 1;
+  50   3                  *(Variate->KeyTik) = 0;
+  51   3                  step_step_times = 0;
+  52   3              }        
+C51 COMPILER V9.52.0.0   KEY_MULTIFUN                                                      03/30/2019 11:40:35 PAGE 2   
+
+  53   2              else if(*(Variate->KeyValueNow) == Element.PressValue)//一直是按下，继续第3步，执行长按状态函数
+  54   2              {            
+  55   3                  Variate->ProcessStep = 3;
+  56   3            
+  57   3                  //如果按下时间标志大于连续按时间            
+  58   3                  if(*(Variate->KeyTik) >= (Element.TimOfLg-step_step_times))
+  59   3                  {
+  60   4                      //step_step_times = Element.TimOfLg - 1;
+  61   4          if(step_step_times<Element.TimOfLg - 1){step_step_times++;}
+  62   4                      *(Variate->KeyTik) = 0;
+  63   4                      
+  64   4                      //执行长按时间函数
+  65   4                      (*(Element.Key_Fun_Long_Always_Low))();
+  66   4                  }
+  67   3              }
+  68   2              //所有异常情况回到0步
+  69   2              else
+  70   2                  Variate->ProcessStep = 1; 
+  71   2          break;      
+  72   2          }
+  73   1      }
+  74          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    395    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1      17
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
