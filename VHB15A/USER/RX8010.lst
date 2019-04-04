@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   RX8010                                                            03/30/2019 11:40:35 PAGE 1   
+C51 COMPILER V9.52.0.0   RX8010                                                            04/04/2019 16:21:58 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE RX8010
@@ -38,10 +38,10 @@ line level    source
   26          sfr P2M0 = 0x96;
   27          sfr P2M1 = 0x95;
   28          
-  29          ///************************************
+  29          //************************************
   30          //** 函数原型: void IC_start(void); **
   31          //** 功 能: IC 总线起始位. **
-  32          //************************************/
+  32          //************************************
   33          static void IC_start(void)
   34          { 
   35   1          SCL_DIR_OUTPUT();
@@ -54,15 +54,15 @@ line level    source
   42   1          SCL=0;
   43   1      }
   44          
-  45          ////**********************************
-  46          ////** 函数原型: void IC_stop(void); **
-  47          ////** 功 能: IC 总线停止位. **
-  48          ////**********************************/
+  45          //**********************************
+  46          //** 函数原型: void IC_stop(void); **
+  47          //** 功 能: IC 总线停止位. **
+  48          //**********************************
   49          static void IC_stop(void)
   50          {
   51   1          SCL=0;
   52   1          SDA_DIR_OUTPUT();
-C51 COMPILER V9.52.0.0   RX8010                                                            03/30/2019 11:40:35 PAGE 2   
+C51 COMPILER V9.52.0.0   RX8010                                                            04/04/2019 16:21:58 PAGE 2   
 
   53   1          SDA=0;
   54   1          delay_us(2);
@@ -72,281 +72,302 @@ line level    source
   58   1          delay_us(2);
   59   1      }
   60          
-  61          /////***************************************************
-  62          ////** 函数原型: bit IC_writebyte(uchar wdata); **
-  63          ////** 功 能: 向IC 总线发送8 位数据,并请求一个应答信 **
-  64          ////** 号ACK.如果收到ACK 应答则返回1(TRUE), **
-  65          ////** 否则返回0(FALSE). **
-  66          ////***************************************************/
-  67          static unsigned char IC_WriteByte( unsigned char wdata)
+  61          //***************************************************
+  62          //** 函数原型: bit IC_writebyte(uchar wdata); **
+  63          //** 功 能: 向IC 总线发送8 位数据,并请求一个应答信 **
+  64          //** 号ACK.如果收到ACK 应答则返回1(TRUE), **
+  65          //** 否则返回0(FALSE). **
+  66          //***************************************************
+  67          static uint8_t IC_WriteByte( uint8_t wdata)
   68          {
-  69   1        unsigned char i;
+  69   1        uint8_t i;
   70   1        SDA_DIR_OUTPUT();
   71   1        for(i=0;i<8;i++)
   72   1        {
   73   2          SCL=0;
   74   2          delay_us(2);
-  75   2          if(wdata&0x80) SDA=1;
-  76   2          else SDA=0;
-  77   2          delay_us(2);
-  78   2          SCL=1;
-  79   2          delay_us(4);
-  80   2          wdata<<=1;
-  81   2        }
-  82   1        SCL=0;
-  83   1        delay_us(4);
-  84   1        SDA_DIR_INPUT();
-  85   1        SCL=1;
-  86   1        delay_us(4);
-  87   1        i=0;
-  88   1        while(SDA)
-  89   1        {
-  90   2          if(++i>12){SCL=0;return(0);}
-  91   2        }
-  92   1        SCL=0;
-  93   1        return(1);
-  94   1      }
-  95          /////***********************************************
-  96          ////** 函数原型: uchar IC_readbyte(void); **
-  97          ////** 功 能: 从IC 总线上接收8 位数据,并将接受到 **
-  98          ////** 8 位数据作为一个字节返回,不回送应 **
-  99          ////** 答信号ACK. **
- 100          ////***********************************************/
- 101          static unsigned char IC_ReadByte(void)
- 102          { 
- 103   1        unsigned char i;
- 104   1        unsigned char IC_data=0;
- 105   1        SCL=0;
- 106   1        SDA_DIR_OUTPUT();
- 107   1        SDA=1;
- 108   1        SDA_DIR_INPUT();  
- 109   1        for(i=0;i<8;i++)
- 110   1        {
- 111   2          SCL=1;
- 112   2          delay_us(2);
- 113   2          IC_data<<=1;
- 114   2          IC_data|=SDA;
-C51 COMPILER V9.52.0.0   RX8010                                                            03/30/2019 11:40:35 PAGE 3   
+  75   2          if((wdata&(uint8_t)0x80)!=(uint8_t)0)
+  76   2          {
+  77   3            SDA=1;
+  78   3          }     
+  79   2          else 
+  80   2          {
+  81   3            SDA=0;
+  82   3          }
+  83   2          delay_us(2);
+  84   2          SCL=1;
+  85   2          delay_us(4);
+  86   2          wdata<<=1;
+  87   2        }
+  88   1        SCL=0;
+  89   1        delay_us(4);
+  90   1        SDA_DIR_INPUT();
+  91   1        SCL=1;
+  92   1        delay_us(4);
+  93   1        i=0;
+  94   1        while(SDA)
+  95   1        {
+  96   2          if(++i>12){SCL=0;return(0);}
+  97   2        }
+  98   1        SCL=0;
+  99   1        return(1);
+ 100   1      }
+ 101          //***********************************************
+ 102          //** 函数原型: uchar IC_readbyte(void); **
+ 103          //** 功 能: 从IC 总线上接收8 位数据,并将接受到 **
+ 104          //** 8 位数据作为一个字节返回,不回送应 **
+ 105          //** 答信号ACK. **
+ 106          //***********************************************
+ 107          static uint8_t IC_ReadByte(void)
+ 108          { 
+ 109   1        uint8_t i;
+ 110   1        uint8_t IC_data=0;
+ 111   1        SCL=0;
+ 112   1        SDA_DIR_OUTPUT();
+ 113   1        SDA=1;
+ 114   1        SDA_DIR_INPUT();  
+C51 COMPILER V9.52.0.0   RX8010                                                            04/04/2019 16:21:58 PAGE 3   
 
- 115   2          //delay_us(4);
- 116   2          SCL=1;
- 117   2          delay_us(2);
- 118   2          SCL=0;
- 119   2          delay_us(4);
- 120   2        }
- 121   1        delay_us(4);
- 122   1        SCL=0;
- 123   1        SDA_DIR_OUTPUT();
- 124   1        SDA=0;
- 125   1        return(IC_data);
- 126   1      }
- 127          /////***************************************************************
- 128          ////** 函数原型: bit readEEone(uchar instr,uchar addr,uchar num); **
- 129          ////** 功 能: 从8010 中读取num 个字节的数据,采用序列读操作方 **
- 130          ////** 式从片内Address 地址开始连续读取数据.8010 不接 **
- 131          ////** 受指定的地址则返回0(FALSE). **
- 132          ////***************************************************************/
- 133          unsigned char readEEone(unsigned char addr,unsigned char num,unsigned char *Data)
- 134          {
- 135   1        unsigned char i;
- 136   1        IC_start();
- 137   1        if(IC_WriteByte(RX8010_WRITE)==0)
- 138   1        {
- 139   2          IC_stop(); return(0);
- 140   2        }
- 141   1        if(IC_WriteByte(addr)==0)
- 142   1        {
- 143   2          IC_stop(); return(0);
- 144   2        }
- 145   1          IC_start();
- 146   1        if(IC_WriteByte(RX8010_READ)==0)
- 147   1        {
- 148   2          IC_stop(); return(0);
- 149   2        }
- 150   1        for(i=0;i<num-1;i++)
- 151   1        {
- 152   2          Data[i]=IC_ReadByte();
- 153   2          SDA_DIR_OUTPUT();       
- 154   2          SDA=0; /** Send ACK **/   
- 155   2          SCL=1;
- 156   2        }
- 157   1        Data[num-1]=IC_ReadByte();
- 158   1        SDA_DIR_OUTPUT(); 
- 159   1        SDA=1; /** Send Read End **/
- 160   1        delay_us(4);
- 161   1        SCL=1;
- 162   1        IC_stop();
- 163   1        return(1);
- 164   1      }
- 165          
- 166          ///****************************************************************
- 167          //** 函数原型: bit writeEEone(uchar instr,uchar addr,uchar num); **
- 168          //** 功 能: 将EEbuf[]单元中的数据写入8010 的num 个字节. **
- 169          //** 采用页写操作方式,每次写入时都需要指定片内地址. **
- 170          //** 如果8010 不接受指定的地址或某个传送的字节未收到 **
- 171          //** 应答信号ACK,则返回0(FALSE). **
- 172          //****************************************************************/
- 173          static unsigned char writeEEone(unsigned char addr,unsigned char num,unsigned char *Data)
- 174          {
- 175   1        unsigned char i;
- 176   1        //gie=0;
-C51 COMPILER V9.52.0.0   RX8010                                                            03/30/2019 11:40:35 PAGE 4   
+ 115   1        for(i=0;i<8;i++)
+ 116   1        {
+ 117   2          SCL=1;
+ 118   2          delay_us(2);
+ 119   2          IC_data<<=1;
+ 120   2          IC_data|=SDA;
+ 121   2          //delay_us(4);
+ 122   2          SCL=1;
+ 123   2          delay_us(2);
+ 124   2          SCL=0;
+ 125   2          delay_us(4);
+ 126   2        }
+ 127   1        delay_us(4);
+ 128   1        SCL=0;
+ 129   1        SDA_DIR_OUTPUT();
+ 130   1        SDA=0;
+ 131   1        return(IC_data);
+ 132   1      }
+ 133          //***************************************************************
+ 134          //** 函数原型: bit readEEone(uchar instr,uchar addr,uchar num); **
+ 135          //** 功 能: 从8010 中读取num 个字节的数据,采用序列读操作方 **
+ 136          //** 式从片内Address 地址开始连续读取数据.8010 不接 **
+ 137          //** 受指定的地址则返回0(FALSE). **
+ 138          //***************************************************************
+ 139          uint8_t readEEone(uint8_t addr,uint8_t num,uint8_t *Data)
+ 140          {
+ 141   1        uint8_t i;
+ 142   1        IC_start();
+ 143   1        if(IC_WriteByte(RX8010_WRITE)==0)
+ 144   1        {
+ 145   2          IC_stop(); return(0);
+ 146   2        }
+ 147   1        if(IC_WriteByte(addr)==0)
+ 148   1        {
+ 149   2          IC_stop(); return(0);
+ 150   2        }
+ 151   1        IC_start();
+ 152   1        if(IC_WriteByte(RX8010_READ)==0)
+ 153   1        {
+ 154   2          IC_stop(); return(0);
+ 155   2        }
+ 156   1        for(i=0;i<(num-1);i++)
+ 157   1        {
+ 158   2          Data[i]=IC_ReadByte();
+ 159   2          SDA_DIR_OUTPUT();       
+ 160   2          SDA=0; /** Send ACK **/   
+ 161   2          SCL=1;
+ 162   2        }
+ 163   1        Data[num-1]=IC_ReadByte();
+ 164   1        SDA_DIR_OUTPUT(); 
+ 165   1        SDA=1; /** Send Read End **/
+ 166   1        delay_us(4);
+ 167   1        SCL=1;
+ 168   1        IC_stop();
+ 169   1        return(1);
+ 170   1      }
+ 171          
+ 172          //****************************************************************
+ 173          //** 函数原型: bit writeEEone(uchar instr,uchar addr,uchar num); **
+ 174          //** 功 能: 将EEbuf[]单元中的数据写入8010 的num 个字节. **
+ 175          //** 采用页写操作方式,每次写入时都需要指定片内地址. **
+ 176          //** 如果8010 不接受指定的地址或某个传送的字节未收到 **
+C51 COMPILER V9.52.0.0   RX8010                                                            04/04/2019 16:21:58 PAGE 4   
 
- 177   1        IC_start();
- 178   1        if(IC_WriteByte(RX8010_WRITE)==0)
- 179   1        {
- 180   2          IC_stop(); return(0);
- 181   2        }
- 182   1        if(IC_WriteByte(addr)==0)
- 183   1        {
- 184   2          IC_stop(); return(0);
- 185   2        }
- 186   1        for(i=0;i<num;i++)
- 187   1        {
- 188   2          if(IC_WriteByte(Data[i])==0)
- 189   2          {
- 190   3            IC_stop(); return(0);
- 191   3          }
- 192   2        }
- 193   1        IC_stop();
- 194   1        delay_us(4);
- 195   1        SDA=0;
- 196   1        SCL=0;
- 197   1        //gie=1;
- 198   1        return(1);
- 199   1      } 
- 200          
- 201          
- 202          //检测VLF频率停止位，若为1则初始化RX8010
- 203          unsigned char RX8010_Initialize(void) 
- 204          {
- 205   1        unsigned char Rdata[7];
- 206   1        unsigned char i;
- 207   1        unsigned char Init_State;
- 208   1        
- 209   1        EA = 0; 
- 210   1        Init_State = RX8010_INIT_NONE;//未初始化
- 211   1        
- 212   1        Rdata[0] = 0x00;
- 213   1        for(i = 0;i < 10;i++)
- 214   1        {
- 215   2          if(readEEone(0x1E,1,Rdata) == 1)
- 216   2          {
- 217   3            Init_State = RX8010_INIT_NONE;
- 218   3            break;//读VLF状态
- 219   3          }
- 220   2          delay_ms(100);
- 221   2          WDT_CONTR = 0x3F; 
- 222   2          Init_State = RX8010_INIT_FAIL;//初始化失败
- 223   2        }
- 224   1        
- 225   1        if(Init_State == RX8010_INIT_NONE)
- 226   1        {   
- 227   2          if(Bit_is_one(Rdata[0],1))//判定是否停止,VLF=1
- 228   2          {
- 229   3            Init_State = RX8010_INIT_OK;//初始化成功
- 230   3            Rdata[0] = 0x58;
- 231   3            writeEEone(0x17,1,Rdata);
- 232   3            Rdata[0] = 0x00;
- 233   3            Rdata[1] = 0x18;
- 234   3            Rdata[2] = 0x00;
- 235   3            writeEEone(0x30,3,Rdata); 
- 236   3            Rdata[0] = 0x04;//无中断输出
- 237   3            Rdata[1] = 0x00;//清AF和VLF
- 238   3            Rdata[2] = 0x40;    
-C51 COMPILER V9.52.0.0   RX8010                                                            03/30/2019 11:40:35 PAGE 5   
+ 177          //** 应答信号ACK,则返回0(FALSE). **
+ 178          //****************************************************************
+ 179          static void writeEEone(uint8_t addr,uint8_t num,const uint8_t *Data)
+ 180          {
+ 181   1        uint8_t i;
+ 182   1        //gie=0;
+ 183   1        IC_start();
+ 184   1        if(IC_WriteByte(RX8010_WRITE)==0)
+ 185   1        {
+ 186   2      //    IC_stop(); return(0);
+ 187   2          IC_stop();
+ 188   2        }
+ 189   1        if(IC_WriteByte(addr)==0)
+ 190   1        {
+ 191   2      //    IC_stop(); return(0);
+ 192   2          IC_stop();
+ 193   2        }
+ 194   1        for(i=0;i<num;i++)
+ 195   1        {
+ 196   2          if(IC_WriteByte(Data[i])==0)
+ 197   2          {
+ 198   3      //      IC_stop(); return(0);
+ 199   3            IC_stop();
+ 200   3          }
+ 201   2        }
+ 202   1        IC_stop();
+ 203   1        delay_us(4);
+ 204   1        SDA=0;
+ 205   1        SCL=0;
+ 206   1        //gie=1;
+ 207   1      //  return(1);
+ 208   1      } 
+ 209          
+ 210          
+ 211          //检测VLF频率停止位，若为1则初始化RX8010
+ 212          uint8_t RX8010_Initialize(void) 
+ 213          {
+ 214   1        uint8_t Rdata[7];
+ 215   1        uint8_t i;
+ 216   1        uint8_t Init_State;
+ 217   1        
+ 218   1        EA = 0; 
+ 219   1        Init_State = RX8010_INIT_NONE;//未初始化
+ 220   1        
+ 221   1        Rdata[0] = 0x00;
+ 222   1        for(i = 0;i < 10;i++)
+ 223   1        {
+ 224   2          if(readEEone(0x1E,1,Rdata) == 1)
+ 225   2          {
+ 226   3            Init_State = RX8010_INIT_NONE;
+ 227   3            break;//读VLF状态
+ 228   3          }
+ 229   2          delay_ms(100);
+ 230   2          WDT_CONTR = 0x3F; 
+ 231   2          Init_State = RX8010_INIT_FAIL;//初始化失败
+ 232   2        }
+ 233   1        
+ 234   1        if(Init_State == RX8010_INIT_NONE)
+ 235   1        {   
+ 236   2          if(Bit_is_one(Rdata[0],1)!=(uint8_t)0)//判定是否停止,VLF=1
+ 237   2          {
+ 238   3            Init_State = RX8010_INIT_OK;//初始化成功
+C51 COMPILER V9.52.0.0   RX8010                                                            04/04/2019 16:21:58 PAGE 5   
 
- 239   3            writeEEone(0x1D,3,Rdata); 
- 240   3            
- 241   3            Rdata[0] = 0x00;//SEC
- 242   3            Rdata[1] = 0x00;//MIN
- 243   3            Rdata[2] = 0x00;//HOUR
- 244   3            Rdata[3] = 0x10;//WEEK
- 245   3            Rdata[4] = 0x01;//DAY
- 246   3            Rdata[5] = 0x01;//MONTH
- 247   3            Rdata[6] = 0x15;//YEAR 2015-01-01-00:00:00-Tursday
- 248   3            writeEEone(0x10,7,Rdata);//设定时间
+ 239   3            Rdata[0] = 0x58;
+ 240   3            writeEEone(0x17,1,Rdata);
+ 241   3            Rdata[0] = 0x00;
+ 242   3            Rdata[1] = 0x18;
+ 243   3            Rdata[2] = 0x00;
+ 244   3            writeEEone(0x30,3,Rdata); 
+ 245   3            Rdata[0] = 0x04;//无中断输出
+ 246   3            Rdata[1] = 0x00;//清AF和VLF
+ 247   3            Rdata[2] = 0x40;    
+ 248   3            writeEEone(0x1D,3,Rdata); 
  249   3            
- 250   3            Rdata[0] = 0x00;//MIN
- 251   3            Rdata[1] = 0x00;//HOUR
- 252   3            Rdata[2] = 0x00;//WEEK
- 253   3            writeEEone(0x18,3,Rdata);//设定闹钟
- 254   3            
- 255   3            Rdata[0] = 0x00;//MIN
- 256   3            Rdata[1] = 0x00;//HOUR
- 257   3            writeEEone(0x1B,2,Rdata);//设定定时
+ 250   3            Rdata[0] = 0x00;//SEC
+ 251   3            Rdata[1] = 0x00;//MIN
+ 252   3            Rdata[2] = 0x00;//HOUR
+ 253   3            Rdata[3] = 0x10;//WEEK
+ 254   3            Rdata[4] = 0x01;//DAY
+ 255   3            Rdata[5] = 0x01;//MONTH
+ 256   3            Rdata[6] = 0x15;//YEAR 2015-01-01-00:00:00-Tursday
+ 257   3            writeEEone(0x10,7,Rdata);//设定时间
  258   3            
- 259   3            Rdata[0] = 0x00;//STOP位为0
- 260   3            writeEEone(0x1F,1,Rdata);     
- 261   3          } 
- 262   2        }
- 263   1        EA = 1;
- 264   1        return Init_State;
- 265   1      }
- 266           
- 267          //设定时钟
- 268          //注意，原来是DS1302，改为RX8010后，顺序不同，另外，星期由8421BCD码改为位
- 269          void RX8010_SetTime(BYTE *p) 
- 270          {
- 271   1        unsigned char Rdata[7];
- 272   1        
- 273   1        Rdata[0] = 0x40;//STOP位为1
- 274   1        writeEEone(0x1F,1,Rdata);
- 275   1        
- 276   1        Rdata[0] = *p;//SEC
- 277   1        Rdata[1] = *(p+1);//MIN
- 278   1        Rdata[2] = *(p+2);//HOUR  
- 279   1        Rdata[3] = *(p+5);//WEEK
- 280   1      /*
- 281   1      //  data[3] = 1 << *(p+5); //WEEK由DS1302转换为RX8010 
- 282   1      //  if(data[3]==0x80)data[3]=1;//DS1302星期天为7，而RX8010是低位为1
- 283   1      */
- 284   1        Rdata[4] = *(p+3);//DAY
- 285   1        Rdata[5] = *(p+4);//MONTH
- 286   1        Rdata[6] = *(p+6);//YEAR 2015-01-01-00:00:00-Tursday
- 287   1        writeEEone(0x10,7,Rdata);
- 288   1        
- 289   1        Rdata[0] = 0x00;//STOP位为0
- 290   1        writeEEone(0x1F,1,Rdata); 
- 291   1      }
- 292            
- 293          //读取时钟
- 294          //注意，原来是DS1302，改为RX8010后，顺序不同，另外，星期由8421BCD码改为位
- 295          void RX8010_GetTime(BYTE *p) 
- 296          {
- 297   1        unsigned char Rdata[7];
- 298   1        
- 299   1        readEEone(0x10,7,Rdata);
- 300   1        *p = Rdata[0];//SEC 
-C51 COMPILER V9.52.0.0   RX8010                                                            03/30/2019 11:40:35 PAGE 6   
+ 259   3            Rdata[0] = 0x00;//MIN
+ 260   3            Rdata[1] = 0x00;//HOUR
+ 261   3            Rdata[2] = 0x00;//WEEK
+ 262   3            writeEEone(0x18,3,Rdata);//设定闹钟
+ 263   3            
+ 264   3            Rdata[0] = 0x00;//MIN
+ 265   3            Rdata[1] = 0x00;//HOUR
+ 266   3            writeEEone(0x1B,2,Rdata);//设定定时
+ 267   3            
+ 268   3            Rdata[0] = 0x00;//STOP位为0
+ 269   3            writeEEone(0x1F,1,Rdata);     
+ 270   3          } 
+ 271   2        }
+ 272   1        EA = 1;
+ 273   1        return Init_State;
+ 274   1      }
+ 275           
+ 276          //设定时钟
+ 277          //注意，原来是DS1302，改为RX8010后，顺序不同，另外，星期由8421BCD码改为位
+ 278          void RX8010_SetTime(const BYTE *p) 
+ 279          {
+ 280   1        uint8_t Rdata[7];
+ 281   1        
+ 282   1        Rdata[0] = 0x40;//STOP位为1
+ 283   1        writeEEone(0x1F,1,Rdata);
+ 284   1        
+ 285   1        Rdata[0] = *p;//SEC
+ 286   1      //  Rdata[1] = *(p+1);//MIN
+ 287   1      //  Rdata[2] = *(p+2);//HOUR  
+ 288   1      //  Rdata[3] = *(p+5);//WEEK
+ 289   1        Rdata[1] = p[1];//MIN
+ 290   1        Rdata[2] = p[2];//HOUR  
+ 291   1        Rdata[3] = p[5];//WEEK
+ 292   1      
+ 293   1      //  data[3] = 1 << *(p+5); //WEEK由DS1302转换为RX8010 
+ 294   1      //  if(data[3]==0x80)data[3]=1;//DS1302星期天为7，而RX8010是低位为1
+ 295   1      
+ 296   1      //  Rdata[4] = *(p+3);//DAY
+ 297   1      //  Rdata[5] = *(p+4);//MONTH
+ 298   1      //  Rdata[6] = *(p+6);//YEAR 2015-01-01-00:00:00-Tursday
+ 299   1        Rdata[4] = p[3];//DAY
+ 300   1        Rdata[5] = p[4];//MONTH
+C51 COMPILER V9.52.0.0   RX8010                                                            04/04/2019 16:21:58 PAGE 6   
 
- 301   1        *(p+1) = Rdata[1];//MIN
- 302   1        *(p+2) = Rdata[2];//HOUR
- 303   1        *(p+5) = Rdata[3];//WEEK
- 304   1        /* 注意：未使用星期
- 305   1        for(i = 1;i > 7; i++)
- 306   1        {
- 307   1          if((*(p+5) >> i)==0)break;
- 308   1        }
- 309   1        *(p+5) = i;
- 310   1        if(*(p+5) == 1)//星期天
- 311   1        {
- 312   1          *(p+5) = 7;
- 313   1        }
- 314   1        else
- 315   1        {
- 316   1          *(p+5) -=1;
- 317   1        }
- 318   1        */
- 319   1        
- 320   1        *(p+3) = Rdata[4];//DAY
- 321   1        *(p+4) = Rdata[5];//MONTH
- 322   1        *(p+6) = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
- 323   1      }
+ 301   1        Rdata[6] = p[6];//YEAR 2015-01-01-00:00:00-Tursday
+ 302   1        writeEEone(0x10,7,Rdata);
+ 303   1        
+ 304   1        Rdata[0] = 0x00;//STOP位为0
+ 305   1        writeEEone(0x1F,1,Rdata); 
+ 306   1      }
+ 307            
+ 308          //读取时钟
+ 309          //注意，原来是DS1302，改为RX8010后，顺序不同，另外，星期由8421BCD码改为位
+ 310          void RX8010_GetTime(BYTE *p) 
+ 311          {
+ 312   1        uint8_t Rdata[7];
+ 313   1        
+ 314   1        readEEone(0x10,7,Rdata);
+ 315   1        *p = Rdata[0];//SEC 
+ 316   1      //  *(p+1) = Rdata[1];//MIN
+ 317   1      //  *(p+2) = Rdata[2];//HOUR
+ 318   1      //  *(p+5) = Rdata[3];//WEEK
+ 319   1        p[1]= Rdata[1];//MIN
+ 320   1        p[2] = Rdata[2];//HOUR
+ 321   1        p[5] = Rdata[3];//WEEK
+ 322   1      //  // 注意：未使用星期
+ 323   1      //  for(i = 1;i > 7; i++)
+ 324   1      //  {
+ 325   1      //    if((*(p+5) >> i)==0)break;
+ 326   1      //  }
+ 327   1      //  *(p+5) = i;
+ 328   1      //  if(*(p+5) == 1)//星期天
+ 329   1      //  {
+ 330   1      //    *(p+5) = 7;
+ 331   1      //  }
+ 332   1      //  else
+ 333   1      //  {
+ 334   1      //    *(p+5) -=1;
+ 335   1      //  }
+ 336   1      //  
+ 337   1        
+ 338   1      //  *(p+3) = Rdata[4];//DAY
+ 339   1      //  *(p+4) = Rdata[5];//MONTH
+ 340   1      //  *(p+6) = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
+ 341   1        p[3] = Rdata[4];//DAY
+ 342   1        p[4] = Rdata[5];//MONTH
+ 343   1        p[6] = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
+ 344   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1116    ----
+   CODE SIZE        =   1111    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----      45
    PDATA SIZE       =   ----    ----

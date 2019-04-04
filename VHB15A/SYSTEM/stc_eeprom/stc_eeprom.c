@@ -1,4 +1,4 @@
-#include <reg51.H>
+//#include <reg51.H>
 #include <intrins.H>
 #include "stc_eeprom.h"
 
@@ -14,14 +14,14 @@ sfr IAP_CONTR   = 0xC7;
 
 //#define DATA_FLASH_START_ADDRESS 0x00  //STC5Axx Series EEPROM Starting Address
 
-static union union_temp16
+static union 
 {
     INT16U un_temp16;
     INT8U  un_temp8[2];
 }my_unTemp16;
 
 
-static void IAP_Disable();  //Disable IAP function 
+static void IAP_Disable(void);  //Disable IAP function 
 
 
 
@@ -78,7 +78,7 @@ void STC_IAP_Sector_Erase(INT16U add)
     IAP_Disable();  //Disable IAP
 }
 
-static void IAP_Disable() //Disable IAP
+static void IAP_Disable(void) //Disable IAP
 { 
     IAP_CONTR = 0;      //
     IAP_CMD   = 0;      //

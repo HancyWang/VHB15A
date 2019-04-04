@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   KEY_DATAS                                                         03/30/2019 11:40:35 PAGE 1   
+C51 COMPILER V9.52.0.0   KEY_DATAS                                                         04/04/2019 16:21:58 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE KEY_DATAS
@@ -42,7 +42,7 @@ line level    source
   30            1,            //处理状态
   31          };
   32          
-  33          unsigned char Key_UP_Tik = 0;
+  33          uint8_t Key_UP_Tik = 0;
   34          void Key_UP_TikFunc(void)
   35          {
   36   1          if(Key_UP_Tik < 250)
@@ -62,7 +62,7 @@ line level    source
   50   1      }    
   51          
   52          static void KeyUpPressLongRepeatAction(void) //连续按下持续,连+连-
-C51 COMPILER V9.52.0.0   KEY_DATAS                                                         03/30/2019 11:40:35 PAGE 2   
+C51 COMPILER V9.52.0.0   KEY_DATAS                                                         04/04/2019 16:21:58 PAGE 2   
 
   53          {
   54   1        Key_State_Present = KEY_STATE_UP_Long_Repeat;
@@ -95,7 +95,7 @@ line level    source
   81            1,            //处理状态
   82          };
   83          
-  84          unsigned char Key_Down_Tik = 0;
+  84          uint8_t Key_Down_Tik = 0;
   85          void Key_Down_TikFunc(void)
   86          {
   87   1          if(Key_Down_Tik < 250)
@@ -126,7 +126,7 @@ line level    source
  112          
  113          static void KeyOKPressShortAction(void);
  114          static void KeyOKPressLongFirstAction(void);    //按键长键后的响应函数
-C51 COMPILER V9.52.0.0   KEY_DATAS                                                         03/30/2019 11:40:35 PAGE 3   
+C51 COMPILER V9.52.0.0   KEY_DATAS                                                         04/04/2019 16:21:58 PAGE 3   
 
  115          static void KeyOKPressLongRepeatAction(void);  //连续按下持续,连+连-
  116          
@@ -149,7 +149,7 @@ line level    source
  133            1,            //处理状态
  134          };
  135          
- 136          unsigned char Key_OK_Tik = 0;
+ 136          uint8_t Key_OK_Tik = 0;
  137          void Key_OK_TikFunc(void)
  138          {
  139   1          if(Key_OK_Tik < 250)
@@ -190,7 +190,7 @@ line level    source
  174            10,                           //TimOf_Low_High 按下弹起的最大响应时间
  175            20,                           //TimOfSe 初次长按响应时间
  176            5,                            //TimOfLg 后续长连续按下状态时间
-C51 COMPILER V9.52.0.0   KEY_DATAS                                                         03/30/2019 11:40:35 PAGE 4   
+C51 COMPILER V9.52.0.0   KEY_DATAS                                                         04/04/2019 16:21:58 PAGE 4   
 
  177            KeyMutePressShortAction,        //void (*)(void)短按键由低到高弹起
  178            KeyMutePressLongFirstAction,    //按键长键后的响应函数
@@ -204,7 +204,7 @@ line level    source
  186            1,            //处理状态
  187          };
  188          
- 189          unsigned char Key_Mute_Tik = 0;
+ 189          uint8_t Key_Mute_Tik = 0;
  190          void Key_Mute_TikFunc(void)
  191          {
  192   1          if(Key_Mute_Tik < 250)
@@ -218,7 +218,7 @@ line level    source
  200          {
  201   1        Key_State_Present = KEY_STATE_Mute_Short; 
  202   1        
- 203   1        if(AlarmInfoIndex)//有报警
+ 203   1        if(AlarmInfoIndex!=(uint8_t)0)//有报警
  204   1        {
  205   2          if(AlarmSoundPauseStatus == 0)//正常报警
  206   2          {
@@ -254,7 +254,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
-C51 COMPILER V9.52.0.0   KEY_DATAS                                                         03/30/2019 11:40:35 PAGE 5   
+C51 COMPILER V9.52.0.0   KEY_DATAS                                                         04/04/2019 16:21:58 PAGE 5   
 
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----

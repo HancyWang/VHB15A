@@ -1,9 +1,9 @@
 #include "delay.h"
 #include "lcd.h"
 #include "Font.h"
-#include "all.h"
+//#include "all.h"
 
-uint8_t  xdata  Back_Color;
+uint8_t    Back_Color;
 
 //2019.03.29
 sfr P0   = 0x80;
@@ -13,7 +13,7 @@ sbit P16 = 0x90^6;
 sbit P40 = 0xC0^0;
 sbit P46 = 0xC0^6;
 
-static uint16_t code Table_Color[]=
+static const uint16_t code Table_Color[]=
 {
 	RED,
 	GREEN,
@@ -54,7 +54,7 @@ void LCD_CtrlWrite_ILI9328(uint16_t i)
 {
 	LCD_CS_L;
 	LCD_RS_H;
-	LCD_PORT =i/256;
+	LCD_PORT =(uint8_t)(i/256);
 	LCD_WR_L;
 	LCD_WR_H;
 	LCD_PORT =i%256;
@@ -66,7 +66,7 @@ void LCD_CtrlWrite_ILI9328(uint16_t i)
 
 void   LCD_CtrlWrite_Color(uint8_t color)
 {
-   LCD_CtrlWrite_ILI9328(Table_Color[color]);
+	LCD_CtrlWrite_ILI9328(Table_Color[color]);
 }
 
 void LCD_Initial(void)
@@ -176,76 +176,75 @@ void LCD_Initial(void)
 
 void  LCD_CrtlWrite_Area(uint8_t SX,uint8_t EX,uint16_t SY,uint16_t EY)
 {
-	   SdCmd(0x2A);
-	   SdData(SX/256);
-	   SdData(SX%256);
-	   SdData(EX/256);
-	   SdData(EX%256);
-	   SdCmd(0x2B);
-	   SdData(SY/256);
-	   SdData(SY%256);
-	   SdData(EY/256);
-	   SdData(EY%256);
-	   SdCmd(0x2C);	
+	SdCmd(0x2A);
+	SdData(SX/256);
+	SdData(SX%256);
+	SdData(EX/256);
+	SdData(EX%256);
+	SdCmd(0x2B);
+	SdData((uint8_t)(SY/256));
+	SdData(SY%256);
+	SdData((uint8_t)(EY/256));
+	SdData(EY%256);
+	SdCmd(0x2C);	
 }  
 
 
  //画矩形
 void Draw_Rectangle(uint8_t Start_X, uint16_t Start_Y,uint8_t End_X, uint16_t End_Y,uint8_t color, uint8_t LineW)
 {
- 	   uint16_t i,j,w,h;
- 	   w=End_X-Start_X;
- 	   h=End_Y-Start_Y;
- 	   //画第一条线
-	   LCD_CrtlWrite_Area(Start_X,End_X,Start_Y,Start_Y+LineW-1);
-     for (j=0; j<LineW;j++)
-     {
- 	     for(i=0;i<=w;i++)
- 	     {
- 	   	    LCD_CtrlWrite_Color(color);
- 	     }
- 	   }
-	   LCD_CrtlWrite_Area(Start_X,End_X,End_Y-LineW+1,End_Y);
-     for (j=0; j<LineW;j++)
-     {
- 	     for(i=0;i<=w;i++)
- 	     {
- 	   	      LCD_CtrlWrite_Color(color);
- 	     }
- 	   }
-	   LCD_CrtlWrite_Area(Start_X,Start_X+LineW-1,Start_Y,End_Y);
-     for (j=0; j<=h;j++)
-     {
- 	     for(i=0;i<LineW;i++)
- 	     {
- 	   	     LCD_CtrlWrite_Color(color);
- 	     }
- 	   }
-	   LCD_CrtlWrite_Area(End_X-LineW+1,End_X,Start_Y,End_Y);
-     for (j=0; j<=h;j++)
-     {
- 	     for(i=0;i<LineW;i++)
- 	     {
- 	   	    LCD_CtrlWrite_Color(color);
- 	     }
- 	   }
- }
+	uint16_t i,j,w,h;
+	w=(uint16_t)End_X-(uint16_t)Start_X;
+	h=End_Y-Start_Y;
+	//画第一条线
+	LCD_CrtlWrite_Area(Start_X,End_X,Start_Y,Start_Y+LineW-1);
+	for (j=0; j<LineW;j++)
+	{
+		for(i=0;i<=w;i++)
+		{
+			LCD_CtrlWrite_Color(color);
+		}
+	}
+	LCD_CrtlWrite_Area(Start_X,End_X,End_Y-LineW+1,End_Y);
+	for (j=0; j<LineW;j++)
+	{
+		for(i=0;i<=w;i++)
+		{
+			LCD_CtrlWrite_Color(color);
+		}
+	}
+	LCD_CrtlWrite_Area(Start_X,Start_X+LineW-1,Start_Y,End_Y);
+	for (j=0; j<=h;j++)
+	{
+		for(i=0;i<LineW;i++)
+		{
+			LCD_CtrlWrite_Color(color);
+		}
+	}
+	LCD_CrtlWrite_Area(End_X-LineW+1,End_X,Start_Y,End_Y);
+	for (j=0; j<=h;j++)
+	{
+		for(i=0;i<LineW;i++)
+		{
+			LCD_CtrlWrite_Color(color);
+		}
+	}
+}
 
  //画实体方块
 void Draw_Rectangle_Real(uint8_t Start_X, uint16_t Start_Y,uint8_t End_X, uint16_t End_Y,uint8_t color)
 {
- 	   uint16_t i,j,w,h;
- 	   w=End_X-Start_X;
- 	   h=End_Y-Start_Y;
-	   LCD_CrtlWrite_Area(Start_X,End_X,Start_Y,End_Y);
-     for (j=0; j<=h;j++)
-     {
- 	     for(i=0;i<=w;i++)
- 	     {
- 	   	        LCD_CtrlWrite_Color(color);
-
- 	     }
- 	   }
+	uint16_t i,j,w,h;
+	w=(uint16_t)End_X-(uint16_t)Start_X;
+	h=End_Y-Start_Y;
+	LCD_CrtlWrite_Area(Start_X,End_X,Start_Y,End_Y);
+	for (j=0; j<=h;j++)
+	{
+		for(i=0;i<=w;i++)
+		{
+			LCD_CtrlWrite_Color(color);
+		}
+	}
 }
 
 //显示单色图形
@@ -256,20 +255,24 @@ void Draw_Rectangle_Real(uint8_t Start_X, uint16_t Start_Y,uint8_t End_X, uint16
 //gp 字符地址
 //NUM-图形编号
 //color-颜色
-static void DISP_MONO_GRAP(uint8_t  X1, uint16_t Y1,uint8_t  H, uint8_t  W, uint8_t *gp,uint8_t color)
+static void DISP_MONO_GRAP(uint8_t  X1, uint16_t Y1,uint8_t  H, uint8_t  W,const uint8_t *gp,uint8_t color)
 {
-	   uint16_t w,j;
-	   LCD_CrtlWrite_Area(X1,X1+H-1,Y1,Y1+W-1);
-	   for(w=0;w<(int)H*(int)W/8;w++)
-	   {
-	 	   for(j=0;j<8;j++)
-	 	   {
-	 	  	 if((gp[w]&(0x01<<j))!=0)
-	 	        LCD_CtrlWrite_Color(color);
-	 	     else
-	 	   	    LCD_CtrlWrite_Color(Back_Color);
-	 	    }
-	 	 }
+	uint16_t w,j;
+	LCD_CrtlWrite_Area(X1,X1+H-1,Y1,Y1+W-1);
+	for(w=0;w<((INT)H*((INT)W)/8);w++)
+	{
+		for(j=0;j<8;j++)
+		{
+			if((gp[w]&(0x01<<j))!=0)
+			{
+				LCD_CtrlWrite_Color(color);
+			}
+			else
+			{
+				LCD_CtrlWrite_Color(Back_Color);
+			}	
+		}
+	}
 }
 
 
@@ -302,7 +305,7 @@ void DISP_JQK41X16(uint8_t  X, uint16_t Y,uint8_t color)
 
 void DISP_HEAT_36X24(uint8_t  X, uint16_t Y,uint8_t color)
 {
-		 DISP_MONO_GRAP(X,Y,24,36,HEAT36X32,color);
+	DISP_MONO_GRAP(X,Y,24,36,HEAT36X32,color);
 }
 
 void DISP_RH_17X40(uint8_t  X, uint16_t Y,uint8_t NUM,uint8_t color)
@@ -365,16 +368,16 @@ void Disp_WuChuang(uint8_t  X, uint16_t Y,uint8_t color)   //
 
 void DISP_VHB80_PIC(uint8_t color)
 {	
-  DISP_VHB80_56X40(POS_VHB80_X,POS_VHB80_Y,color);
-  DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color);    //加热盘图形    
-  DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,color);
-  Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,color);  //画吸气管上部，下部
-  Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,color); 
-  DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,color);    
-  Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,color);  //画出气管上部，下部
-  Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,color); ;  //画出气管上部，下部
-  Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,color);  //画封口 
-  DISP_JQK41X16(POS_JQK_X,POS_JQK_Y,color);	    //画进气口
+	DISP_VHB80_56X40(POS_VHB80_X,POS_VHB80_Y,color);
+	DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color);    //加热盘图形    
+	DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,color);
+	Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,color);  //画吸气管上部，下部
+	Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,color); 
+	DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,color);    
+	Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,color);  //画出气管上部，下部
+	Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,color); ;  //画出气管上部，下部
+	Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,color);  //画封口 
+	DISP_JQK41X16(POS_JQK_X,POS_JQK_Y,color);	    //画进气口
 }
 
 
@@ -384,14 +387,14 @@ void DISP_VHB80_PIC(uint8_t color)
 static void LCD_DrawPoint(u16 x,u16 y,uint8_t color)
 {	
 	SdCmd(0x2A);;	 //设置光标位置 
-	SdData(x/256);	  //开始点的X坐标
+	SdData((uint8_t)(x/256));	  //开始点的X坐标
 	SdData(x%256);
-	SdData(x/256);
+	SdData((uint8_t)(x/256));
 	SdData(x%256);	   
 	SdCmd(0x2B);
-	SdData(y/256);	//开始点的Y坐标	   
+	SdData((uint8_t)(y/256));	//开始点的Y坐标	   
 	SdData(y%256);	   
-	SdData(y/256);		   
+	SdData((uint8_t)(y/256));		   
 	SdData(y%256);
 	SdCmd(0x2C);		
 	LCD_CtrlWrite_Color(color); //开始写入GRAM
@@ -404,56 +407,68 @@ static void LCD_DrawPoint(u16 x,u16 y,uint8_t color)
 //NUM字符
 //mode:叠加方式(1)不写背景色  还是非叠加方式(0)写背景色
 //color字符的颜色	
- void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color)
+void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color)
 {
-	   uint16_t  w,j;
-	   uint16_t F_x,F_y;
+	uint16_t  w,j;
+	uint16_t F_x,F_y;
+	u8 num=NUM;
 
-	   F_x = X;
-	   F_y = Y;	 
+	F_x = X;
+	F_y = Y;	 
 
-	  LCD_CrtlWrite_Area(X,X+15,Y,Y+7);
+	LCD_CrtlWrite_Area((uint8_t)X,(uint8_t)(X+15),Y,Y+7);
 
-	   NUM=NUM-' ';//得到偏移后的值		   
-	   for(w=0;w<8;w++)
-	   {
-	 	   for(j=0;j<8;j++)
-	 	   {
-	 	  	 if((asc2_1608[NUM][w*2+1]&(0x01<<j))!=0)
-			 {
-			 	if(mode == 0)
+	num=num-(u8)(' ');//得到偏移后的值		   
+	for(w=0;w<8;w++)
+	{
+		for(j=0;j<8;j++)
+		{
+			if((asc2_1608[num][(w*2)+1]&(0x01<<j))!=0)
+			{
+				if(mode == 0)
+				{
 					LCD_CtrlWrite_Color(color); //快速写
+				}
 				else
-	 	        	LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
-				
-			 }
-	 	     else
-	 	   	    {
-			 		if(mode == 0)
-	 	   	    	LCD_CtrlWrite_Color(Back_Color);
-			    }
-			 F_x++;				
-	 	   } 
-		   for(j=0;j<8;j++)
-	 	   {
-	 	  	 if((asc2_1608[NUM][w*2]&(0x01<<j))!=0)
-	 	      {
-			 	if(mode == 0)
+				{
+					LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
+				}
+			}
+			else
+			{
+				if(mode == 0)
+				{
+					LCD_CtrlWrite_Color(Back_Color);
+				}
+			}
+			F_x++;				
+		} 
+		
+		for(j=0;j<8;j++)
+		{
+			if((asc2_1608[num][w*2]&(0x01<<j))!=0)
+			{
+				if(mode == 0)
+				{
 					LCD_CtrlWrite_Color(color); //快速写
+				}
 				else
-	 	        	LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
-				
-			 }
-	 	     else
-	 	   	    {
-			 		if(mode == 0)
-	 	   	    	LCD_CtrlWrite_Color(Back_Color);
-			    }
-			 F_x++;				
-	 	   }
-		   F_y++; 
-		   F_x = X; 
-	 	} 
+				{
+					LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
+				}
+			}
+			else
+			{
+				if(mode == 0)
+				{
+					LCD_CtrlWrite_Color(Back_Color);
+				}	
+			}
+			F_x++;				
+		}
+		F_y++; 
+		F_x = X; 
+	} 
 }
 
 //*	 画点的方式 可以显示叠加方式
@@ -463,76 +478,90 @@ static void LCD_DrawPoint(u16 x,u16 y,uint8_t color)
 //NUM字符
 //mode:叠加方式(1)不写背景色  还是非叠加方式(0)写背景色 速度快，画框方式
 //color字符的颜色 
- void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
+void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 {
-	   uint16_t  w,j;
-	   uint16_t F_x,F_y; 	   
+	uint16_t  w,j;
+	uint16_t F_x,F_y; 	 
+	u8 num=NUM;
 
-	   F_x = X;
-	   F_y = Y;
+	F_x = X;
+	F_y = Y;
 
-	   LCD_CrtlWrite_Area(X,X+23,Y,Y+11);
+	LCD_CrtlWrite_Area((uint8_t)X,(uint8_t)(X+23),Y,Y+11);
 
-	   NUM=NUM-' ';//得到偏移后的值		   
-	   for(w=0;w<12;w++)
-	   {
-	   	   for(j=0;j<8;j++)
-	 	   {
-	 	  	 if((asc2_2412[NUM][w*3+2]&(0x01<<j))!=0)
-			 {
-			 	if(mode == 0)
+	num=num-(u8)(' ');//得到偏移后的值		   
+	for(w=0;w<12;w++)
+	{
+		for(j=0;j<8;j++)
+		{
+			if((asc2_2412[num][(w*3)+2]&(0x01<<j))!=0)
+			{
+				if(mode == 0)
+				{
 					LCD_CtrlWrite_Color(color); //快速写
+				}
 				else
-	 	        	LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
-				
-			 }
-	 	     else
-	 	   	    {
-			 		if(mode == 0)
-	 	   	    	LCD_CtrlWrite_Color(Back_Color);
-			    }
-				F_x++;	
-				
-	 	   } 
-	 	   for(j=0;j<8;j++)
-	 	   {
-	 	  	 if((asc2_2412[NUM][w*3+1]&(0x01<<j))!=0)
-	 	     {
-			 	if(mode == 0)
+				{
+					LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
+				}
+			}
+			else
+			{
+				if(mode == 0)
+				{
+					LCD_CtrlWrite_Color(Back_Color);
+				}
+			}
+			F_x++;	
+		} 
+		
+		for(j=0;j<8;j++)
+		{
+			if((asc2_2412[num][(w*3)+1]&(0x01<<j))!=0)
+			{
+				if(mode == 0)
+				{
 					LCD_CtrlWrite_Color(color); //快速写
+				}
 				else
-	 	        	LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
-				
-			 }
-	 	     else
-	 	   	    {
-			 		if(mode == 0)
-	 	   	    	LCD_CtrlWrite_Color(Back_Color);
-			    }
-				F_x++;
-				
-	 	   } 
-		   for(j=0;j<8;j++)
-	 	   {
-	 	  	 if((asc2_2412[NUM][w*3]&(0x01<<j))!=0)
-	 	     {
-			 	if(mode == 0)
+				{
+					LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
+				}
+			}
+			else
+			{
+				if(mode == 0)
+				{
+					LCD_CtrlWrite_Color(Back_Color);
+				}
+			}
+			F_x++;
+		} 
+		for(j=0;j<8;j++)
+		{
+			if((asc2_2412[num][w*3]&(0x01<<j))!=0)
+			{
+				if(mode == 0)
+				{
 					LCD_CtrlWrite_Color(color); //快速写
+				}
 				else
-	 	        	LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
-				
-			 }
-	 	     else
-	 	   	    {
-			 		if(mode == 0)
-	 	   	    	LCD_CtrlWrite_Color(Back_Color);
-			    }
-			   F_x++;
-
-	 	   }  
-		   F_y++; 
-		   F_x = X; 
-	 	} 
+				{
+					LCD_DrawPoint(F_x,F_y,color);//开始写入GRAM
+				}
+			}
+			else
+			{
+				if(mode == 0)
+				{
+					LCD_CtrlWrite_Color(Back_Color);
+				}	
+			}
+			F_x++;
+		}  
+		F_y++; 
+		F_x = X; 
+	} 
 }
 
 //在指定位置显示一个字符
@@ -546,9 +575,17 @@ void LCD_ShowChar(u16 x,u16 y,u8 size,u8 num,u8 mode,u8 color)
     
 	//设置窗口
 	if(size == 16)
-        	DISP_FNT8X16(x,y,num,mode,color);
-		else if(size == 24)
-        	DISP_FNT12X24(x,y,num,mode,color); 
+	{
+		DISP_FNT8X16(x,y,num,mode,color);
+	}	
+	else if(size == 24)
+	{
+		DISP_FNT12X24(x,y,num,mode,color);
+	}
+	else
+	{
+		//do nothing
+	}
 }  
 
 
@@ -559,26 +596,53 @@ void LCD_ShowChar(u16 x,u16 y,u8 size,u8 num,u8 mode,u8 color)
 //*p:字符串起始地址
 //mode:叠加方式(1)不写背景色  还是非叠加方式(0)写背景色
 //字符的颜色
-void LCD_ShowString(u16 x, u16 y,u16 height_x,u16 width_y, u8 *p,u8 mode,u8 color)
+void LCD_ShowString(u16 x, u16 y,u16 height_x,u16 width_y,const u8 *p,u8 mode,u8 color)
 { 
 	uint8_t size;	        
 	uint8_t y0;
-	y0=y;
+	u16 Y1;
+	u16 X1;
+	u16 WIDTH_Y;
+	
+	y0=(uint8_t)y;
+	
+	Y1=y;
+	X1=x;
+	WIDTH_Y=width_y;
+	
 	//size = 16;
 
 	//LCD_CrtlWrite_Area(0,239,0,319);
-	size = height_x;  //字号或高度
-	height_x+=x; //
-	width_y+=y;//总宽度
-    while((*p<='~')&&(*p>=' '))//判断是不是非法字符!
-    {       
-        if(y>=width_y){y=y0;y+=size;}
-        //if(x>=height_x)break;//退出
-		LCD_ShowChar(x,y,size,*p,mode,color);
+	size = (uint8_t)height_x;  //字号或高度
 
-        y+=size/2;	
-        p++;
-    }  
+	WIDTH_Y+=Y1;//总宽度
+	while((*p<='~')&&(*p>=' '))//判断是不是非法字符!
+	{       
+		if(Y1>=WIDTH_Y){Y1=y0;Y1+=size;}
+		//if(x>=height_x)break;//退出
+		LCD_ShowChar(X1,Y1,size,*p,mode,color);
+
+		Y1+=size/2;	
+		p++;
+	} 
+//	uint8_t size;	        
+//	uint8_t y0;
+//	y0=y;
+//	//size = 16;
+
+//	//LCD_CrtlWrite_Area(0,239,0,319);
+//	size = height_x;  //字号或高度
+//	height_x+=x; //
+//	width_y+=y;//总宽度
+//	while((*p<='~')&&(*p>=' '))//判断是不是非法字符!
+//	{       
+//		if(y>=width_y){y=y0;y+=size;}
+//		//if(x>=height_x)break;//退出
+//		LCD_ShowChar(x,y,size,*p,mode,color);
+
+//		y+=size/2;	
+//		p++;
+//	} 	
 }
 
 //m^n函数
@@ -586,7 +650,10 @@ void LCD_ShowString(u16 x, u16 y,u16 height_x,u16 width_y, u8 *p,u8 mode,u8 colo
 static u32 LCD_Pow(u8 m,u8 n)
 {
 	u32 result=1;	 
-	while(n--)result*=m;    
+	while(n-->(u8)0)
+	{
+		result*=m;
+	}    
 	return result;
 }		
 
@@ -608,16 +675,26 @@ void LCD_ShowxNum(u16 x,u16 y,u8 size,u8 len,u32 num,u8 mode,u8 color)
 	for(t=0;t<len;t++)
 	{
 		temp=(num/LCD_Pow(10,len-t-1))%10;	 //求需要显示的最高位
-		if(enshow==0&&t<(len-1))// 如果最高位为0   需要显示的长度
+		if((enshow==0)&&(t<(len-1)))// 如果最高位为0   需要显示的长度
 		{
 			if(temp==0)
 			{
-				if(mode&0X80)LCD_ShowChar(x,y+(size/2)*t,size,'0',mode&0X01,color);  //为0也要显示
-				else LCD_ShowChar(x,y+(size/2)*t,size,' ',mode&0X01,color);  //为0不显示
- 				continue;
-			}else enshow=1; //最高位不是0或	 		 	 
+				if((mode&(u8)0X80)!=(u8)0)
+				{
+					LCD_ShowChar(x,y+((size/2)*t),size,'0',mode&0X01,color);  //为0也要显示
+				}
+				else
+				{
+					LCD_ShowChar(x,y+((size/2)*t),size,' ',mode&0X01,color);  //为0不显示
+				}					
+				continue;
+			}
+			else
+			{
+				enshow=1; //最高位不是0或	
+			}				 		 	 
 		}
-	 	LCD_ShowChar(x,y+(size/2)*t,size,temp+'0',mode&0X01,color); 
+	 	LCD_ShowChar(x,y+((size/2)*t),size,temp+'0',mode&0X01,color); 
 	}
 } 
 
@@ -626,27 +703,30 @@ void LCD_ShowxNum(u16 x,u16 y,u8 size,u8 len,u32 num,u8 mode,u8 color)
 //r    :半径
 void Draw_Circle(u16 x0,u16 y0,u8 r,u8 color)
 {
-	int a,b;
-	int di;
+	u16 a,b;
+	u16 di;
 
 	a=0;b=r;	  
 	di=3-(r<<1);             //判断下个点位置的标志
 	while(a<=b)
 	{
 		LCD_DrawPoint(x0+a,y0-b,color);             //5
- 		LCD_DrawPoint(x0+b,y0-a,color);             //0           
+		LCD_DrawPoint(x0+b,y0-a,color);             //0           
 		LCD_DrawPoint(x0+b,y0+a,color);             //4               
 		LCD_DrawPoint(x0+a,y0+b,color);             //6 
 		LCD_DrawPoint(x0-a,y0+b,color);             //1       
- 		LCD_DrawPoint(x0-b,y0+a,color);             
+		LCD_DrawPoint(x0-b,y0+a,color);             
 		LCD_DrawPoint(x0-a,y0-b,color);             //2             
-  	LCD_DrawPoint(x0-b,y0-a,color);             //7     	         
+		LCD_DrawPoint(x0-b,y0-a,color);             //7     	         
 		a++;
 		//使用Bresenham算法画圆     
-		if(di<0)di +=4*a+6;	  
+		if(di<0)
+		{
+			di +=((4*a)+6);	
+		}  
 		else
 		{
-			di+=10+4*(a-b);   
+			di+=(10+(4*(a-b)));   
 			b--;
 		} 						    
 	}
@@ -654,17 +734,17 @@ void Draw_Circle(u16 x0,u16 y0,u8 r,u8 color)
 
 void Refresh_Work_Mode(void)
 {
-	  Back_Color=WHITE18;
-    if(Work_Mode==0)
-    {
-         Disp_WuChuang(POS_YWC_X,POS_YWC_Y,PURPLE18);
-    }else if(Work_Mode==1)
-    {
-         Disp_YouChuang(POS_YWC_X,POS_YWC_Y,PURPLE18);
-    }else//无简易模式
-    {
-           ;
-    }
+	Back_Color=WHITE18;
+	if(Work_Mode==0)
+	{
+		Disp_WuChuang(POS_YWC_X,POS_YWC_Y,PURPLE18);
+	}else if(Work_Mode==1)
+	{
+		Disp_YouChuang(POS_YWC_X,POS_YWC_Y,PURPLE18);
+	}else//无简易模式
+	{
+		//do nothing
+	}
 }
 
 
@@ -674,70 +754,74 @@ void Refresh_Work_Mode(void)
 //r    :半径
 void DrawWorkWindows(void)
 {
-    LCD_LIGHT_CLOSE;
-    //清除选择界面-----------------------------------------
-		Draw_Rectangle_Real(0,0,239,319,WHITE18);//清屏
-    Back_Color=WHITE18;
-    Disp_WuChuang(POS_Select_WC_X,POS_Select_WC_Y,WHITE18);
-    Disp_YouChuang(POS_Select_YC_X,POS_Select_YC_Y,WHITE18);
-    Draw_Rectangle(75,182,162,262,WHITE18,4);//
-    Draw_Rectangle(75,58,162,136,WHITE18,4);
-    Refresh_Work_Mode();
-    Back_Color=WHITE18;
-    DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
-    DISP_ICO_40X40(POS_ICO_SHIDU_X,POS_ICO_TEMP_Y,0,BLACK18);
-    DISP_ICO_40X40(POS_ICO_TIME_X,POS_ICO_TEMP_Y,1,BLACK18);//显示时间
-    //画点
-    Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,BLACK18); //画点
-    //显示单位
-    DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
-  
-    //显示湿度单位
-    DISP_ICO_32X40(POS_RT_RH_X,POS_RT_RH_Y+19*2,ICO_PER,BLACK18);  
-		if(data_flash.Language == Lan_English)//英语
-		{
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,0,BLACK18);
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,1,BLACK18);
-		}
-		else if(data_flash.Language == Lan_Portuguese)//葡萄牙语
-		{
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,2,BLACK18);
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,0,BLACK18);
-		}
-		else if(data_flash.Language == Lan_Spanish)//西班牙语
-		{
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,1,BLACK18);
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,0,BLACK18);
-		}
-		else if(data_flash.Language == Lan_French)//法语
-		{
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,1,BLACK18);
-			DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,0,BLACK18);
-		}		
+	LCD_LIGHT_CLOSE;
+	//清除选择界面-----------------------------------------
+	Draw_Rectangle_Real(0,0,239,319,WHITE18);//清屏
+	Back_Color=WHITE18;
+	Disp_WuChuang(POS_Select_WC_X,POS_Select_WC_Y,WHITE18);
+	Disp_YouChuang(POS_Select_YC_X,POS_Select_YC_Y,WHITE18);
+	Draw_Rectangle(75,182,162,262,WHITE18,4);//
+	Draw_Rectangle(75,58,162,136,WHITE18,4);
+	Refresh_Work_Mode();
+	Back_Color=WHITE18;
+	DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
+	DISP_ICO_40X40(POS_ICO_SHIDU_X,POS_ICO_TEMP_Y,0,BLACK18);
+	DISP_ICO_40X40(POS_ICO_TIME_X,POS_ICO_TEMP_Y,1,BLACK18);//显示时间
+	//画点
+	Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,BLACK18); //画点
+	//显示单位
+	DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+
+	//显示湿度单位
+	DISP_ICO_32X40(POS_RT_RH_X,POS_RT_RH_Y+(19*2),ICO_PER,BLACK18);  
+	if(data_flash.Language == Lan_English)//英语
+	{
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,0,BLACK18);
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,1,BLACK18);
+	}
+	else if(data_flash.Language == Lan_Portuguese)//葡萄牙语
+	{
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,2,BLACK18);
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,0,BLACK18);
+	}
+	else if(data_flash.Language == Lan_Spanish)//西班牙语
+	{
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,1,BLACK18);
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,0,BLACK18);
+	}
+	else if(data_flash.Language == Lan_French)//法语
+	{
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+70,1,BLACK18);
+		DISP_RH14X24(POS_RT_RH_X,POS_RT_RH_Y+84,0,BLACK18);
+	}	
+	else
+	{
+		//do nothing
+	}
      
-    DISP_DHM(POS_DMH_X,POS_DMH_Y,0,BLACK18);
-    DISP_DHM(POS_DMH_X,POS_DMH_Y+25,1,BLACK18);
-    DISP_DHM(POS_DMH_X,POS_DMH_Y+25*2,2,BLACK18);   
-    //显示运行时间
+	DISP_DHM(POS_DMH_X,POS_DMH_Y,0,BLACK18);
+	DISP_DHM(POS_DMH_X,POS_DMH_Y+25,1,BLACK18);
+	DISP_DHM(POS_DMH_X,POS_DMH_Y+(25*2),2,BLACK18);   
+	//显示运行时间
 
-    Draw_Rectangle_Real(POS_ICO_TIME_X,POS_DMH_Y+18,POS_ICO_TIME_X+2,POS_DMH_Y+20,BLACK18);
-    Draw_Rectangle_Real(POS_ICO_TIME_X+10,POS_DMH_Y+18,POS_ICO_TIME_X+12,POS_DMH_Y+20,BLACK18);
+	Draw_Rectangle_Real(POS_ICO_TIME_X,POS_DMH_Y+18,POS_ICO_TIME_X+2,POS_DMH_Y+20,BLACK18);
+	Draw_Rectangle_Real(POS_ICO_TIME_X+10,POS_DMH_Y+18,POS_ICO_TIME_X+12,POS_DMH_Y+20,BLACK18);
 
-    Draw_Rectangle_Real(POS_ICO_TIME_X,POS_DMH_Y+43,POS_ICO_TIME_X+2,POS_DMH_Y+45,BLACK18);
-    Draw_Rectangle_Real(POS_ICO_TIME_X+10,POS_DMH_Y+43,POS_ICO_TIME_X+12,POS_DMH_Y+45,BLACK18);
-		
-		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y,2,BLACK18);
-    DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+12,0,BLACK18);
-	
-    Draw_Rectangle_Real(POS_SYSDATE_X,POS_SYSDATE_Y+48,POS_SYSDATE_X+2,POS_SYSDATE_Y+50,BLACK18);
+	Draw_Rectangle_Real(POS_ICO_TIME_X,POS_DMH_Y+43,POS_ICO_TIME_X+2,POS_DMH_Y+45,BLACK18);
+	Draw_Rectangle_Real(POS_ICO_TIME_X+10,POS_DMH_Y+43,POS_ICO_TIME_X+12,POS_DMH_Y+45,BLACK18);
 
-    Draw_Rectangle_Real(POS_SYSDATE_X,POS_SYSDATE_Y+76,POS_SYSDATE_X+2,POS_SYSDATE_Y+78,BLACK18);
+	DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y,2,BLACK18);
+	DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+12,0,BLACK18);
 
-    Draw_Rectangle_Real(POS_SYSTIME_X,POS_SYSTIME_Y+24,POS_SYSTIME_X+2,POS_SYSTIME_Y+26,BLACK18);
-    Draw_Rectangle_Real(POS_SYSTIME_X+10,POS_SYSTIME_Y+24,POS_SYSTIME_X+12,POS_SYSTIME_Y+26,BLACK18);
+	Draw_Rectangle_Real(POS_SYSDATE_X,POS_SYSDATE_Y+48,POS_SYSDATE_X+2,POS_SYSDATE_Y+50,BLACK18);
 
-    Draw_Rectangle_Real(POS_SYSTIME_X,POS_SYSTIME_Y+52,POS_SYSTIME_X+2,POS_SYSTIME_Y+54,BLACK18);
-    Draw_Rectangle_Real(POS_SYSTIME_X+10,POS_SYSTIME_Y+52,POS_SYSTIME_X+12,POS_SYSTIME_Y+54,BLACK18);     
+	Draw_Rectangle_Real(POS_SYSDATE_X,POS_SYSDATE_Y+76,POS_SYSDATE_X+2,POS_SYSDATE_Y+78,BLACK18);
+
+	Draw_Rectangle_Real(POS_SYSTIME_X,POS_SYSTIME_Y+24,POS_SYSTIME_X+2,POS_SYSTIME_Y+26,BLACK18);
+	Draw_Rectangle_Real(POS_SYSTIME_X+10,POS_SYSTIME_Y+24,POS_SYSTIME_X+12,POS_SYSTIME_Y+26,BLACK18);
+
+	Draw_Rectangle_Real(POS_SYSTIME_X,POS_SYSTIME_Y+52,POS_SYSTIME_X+2,POS_SYSTIME_Y+54,BLACK18);
+	Draw_Rectangle_Real(POS_SYSTIME_X+10,POS_SYSTIME_Y+52,POS_SYSTIME_X+12,POS_SYSTIME_Y+54,BLACK18);     
 } 
 
 //显示版本号
@@ -745,7 +829,7 @@ void DrawWorkWindows(void)
 void	LCD_Show_Verion(void)
 {
 	LCD_ShowString(60,20,16,200,"VHB15A",0,BLACK18);	//显示机种名
-	
+
 	LCD_ShowString(60,68,16,200,"---EN",0,BLACK18);	//显示版本语言		
 
 	LCD_ShowString(60,108,16,200,"---VM",0,BLACK18);	//显示客户 

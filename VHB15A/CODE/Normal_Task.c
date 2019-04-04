@@ -1,21 +1,21 @@
 #include "all.h"
 
 //2019.03.30
-sbit P20 = 0xA0^0;
-sbit P21 = 0xA0^1;
-sbit P22 = 0xA0^2;
-sbit P23 = 0xA0^3;
+sbit P20 = (uint8_t)0xA0^(uint8_t)0;
+sbit P21 = (uint8_t)0xA0^(uint8_t)1;
+sbit P22 = (uint8_t)0xA0^(uint8_t)2;
+sbit P23 = (uint8_t)0xA0^(uint8_t)3;
 
 WORK_STATUS Work_State = UI_STATE_POWER_OFF_MODE;//工作状态定义
 
 void ManageTask(void)//Task0:Task Manager ----20mS
 {
-    static unsigned char Manage_Tik_100mS_Cnt = 0;
-	  static unsigned char Manage_Tik_250mS_Cnt = 0;
-	  static unsigned char Manage_Tik_1000mS_Cnt = 0;		     
+    static uint8_t Manage_Tik_100mS_Cnt = 0;
+	  static uint8_t Manage_Tik_250mS_Cnt = 0;
+	  static uint8_t Manage_Tik_1000mS_Cnt = 0;		     
              
     WS_TaskState = ManageTIFG;
-    if(WS_TaskJudge(WS_TaskState))   
+    if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)   
     { 
         WS_DelTaskIfg(WS_TaskState); 
         { 				
@@ -71,7 +71,11 @@ void ManageTask(void)//Task0:Task Manager ----20mS
 							else if(Work_State == UI_STATE_SetTime_MODE)
 							{
 								WS_SetTaskIfg(HmiSetTimeTIFG);//时间设定
-							}			
+							}
+							else
+							{
+								//do nothing
+							}							
 							
 							if((Work_State != UI_STATE_POWER_OFF_MODE)
 								&&(Work_State != UI_STATE_POST_MODE)
@@ -81,6 +85,7 @@ void ManageTask(void)//Task0:Task Manager ----20mS
 							{
 								WS_SetTaskIfg(HmiScreenSaverModeTIFG);//屏保模式 
 							}
+
 							
 							if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
 								||(Work_State == UI_STATE_SetTempPatient_MODE)
@@ -152,44 +157,55 @@ void KeyScanTask(void) //1
 {
 		BitStatus bit_status;
     WS_TaskState = KeyScanTIFG;
-    if(WS_TaskJudge(WS_TaskState))
+    if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
     {   
         WS_DelTaskIfg(WS_TaskState);
         {
 					bit_status = KEY_LEFT_UP_IN;//UP
-          if(bit_status == RESET)
+          if((INT)bit_status == (INT)RESET)
           {
             KeyToFuncVal = KEY_STATE_PressValue;     
           }
           else
-            KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					{
+						KeyToFuncVal = KEY_STATE_ReleaseValue;
+					}
           Key_Multifun(Key_UP_Element,&Key_UP);
 					
 					bit_status = KEY_LEFT_DOWN_IN;//DOWN
-          if(bit_status == RESET)
+          if((INT)bit_status == (INT)RESET)
           {
             KeyToFuncVal = KEY_STATE_PressValue;     
           }
           else
-            KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					{
+						KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					}
+            
           Key_Multifun(Key_Down_Element,&Key_Down);
 					
 					bit_status = KEY_RIGHT_UP_IN;//OK
-          if(bit_status == RESET)
+          if((INT)bit_status == (INT)RESET)
           {
             KeyToFuncVal = KEY_STATE_PressValue;     
           }
           else
-            KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					{
+						KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					}
+            
           Key_Multifun(Key_OK_Element,&Key_OK);
 					
 					bit_status = KEY_RIGHT_DOWN_IN;//MUTE
-          if(bit_status == RESET)
+          if((INT)bit_status == (INT)RESET)
           {
             KeyToFuncVal = KEY_STATE_PressValue;				
           }
           else
-            KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					{
+						KeyToFuncVal = KEY_STATE_ReleaseValue; 
+					}
+            
           Key_Multifun(Key_Mute_Element,&Key_Mute);					
         }
     }
@@ -198,7 +214,7 @@ void KeyScanTask(void) //1
 void HmiServiceModeTask(void)//2
 {
 	WS_TaskState = HmiServiceModeTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -210,7 +226,7 @@ void HmiServiceModeTask(void)//2
 void HmiPostTask(void)//3
 {
 	WS_TaskState = HmiPostTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -222,7 +238,7 @@ void HmiPostTask(void)//3
 void HmiFactoryDefaultSelTask(void)//4
 {
 	WS_TaskState = HmiFactoryDefaultSelTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -235,7 +251,7 @@ void HmiFactoryDefaultSelTask(void)//4
 void HmiNon_InvasiveSelTask(void)//5
 {
 	WS_TaskState = HmiNon_InvasiveSelTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -247,7 +263,7 @@ void HmiNon_InvasiveSelTask(void)//5
 void HmiRunningTask(void)//6
 {
 	WS_TaskState = HmiRunningTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -259,7 +275,7 @@ void HmiRunningTask(void)//6
 void HmiSetTempPatientTask(void)//7
 {
 	WS_TaskState = HmiSetTempPatientTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -271,7 +287,7 @@ void HmiSetTempPatientTask(void)//7
 void HmiSetTempChamberTask(void)//8
 {
 	WS_TaskState = HmiSetTempChamberTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -283,7 +299,7 @@ void HmiSetTempChamberTask(void)//8
 void HmiSetInExpTask(void)//9
 {
 	WS_TaskState = HmiSetInExpTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -295,7 +311,7 @@ void HmiSetInExpTask(void)//9
 void HmiSetTimeTask(void)//10
 {
 	WS_TaskState = HmiSetTimeTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -307,7 +323,7 @@ void HmiSetTimeTask(void)//10
 void HmiScreenSaverModeTask(void)//11
 {
 	WS_TaskState = HmiScreenSaverModeTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -319,7 +335,7 @@ void HmiScreenSaverModeTask(void)//11
 void GetTemp_HpChamberTask(void)//12
 {
 	WS_TaskState = GetTemp_HpChamberTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -331,7 +347,7 @@ void GetTemp_HpChamberTask(void)//12
 void GetTempHumidity_PatientTask(void)//13
 {
 	WS_TaskState = GetTempHumidity_PatientTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -343,7 +359,7 @@ void GetTempHumidity_PatientTask(void)//13
 void RefreshTempHumidyTask(void)//14
 {
 	WS_TaskState = RefreshTempHumidyTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -355,7 +371,7 @@ void RefreshTempHumidyTask(void)//14
 void RefreshRunTimeTask(void)//15
 {
 	WS_TaskState = RefreshRunTimeTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -367,7 +383,7 @@ void RefreshRunTimeTask(void)//15
 void RefreshRTCTimeTask(void)//16
 {
 	WS_TaskState = RefreshRTCTimeTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -384,7 +400,7 @@ void RefreshRTCTimeTask(void)//16
 void HeaterWireControlTask(void)//17
 {
 	WS_TaskState = HeaterPlateWireControlTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -396,7 +412,7 @@ void HeaterWireControlTask(void)//17
 void LowPowerModeTask(void)//18
 {
 	WS_TaskState = LowPowerModeTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -408,7 +424,7 @@ void LowPowerModeTask(void)//18
 void HeaterWireModeDetTask(void)//19
 {
 	WS_TaskState = HeaterWireModeDetTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -420,7 +436,7 @@ void HeaterWireModeDetTask(void)//19
 void AlarmErrorTask(void)//20
 {
 	WS_TaskState = AlarmErrorTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -432,7 +448,7 @@ void AlarmErrorTask(void)//20
 void LowTempDet1STask(void)//21
 {
 	WS_TaskState = LowTempDet1STIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -444,7 +460,7 @@ void LowTempDet1STask(void)//21
 void SaveDateToFlashTask(void)//22
 {
 	WS_TaskState = SaveDateToFlashTIFG;
-	if(WS_TaskJudge(WS_TaskState))
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
@@ -456,7 +472,7 @@ void SaveDateToFlashTask(void)//22
 void UartRecTask(void)//23
 {
     WS_TaskState = UartRecTIFG;
-    if(WS_TaskJudge(WS_TaskState))
+    if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
     {   
         WS_DelTaskIfg(WS_TaskState);         
         UART_RecData_Func();   

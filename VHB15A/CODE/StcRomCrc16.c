@@ -1,4 +1,4 @@
-#include "all.h"
+//#include "all.h"
 
 //static unsigned int crc_16(unsigned int crc16_init,unsigned char *Cdata, unsigned int len);
 

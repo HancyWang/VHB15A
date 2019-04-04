@@ -58,7 +58,8 @@ void EUSART_Initialize(void)
 uint8_t EUSART_Read(void)
 {
     uint8_t readValue  = 0; 
-    readValue = eusartRxBuffer[eusartRxTail++];//读出计数
+		eusartRxTail++;
+    readValue = eusartRxBuffer[eusartRxTail];//读出计数
     if(sizeof(eusartRxBuffer) <= eusartRxTail) //读出从头计数
     {
         eusartRxTail = 0;
@@ -68,7 +69,7 @@ uint8_t EUSART_Read(void)
 }
 
 //发送一个字节到串口
-static void send_char_com(unsigned char  Send_ch)
+static void send_char_com(uint8_t  Send_ch)
 {
     ACC=Send_ch;
     SBUF=ACC;	
@@ -78,17 +79,17 @@ static void send_char_com(unsigned char  Send_ch)
 //写一个字节到串口发送缓冲区
 void EUSART_Write(uint8_t txData)
 {
-	while(Send_uart_busy);
+	while(Send_uart_busy!=(uint8_t)0){};
 	send_char_com(txData);
 }
 
 //发送cnt个字符到发送缓冲区
-void EUSART_Write_Str(const unsigned char *stra,unsigned char cnt)//发送字符串或数组到串口
+void EUSART_Write_Str(const uint8_t *stra,uint8_t cnt)//发送字符串或数组到串口
 {
-    unsigned char i;    
+    uint8_t i;    
     for(i=0;i<cnt;i++)
     {
-      EUSART_Write(*(stra+i));  
+      EUSART_Write(stra[i]);  
     }		
 }
 
@@ -101,8 +102,8 @@ void EUSART_Transmit_ISR(void)
 //串口中断接收服务程序
 void EUSART_Receive_ISR(void)
 {      
-
-    eusartRxBuffer[eusartRxHead++] = SBUF;
+		eusartRxHead++;
+    eusartRxBuffer[eusartRxHead] = SBUF;
 
     if(sizeof(eusartRxBuffer) <= eusartRxHead)//从头计数
     {

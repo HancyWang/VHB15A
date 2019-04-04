@@ -1,10 +1,15 @@
+2019-04-04 V2.0.5
+   with PC-LINT(MISA2014) 3300
 
-2019-01-20 V3.0.0
-	Working_Normal重置条件
-	1，出气口温度传感器故障
-	2，患者端传感器故障
-	3，湿化罐未安装 
-	4，回路发热丝不匹配
+2019-04-01 V2.0.4
+
+    with PC-LINT(MISA2014)  4700 
+
+
+2019-03-20 V2.0.3A
+
+    modifying software function,variables 
+ChangeRecord
 	
 2018-07-10 V2.0.3
 		   1, CQK_Temp变量定义为long，否则可能会溢出。		 

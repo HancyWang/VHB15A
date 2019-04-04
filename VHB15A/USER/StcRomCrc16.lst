@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   STCROMCRC16                                                       03/30/2019 11:40:34 PAGE 1   
+C51 COMPILER V9.52.0.0   STCROMCRC16                                                       04/04/2019 14:50:16 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE STCROMCRC16
@@ -10,7 +10,7 @@ COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\StcRomCrc16.c LARGE OBJECT
 
 line level    source
 
-   1          #include "all.h"
+   1          //#include "all.h"
    2          
    3          //static unsigned int crc_16(unsigned int crc16_init,unsigned char *Cdata, unsigned int len);
    4          
@@ -62,7 +62,7 @@ line level    source
   50          //unsigned int Stc_Rom_CheckSum_Result = 0;//CheckSum计算的结果
   51          //此函数放在初始化IO之后，以最大限度节约MCU时间
   52          //void STC_ROM_CheckSum_Calc_Fun(void)
-C51 COMPILER V9.52.0.0   STCROMCRC16                                                       03/30/2019 11:40:34 PAGE 2   
+C51 COMPILER V9.52.0.0   STCROMCRC16                                                       04/04/2019 14:50:16 PAGE 2   
 
   53          //{
   54          //  unsigned int ROM_Add;//

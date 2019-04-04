@@ -19,6 +19,7 @@
 #ifndef u16_t
 typedef unsigned int u16_t;
 #endif
+
 void delay_us(u16_t t);
 
 /// @brief delay_ms function

@@ -1,16 +1,17 @@
 #include "Sound_Type.h"
 #include "all.h"
 
-static unsigned char Sound_En_Cnt = 0;
-static unsigned int SoundPauseCnt = 0;
+static uint8_t Sound_En_Cnt = 0;
+static uint16_t SoundPauseCnt = 0;
 
 //2019.03.30
-sbit P43 = 0xC0^3;
+sbit P43 = (uint8_t)0xC0^(uint8_t)3;
 
 void Sound_Short(void)//哔短响一声
 {	
-	if(AlarmInfoIndex)//当前是报警状态,无声音
+	if(AlarmInfoIndex!=(uint8_t)0)//当前是报警状态,无声音
 	{
+		//do nothing
 	}
 	else
 	{
@@ -30,7 +31,7 @@ void Sound_Alarm_Pause_Disable(void)//声音暂停取消
 
 void Sound_Type_Drive(void)//放入定时中断
 {
-	if(AlarmInfoIndex)//当前是报警状态
+	if(AlarmInfoIndex!=(uint8_t)0)//当前是报警状态
 	{
 		if(SoundPauseCnt == 0)//声音暂停取消
 		{
@@ -45,7 +46,7 @@ void Sound_Type_Drive(void)//放入定时中断
 	}
 	else//非报警状态
 	{
-		if(Sound_En_Cnt)
+		if(Sound_En_Cnt!=(uint8_t)0)
 		{
 			Buzzer_Port=1;
 			Sound_En_Cnt--;
@@ -56,3 +57,5 @@ void Sound_Type_Drive(void)//放入定时中断
 		}
 	}
 }
+
+

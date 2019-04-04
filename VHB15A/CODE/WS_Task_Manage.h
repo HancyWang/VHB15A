@@ -7,7 +7,7 @@
 
 #ifndef __TASK__MANAGE__
 #define __TASK__MANAGE__
-
+#include "data_type.h"
 //******************************************************************************
 //Maximum number of tasks 确定最大任务数量"TASK_32","TASK_16","TASK_8"
 //******************************************************************************
@@ -20,16 +20,16 @@
 #ifdef  TASK_32
 #define TASK_32
 
-extern unsigned long int WS_TaskIfg;
-extern const unsigned long int WS_TaskMap[];
+extern uint32_t WS_TaskIfg;
+extern const uint32_t WS_TaskMap[32];
 
 #endif
 
 #ifdef  TASK_16
 #define TASK_16
 
-extern unsigned short int WS_TaskIfg;
-extern const unsigned short int WS_TaskMap[];
+extern u16s_t WS_TaskIfg;
+extern const u16s_t WS_TaskMap[16];
 
 #endif
 
@@ -38,18 +38,18 @@ extern const unsigned short int WS_TaskMap[];
 #define TASK_8
 
 extern uint8_t WS_TaskIfg;
-extern  unsigned char const WS_TaskMap[];
+extern  uint8_t const WS_TaskMap[8];
 
 #endif
 
-extern unsigned char WS_TaskState;
+extern uint8_t WS_TaskState;
 
 //任务在就绪表中就绪操作
-void WS_SetTaskIfg(unsigned char Setprio);
+void WS_SetTaskIfg(uint8_t Setprio);
 //任务在就绪表中删除操作
-void WS_DelTaskIfg(unsigned char DelPrio);
+void WS_DelTaskIfg(uint8_t DelPrio);
 //任务判断是否就绪操作
-unsigned char WS_TaskJudge(unsigned char AllPrio);
+uint8_t WS_TaskJudge(uint8_t AllPrio);
 //自动Task时标
 //void WS_TaskTik(void);
 

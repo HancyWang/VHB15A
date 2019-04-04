@@ -10,7 +10,7 @@ void main(void)
 	Main_Init();//Initial variables
   HmiEnterToWorkStateFunc(Work_State);//Enter POST or service mode 
 
-	while(1)
+	while(1>0)
 	{
 		WDT_CONTR = 0x3F; //Clear WatchDog,4.55S	
 		ManageTask(); //0
@@ -39,3 +39,4 @@ void main(void)
 		UartRecTask();//23
 	}//end while=============================
 }
+

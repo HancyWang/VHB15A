@@ -7,40 +7,40 @@ sbit P22 = 0xA0^2;
 sbit P23 = 0xA0^3;
 sbit P40 = 0xC0^0;
 
-static unsigned char Tik_POST_Tick_100mS = 0;//ÔËÐÐÄ£Ê½µÄÊ±±ê
-static unsigned char Tik_HmiFac_Tick_100mS_10S = 0;//10SÄÚ²»ÏìÓ¦ÔòÉÁË¸·ÅÈëÇ°Ì¨ÈÎÎñ
-static unsigned char OK_not_Pressed_flag = 0;//OK¼üÃ»ÓÐ±»°´ÏÂ±êÖ¾£¬10SºóÆô¶¯´Ë±êÖ¾
-static unsigned char HmiFac_Mode_Changed = 1;//Ä£Ê½±»¸Ä±ä
-//static unsigned char HmiLan_Sel_Changed = 1;//Ä£Ê½±»¸Ä±ä
-static unsigned char Tik_HmiNon_InvasiveSel_Tick_100mS = 0;//ÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæµÄÊ±±ê
-static unsigned int  Tik_ScreenSaver_Tick_100mS = 0;
+static uint8_t Tik_POST_Tick_100mS = 0;//ÔËÐÐÄ£Ê½µÄÊ±±ê
+static uint8_t Tik_HmiFac_Tick_100mS_10S = 0;//10SÄÚ²»ÏìÓ¦ÔòÉÁË¸·ÅÈëÇ°Ì¨ÈÎÎñ
+static uint8_t OK_not_Pressed_flag = 0;//OK¼üÃ»ÓÐ±»°´ÏÂ±êÖ¾£¬10SºóÆô¶¯´Ë±êÖ¾
+static uint8_t HmiFac_Mode_Changed = 1;//Ä£Ê½±»¸Ä±ä
+//static uint8_t HmiLan_Sel_Changed = 1;//Ä£Ê½±»¸Ä±ä
+static uint8_t Tik_HmiNon_InvasiveSel_Tick_100mS = 0;//ÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæµÄÊ±±ê
+static uint16_t  Tik_ScreenSaver_Tick_100mS = 0;
 
-static unsigned  int   Remeber_Temp_Value;//¼ÇÒäÉè¶¨µÄÊýÖµ
+static uint16_t   Remeber_Temp_Value;//¼ÇÒäÉè¶¨µÄÊýÖµ
 
-static void Display_SET_Temp(unsigned int Temp);
+static void Display_SET_Temp(uint16_t Temp);
 static void EnterSetTime(void);//½øÈëÊ±¼äÉè¶¨
 static void EnterSetInExp(void);//½øÈëInExpÉè¶¨
 static void Date_Is_Correct(void);//ÈÕÆÚÐ£Õý
-static void Display_In_Exp_Ratio(unsigned char Dis,unsigned char Dp_en);//ÏÔÊ¾In/Exp 
+static void Display_In_Exp_Ratio(uint8_t Dis,uint8_t Dp_en);//ÏÔÊ¾In/Exp 
 
-static void Display_In_Exp_Ratio(unsigned char Dis,unsigned char Dp_en)//ÏÔÊ¾In/Exp  
+static void Display_In_Exp_Ratio(uint8_t Dis,uint8_t Dp_en)//ÏÔÊ¾In/Exp  
 {
-	if(Dp_en)
+	if(Dp_en!=(uint8_t)0)
 	{
-	  LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);		
+		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);		
 
 		show_str[0]='1';
 		show_str[1]=':';
 		show_str[2]='1';
 		if(Dis <= 1)  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
 		{
-		show_str[3]=' ';
-		show_str[4]=' ';
+			show_str[3]=' ';
+			show_str[4]=' ';
 		}
 		else
 		{
-		show_str[3]='.';
-		show_str[4]='0' + Dis-1;
+			show_str[3]='.';
+			show_str[4]='0' + Dis-1;
 		}
 		show_str[5] = '\0';
 		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+180,16,200,show_str,0,BLACK18); 
@@ -53,64 +53,68 @@ static void Display_In_Exp_Ratio(unsigned char Dis,unsigned char Dp_en)//ÏÔÊ¾In/
 	
 }
 
-void DisPlayTime(unsigned char TempTime[7],unsigned char TimeKind)//ÏÔÊ¾Ê±¼ä
+void DisPlayTime(const uint8_t TempTime[7],uint8_t TimeKind)//ÏÔÊ¾Ê±¼ä
 {
-		unsigned char i;
-	  unsigned char color;
-//2-7//Äê/ÔÂ/ÈÕ/Ê±/·Ö/Ãë
+	uint8_t i;
+	uint8_t color;
+	//2-7//Äê/ÔÂ/ÈÕ/Ê±/·Ö/Ãë
 	
-	  color = BLACK18;
-	  if(TimeKind == 7)
-		{	//ÏÔÊ¾Ãë-------------------------------------------------	   
-			 i=(TempTime[0]&0xF)%10;
-			 DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+68,i,BLACK18);	 
-			 i=(TempTime[0]>>4)& 0x7;
-			 DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+56,i,color);
-		}
-		else if(TimeKind == 6)
-		{ //ÏÔÊ¾·Ö========------------------------------------------	   
-			 i=(TempTime[1]&0xF)%10;
-			 DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+40,i,color);
-			 i=(TempTime[1]>>4) & 0x7;
-			 DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+28,i,color);
-		 }
-		 else if(TimeKind == 5)
-		 { //ÏÔÊ¾Ê±,²ÉÓÃ24Ð¡ÖÆ=========================== 		  
-			 DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y,TempTime[2]>>4,color);//BCDÂë
-			 DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+12,TempTime[2]&0x0f,color);
-		 }
-		 else if(TimeKind == 4)	 
-		 {//ÏÔÊ¾ÈÕ
-			 i=(TempTime[3]&0xF)%10;
-			 DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+92,i,color);
-			 i=(TempTime[3]>>4)& 0x03;
-			 DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+80,i,color);	 
-		 }
-		 else if(TimeKind == 3)	 	   
-		 {//ÏÔÊ¾ÔÂ
-			 i=(TempTime[4]&0xF)%10;
-				DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+64,i,color);
-			 i=TempTime[4]>>4& 0x1;
-				DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+52,i,color);
-		 }
-		 else if(TimeKind == 2)
-		 {//ÏÔÊ¾Äê	 
-			 i=(TempTime[6]&0xF)%10;
-			 DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+36,i,color);
-			 i=(TempTime[6]>>4)%10;
-			 DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+24,i,color);
-		 }	
+	color = BLACK18;
+	if(TimeKind == 7)
+	{	//ÏÔÊ¾Ãë-------------------------------------------------	   
+		i=(TempTime[0]&0xF)%10;
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+68,i,BLACK18);	 
+		i=(TempTime[0]>>4)& 0x7;
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+56,i,color);
+	}
+	else if(TimeKind == 6)
+	{ //ÏÔÊ¾·Ö========------------------------------------------	   
+		i=(TempTime[1]&0xF)%10;
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+40,i,color);
+		i=(TempTime[1]>>4) & 0x7;
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+28,i,color);
+	}
+	else if(TimeKind == 5)
+	{ //ÏÔÊ¾Ê±,²ÉÓÃ24Ð¡ÖÆ=========================== 		  
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y,TempTime[2]>>4,color);//BCDÂë
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+12,TempTime[2]&0x0f,color);
+	}
+	else if(TimeKind == 4)	 
+	{//ÏÔÊ¾ÈÕ
+		i=(TempTime[3]&0xF)%10;
+		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+92,i,color);
+		i=(TempTime[3]>>4)& 0x03;
+		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+80,i,color);	 
+	}
+	else if(TimeKind == 3)	 	   
+	{//ÏÔÊ¾ÔÂ
+		i=(TempTime[4]&0xF)%10;
+		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+64,i,color);
+		i=(TempTime[4]>>4)& 0x1;
+		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+52,i,color);
+	}
+	else if(TimeKind == 2)
+	{//ÏÔÊ¾Äê	 
+		i=(TempTime[6]&0xF)%10;
+		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+36,i,color);
+		i=(TempTime[6]>>4)%10;
+		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+24,i,color);
+	}	
+	else
+	{
+		//do nothing
+	}
 }
 
 //ÏÔÊ¾Éè¶¨ÎÂ¶È
-static void Display_SET_Temp(unsigned int Temp)
+static void Display_SET_Temp(uint16_t Temp)
 {
-		 Back_Color=WHITE18;  	//ÏÔÊ¾Éè¶¨Öµ
-		   //ÎÂ¶ÈÍ¼±ê¿ªÊ¼ÉÁË¸,½øÈëÎÂ¶ÈÉè¶¨
-		 DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,Temp/100,BLACK18);  
-		 DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,Temp%100/10,BLACK18);   
-		 DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*2+5,Temp%10,BLACK18);
-		 Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,BLACK18); //»­µã //»­µã
+	Back_Color=WHITE18;  	//ÏÔÊ¾Éè¶¨Öµ
+	//ÎÂ¶ÈÍ¼±ê¿ªÊ¼ÉÁË¸,½øÈëÎÂ¶ÈÉè¶¨
+	DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(uint8_t)(Temp/100),BLACK18);  
+	DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,Temp%100/10,BLACK18);   
+	DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*2)+5,Temp%10,BLACK18);
+	Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,BLACK18); //»­µã //»­µã
 }
 
 
@@ -153,22 +157,29 @@ void	HmiEnterToWorkStateFunc(WORK_STATUS State)
 				
 				Back_Color=WHITE18;
 				{
-						strcpy(show_str,"Previous Settings");				
+					CHAR str_previousSetting[]="Previous Settings";
+					CHAR str_defaultSetting[]="Default Settings";
+					CHAR str_select[]="Select";
+					CHAR str_enter[]="Enter";
+					CHAR str_Patient39C[]="Patient:39 C  ";
+					CHAR str_chamber36C[]="Chamber:36 C  ";
+					
+					strcpy(show_str,str_previousSetting);				
 					LCD_ShowString(Load_User_Pre_Set_X,Load_User_Pre_Set_Y+14,24,280,show_str,0,BLUE18);	
-						strcpy(show_str,"Default Settings");				
+					strcpy(show_str,str_defaultSetting);				
 					LCD_ShowString(Load_Fac_Set_X,Load_Fac_Set_Y+14,24,280,show_str,0,BLUE18);	
-						strcpy(show_str,"Select");				
+					strcpy(show_str,str_select);				
 					LCD_ShowString(20,125,16,280,show_str,0,BLUE18);
-						strcpy(show_str,"Enter");				
+					strcpy(show_str,str_enter);				
 					LCD_ShowString(20,245,16,280,show_str,0,BLUE18);
-							
+						
 					Back_Color=WHITE18;		
-						strcpy(show_str,"Patient:39 C  ");					
+					strcpy(show_str,str_Patient39C);					
 					LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
-					Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*10,2,BLUE18);//ÎÂ¶ÈÍ¼±ê		
-						strcpy(show_str,"Chamber:36 C  ");						
-					LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*15,16,280,show_str,0,BLUE18);
-					Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*10+8*15,2,BLUE18);//ÎÂ¶ÈÍ¼±ê						
+					Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê		
+					strcpy(show_str,str_chamber36C);						
+					LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*15),16,280,show_str,0,BLUE18);
+					Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê						
 					LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y,16,280,"In/Exp:1:1.3",0,BLUE18);//						
 					Draw_Rectangle(Load_Fac_Set_X+39,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X-15,Load_User_Pre_Set_Y+242,RED18,2);//»­²ÎÊý¿ò					
 					Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-10,RED18);//»­Ñ¡Ôñ²ÎÊýºáÏß						
@@ -180,7 +191,7 @@ void	HmiEnterToWorkStateFunc(WORK_STATUS State)
 				DISP_ICO_40X40(15,200,2,BLUE18);//ÏÔÊ¾OKÍ¼±ê
 			}		
 			break;
-		}		
+		}	
 			
 		case UI_STATE_NON_INVASIVE_MODE:
 		{			
@@ -210,8 +221,8 @@ void	HmiEnterToWorkStateFunc(WORK_STATUS State)
 
 		case UI_STATE_SetTempPatient_MODE:
 		{
-			Remeber_Temp_Value = Set_RT_Temp;	
-			DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);		
+			Remeber_Temp_Value = (uint16_t)Set_RT_Temp;	
+			DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);		
 			Display_SET_Temp(Remeber_Temp_Value);			
 //			Set_CQK_Subtract_RT = Set_CQK_Temp - Set_RT_Temp;//³öÆø¿ÚºÍÈËÌå¶ËÉè¶¨ÎÂ¶È²î£¬¼ÇÒä´Ë²îÖµ	
 			break;
@@ -220,7 +231,7 @@ void	HmiEnterToWorkStateFunc(WORK_STATUS State)
 		case UI_STATE_SetTempChamber_MODE:
 		{
 			Remeber_Temp_Value = Set_CQK_Temp;	
-			DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);		
+			DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);		
 			Display_SET_Temp(Remeber_Temp_Value);		
 			break;
 		}
@@ -237,13 +248,15 @@ void	HmiEnterToWorkStateFunc(WORK_STATUS State)
 			EnterSetInExp();//½øÈëInExpÉè¶¨
 			break;
 		}
+		default:
+			break;
 	}
 }
 
 //
 void HmiServiceModeFunc(void)
 {
-	static unsigned char ServiceMode_Step = 0;
+	static uint8_t ServiceMode_Step = 0;
   //ÏÔÊ¾ÆÁ´¿É«²âÊÔ 	
 	if(ServiceMode_Step == 0)
 	{
@@ -297,7 +310,7 @@ void HmiServiceModeFunc(void)
 			Back_Color=WHITE18;
 			LCD_ShowString(220,20,16,280,"W25X Write&Read Test(Test 5/6)",0,GRAY18);
 			LCD_ShowString(200,20,16,200,"Press Left Up Key...",0,GRAY18);		
-	
+
 			//WX25 ²âÊÔ
 			SPI_Erase_Sector(0x100000);//1M×Ö½ÚÆðÆôÉÈÇø²Á³ý
 			WDT_CONTR = 0x3F; ;	
@@ -318,7 +331,10 @@ void HmiServiceModeFunc(void)
 			else
 			{
 				LCD_ShowString(160,70,16,200,"W25X TEST Fail!",0,RED18);
-				while(1)WDT_CONTR = 0x3F; ;
+				while(1>0)
+				{
+					WDT_CONTR = 0x3F;
+				}
 			}	
 			//ÏÔÊ¾°æ±¾ºÅ
 			LCD_Show_Verion();
@@ -341,16 +357,20 @@ void HmiServiceModeFunc(void)
 			LCD_ShowString(220,20,16,280,"Temperature & Humidity(Test 6/6)",0,RED18);
 
 			DISP_ICO_52X64(POS_ICO_TEMP_X-8,POS_ICO_TEMP_Y,0,BLACK18);//ÈËÌå¶ËÍ¼±ê
-			DISP_ICO_32X40(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
+			DISP_ICO_32X40(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
 			DISP_ICO_40X40(POS_ICO_SHIDU_X,POS_ICO_TEMP_Y,0,BLACK18); //Êª¶ÈÍ¼±ê
-			DISP_ICO_32X40(POS_RT_RH_X+2,POS_RT_RH_Y+19*2,ICO_PER,BLACK18); //ÏÔÊ¾Êª¶Èµ¥Î» 	
+			DISP_ICO_32X40(POS_RT_RH_X+2,POS_RT_RH_Y+(19*2),ICO_PER,BLACK18); //ÏÔÊ¾Êª¶Èµ¥Î» 	
 			DISP_RH14X24(POS_RT_RH_X+5,POS_RT_RH_Y+70,0,BLACK18);
 			DISP_RH14X24(POS_RT_RH_X+5,POS_RT_RH_Y+84,1,BLACK18);
 			DISP_ICO_52X64(55,POS_ICO_TEMP_Y,1,BLACK18); //³öÆø¿ÚÎÂ¶ÈÍ¼±ê
-			DISP_ICO_32X40(55,POS_ICO_TEMP_Y+35*3+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
+			DISP_ICO_32X40(55,POS_ICO_TEMP_Y+(35*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
 			DISP_HEAT_36X24(15,POS_ICO_TEMP_Y+5,BLACK18);//¼ÓÈÈÅÌÎÂ¶ÈÍ¼±ê 
-			DISP_ICO_32X40(5,POS_ICO_TEMP_Y+35*3+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î» 
+			DISP_ICO_32X40(5,POS_ICO_TEMP_Y+(35*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î» 
 			LCD_LIGHT_OPEN;//¿ª±³¹â			
+		}
+		else
+		{
+			//do nothing
 		}
 	}
 	else if(ServiceMode_Step == 6)
@@ -391,25 +411,32 @@ void HmiServiceModeFunc(void)
 			Work_State = UI_STATE_POST_MODE;
 			HmiEnterToWorkStateFunc(UI_STATE_POST_MODE);			
 		}		
-	}	
+	}
+	else
+	{
+		//do nothing
+	}
 	Key_State_Present = KEY_STATE_NONE;	//Çå³ý°´¼ü
 }  
 
 //-----------POST½çÃæ
 void HmiPostFunc_Tik_Cnt(void)
 {
-	if(Tik_POST_Tick_100mS < 250)Tik_POST_Tick_100mS++;
+	if(Tik_POST_Tick_100mS < 250)
+	{
+		Tik_POST_Tick_100mS++;
+	}
 }
 
 void	HmiPostFunc(void)//GUI --- 
 {	
-	static unsigned char Post_Step=0;
-	unsigned char i;	
-	
-//LCD_LIGHT_OPEN;//¿ª±³¹â		
-  if(Post_Step == 0)//RTC×Ô¼ì1
-	{		
-//LCD_ShowString(220,20,16,200,"POST_STEP0!",0,RED18);
+	static uint8_t Post_Step=0;
+	uint8_t i;
+
+	//LCD_LIGHT_OPEN;//¿ª±³¹â		
+	if(Post_Step == 0)//RTC×Ô¼ì1
+	{
+		//LCD_ShowString(220,20,16,200,"POST_STEP0!",0,RED18);
 		i = RX8010_Initialize();//RTC³õÊ¼»¯	
 		if(i == RX8010_INIT_FAIL)//RTC³õÊ¼»¯Ê§Ð§
 		{
@@ -439,7 +466,7 @@ void	HmiPostFunc(void)//GUI ---
 	}
 	else if(Post_Step == 1)//RTC×Ô¼ì2-×Ô¶¯³õÊ¼»¯,µÈ´ý2S
 	{
-//LCD_ShowString(190,20,16,200,"POST STEP1!",0,RED18);
+		//LCD_ShowString(190,20,16,200,"POST STEP1!",0,RED18);
 		if(Tik_POST_Tick_100mS > 20)
 		{
 			Post_Step = 2;
@@ -447,7 +474,7 @@ void	HmiPostFunc(void)//GUI ---
 	}
 	else if(Post_Step == 2)//FLASH×Ô¼ì1
 	{
-//LCD_ShowString(160,20,16,200,"POST STEP2!",0,RED18);		
+		//LCD_ShowString(160,20,16,200,"POST STEP2!",0,RED18);		
 		SPI_Read_nBytes(0x100000,2,SaveData); 
 		if((SaveData[0] == 'O')&&(SaveData[1] == 'K'))//Ð£Ñé³É¹¦
 		{
@@ -461,103 +488,113 @@ void	HmiPostFunc(void)//GUI ---
 	}
 	else if(Post_Step == 3)//FLASH×Ô¼ì2
 	{
-//LCD_ShowString(130,20,16,200,"POST STEP3!",0,RED18);		
-			SaveData[0] = 'O';
-			SaveData[1] = 'K'; 
-			SPI_Write_nBytes(0x100000,2,SaveData);
-			delay_ms(10);
-			SaveData[0] = 0xff;
-			SaveData[1] = 0xff;
-			SPI_Read_nBytes(0x100000,2,SaveData); 
+		//LCD_ShowString(130,20,16,200,"POST STEP3!",0,RED18);		
+		SaveData[0] = 'O';
+		SaveData[1] = 'K'; 
+		SPI_Write_nBytes(0x100000,2,SaveData);
+		delay_ms(10);
+		SaveData[0] = 0xff;
+		SaveData[1] = 0xff;
+		SPI_Read_nBytes(0x100000,2,SaveData); 
 			
-			if((SaveData[0] == 'O')&&(SaveData[1] == 'K'))
-			{								 
-				Post_Step = 4;//OK
-			}
-			else
-			{
-				Post_Step = 255;//FAIL,ÐèÖØÐÂ¿ª»ú»òËÍÐÞ				
-				LCD_ShowString(180,20,16,200,"Memory Initialize Fail!",0,RED18);
-				LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
-				LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);
-			}			
+		if((SaveData[0] == 'O')&&(SaveData[1] == 'K'))
+		{								 
+			Post_Step = 4;//OK
+		}
+		else
+		{
+			Post_Step = 255;//FAIL,ÐèÖØÐÂ¿ª»ú»òËÍÐÞ				
+			LCD_ShowString(180,20,16,200,"Memory Initialize Fail!",0,RED18);
+			LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
+			LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);
+		}			
 	}
 	else if(Post_Step == 4)//HP SENSOR-2
 	{
-//LCD_ShowString(100,20,16,200,"POST STEP4!",0,RED18);		
+		//LCD_ShowString(100,20,16,200,"POST STEP4!",0,RED18);		
 		Tik_POST_Tick_100mS = 0;
 		Post_Step = 5;
 	}
 	else if(Post_Step == 5)//HP SENSOR-2
 	{
-//LCD_ShowString(70,20,16,200,"POST STEP5!",0,RED18);	
-//LCD_ShowxNum(130,70,16,3,No_HeatSensor_Times,0x80,BLACK18); //
+		//LCD_ShowString(70,20,16,200,"POST STEP5!",0,RED18);	
+		//LCD_ShowxNum(130,70,16,3,No_HeatSensor_Times,0x80,BLACK18); //
 		if(Tik_POST_Tick_100mS > 10)//ÑÓÊ±1S
 		{
-			 if(No_HeatSensor_Times>25)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â,1S¿ÉÒÔ¼ì²âµ½50´Î
-			 {
-				 Post_Step = 6;
-				 Tik_POST_Tick_100mS = 0;
-			 }	
-			 else
-			 {
-				 Post_Step = 7;//PASS		
-			 }
+			if(No_HeatSensor_Times>25)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â,1S¿ÉÒÔ¼ì²âµ½50´Î
+			{
+				Post_Step = 6;
+				Tik_POST_Tick_100mS = 0;
+			}	
+			else
+			{
+				Post_Step = 7;//PASS		
+			}
 		}
 	}
 	else if(Post_Step == 6)//HP SENSOR-3 ¼ì²âÁ½´Î
 	{
-//LCD_ShowString(40,20,16,200,"POST STEP6!",0,RED18);
-//LCD_ShowxNum(130,150,16,3,No_HeatSensor_Times,0x80,BLACK18); //·¢ÈÈÅÌ¼ÓÈÈµÄÄ£Ê½ÏÔÊ¾		
+		//LCD_ShowString(40,20,16,200,"POST STEP6!",0,RED18);
+		//LCD_ShowxNum(130,150,16,3,No_HeatSensor_Times,0x80,BLACK18); //·¢ÈÈÅÌ¼ÓÈÈµÄÄ£Ê½ÏÔÊ¾		
 		if(Tik_POST_Tick_100mS > 30)//ÑÓÊ±3S
 		{
-			 if(No_HeatSensor_Times>100)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â 4S¼ì²âµ½200´Î
-			 {
-				 Post_Step = 255;
-				 LCD_ShowString(180,20,16,200,"Sensor Initialize Fail!",0,RED18);
-				 LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
-				 LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);				 
-			 }
-			 else
-			 {
-				 Post_Step = 7;//PASS		
-			 }
-		 }
+			if(No_HeatSensor_Times>100)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â 4S¼ì²âµ½200´Î
+			{
+				Post_Step = 255;
+				LCD_ShowString(180,20,16,200,"Sensor Initialize Fail!",0,RED18);
+				LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
+				LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);				 
+			}
+			else
+			{
+				Post_Step = 7;//PASS		
+			}
+		}
 	}
 	else if(Post_Step == 7)//
 	{
-//LCD_ShowString(10,20,16,200,"POST_STEP7!",0,RED18);		
+		//LCD_ShowString(10,20,16,200,"POST_STEP7!",0,RED18);		
 		Work_State = UI_STATE_FACTORY_DEFAULT_SEL_MODE;
-		HmiEnterToWorkStateFunc(UI_STATE_FACTORY_DEFAULT_SEL_MODE);	
+		HmiEnterToWorkStateFunc(UI_STATE_FACTORY_DEFAULT_SEL_MODE);
 	}
-  else if(Post_Step == 255)//FAIL
+	else if(Post_Step == 255)//FAIL
 	{
 		LCD_LIGHT_OPEN;	
-	}		
+	}
+	else
+	{
+		//do nothing
+	}
 }
 
 
 //-----------¿ª»úÑ¡Ôñ½çÃæ
-static unsigned char Tik_HmiFac_Tick_100mS_OK_flash = 0;//OKÉÁË¸¶ÁÊý
+static uint8_t Tik_HmiFac_Tick_100mS_OK_flash = 0;//OKÉÁË¸¶ÁÊý
 void HmiFactoryDefault_Tik_Cnt(void)
 {
-	if(Tik_HmiFac_Tick_100mS_10S < 250)Tik_HmiFac_Tick_100mS_10S++;
-	if(Tik_HmiFac_Tick_100mS_OK_flash <250 )Tik_HmiFac_Tick_100mS_OK_flash++;
+	if(Tik_HmiFac_Tick_100mS_10S < 250)
+	{
+		Tik_HmiFac_Tick_100mS_10S++;
+	}
+	if(Tik_HmiFac_Tick_100mS_OK_flash <250 )
+	{
+		Tik_HmiFac_Tick_100mS_OK_flash++;
+	}
 }
 
 void	HmiFactoryDefaultFunc(void)//GUI --- 
 {
-	unsigned int Pre_Disp_Deg_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
-	unsigned int Pre_Disp_Deg_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
-  unsigned int Pre_Disp_Deg_CQK_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
-	unsigned int Pre_Disp_Deg_CQK_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
+	uint16_t Pre_Disp_Deg_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
+	uint16_t Pre_Disp_Deg_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
+  uint16_t Pre_Disp_Deg_CQK_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
+	uint16_t Pre_Disp_Deg_CQK_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
 
 	if(Tik_HmiFac_Tick_100mS_10S >= 100)//10S
 	{
 		OK_not_Pressed_flag = 1;
 	}		
 	
-	if(OK_not_Pressed_flag)
+	if(OK_not_Pressed_flag!=(uint8_t)0)
 	{			
 		if(Tik_HmiFac_Tick_100mS_OK_flash == 1)
 		{
@@ -575,11 +612,15 @@ void	HmiFactoryDefaultFunc(void)//GUI ---
 		}
 		else if(Tik_HmiFac_Tick_100mS_OK_flash >= 20)//0.5HzµÄÉÁË¸ÆµÂÊ
 		{
-		Tik_HmiFac_Tick_100mS_OK_flash = 0;				
-		Back_Color=WHITE18;	
-		DISP_ICO_40X40(15,200,2,RED18);//ÏÔÊ¾OKÍ¼±ê	
-		Back_Color=WHITE18;
-		Sound_Short();
+			Tik_HmiFac_Tick_100mS_OK_flash = 0;				
+			Back_Color=WHITE18;	
+			DISP_ICO_40X40(15,200,2,RED18);//ÏÔÊ¾OKÍ¼±ê	
+			Back_Color=WHITE18;
+			Sound_Short();
+		}
+		else
+		{
+			//do nothing
 		}
 	}
 				
@@ -587,45 +628,49 @@ void	HmiFactoryDefaultFunc(void)//GUI ---
 	if((Key_State_Present == KEY_STATE_Down_Short)//ÏòÏÂ¼üµ½¹¤³§Éè¶¨
 		||(Key_State_Present == KEY_STATE_Down_Long_First))
 
- {
-	 if(defalut_mode == Load_User_Pre_MODE)
-	 {
+	{
+		if(defalut_mode == Load_User_Pre_MODE)
+		{
 			HmiFac_Mode_Changed = 1;				 
 			defalut_mode = Load_Fac_MODE;  
-	 }
- }	
- else if((Key_State_Present == KEY_STATE_UP_Short)
+		}
+	}	
+	else if((Key_State_Present == KEY_STATE_UP_Short)
 		||(Key_State_Present == KEY_STATE_UP_Long_First))
- {
-	 if(defalut_mode == Load_Fac_MODE)
-	 {
+	{
+		if(defalut_mode == Load_Fac_MODE)
+		{
 			HmiFac_Mode_Changed = 1;	
 			defalut_mode = Load_User_Pre_MODE;
-	 }
- }
- else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈë¿ª»úÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ»òÖ±½Ó½øÈ¥¿ª»úÔËÐÐ½çÃæ
+		}
+	}
+	else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈë¿ª»úÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ»òÖ±½Ó½øÈ¥¿ª»úÔËÐÐ½çÃæ
 			 ||(Key_State_Present ==KEY_STATE_OK_Long_First))
- {
-	 Load_Settings_Before_Choice();//ÔÚÑ¡Ôñ·½¿ò³öÏÖÖ®Ç°£¬Òª´¦ÀíµÄÊý¾Ý£¬ÒÔÍ¬Ê±¼æÈÝÓÐÎÞÑ¡Ôñ¼ÇÒä½çÃæ³ÌÐò				 
-	 HmiFac_Mode_Changed = 0;	
-	 LCD_LIGHT_CLOSE;			
-	 if(defalut_mode == Load_Fac_MODE)//Ä¬ÐíÉè¶¨
-	 {					 
-		 Work_State = UI_STATE_NON_INVASIVE_MODE;
-		 HmiEnterToWorkStateFunc(UI_STATE_NON_INVASIVE_MODE);
-	 }
-	 else//ÉÏÒ»´ÎµÄÉè¶¨
-	 {
-		 Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-		 HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);					 
-	 }				 
- }
+	{
+		Load_Settings_Before_Choice();//ÔÚÑ¡Ôñ·½¿ò³öÏÖÖ®Ç°£¬Òª´¦ÀíµÄÊý¾Ý£¬ÒÔÍ¬Ê±¼æÈÝÓÐÎÞÑ¡Ôñ¼ÇÒä½çÃæ³ÌÐò				 
+		HmiFac_Mode_Changed = 0;	
+		LCD_LIGHT_CLOSE;			
+		if(defalut_mode == Load_Fac_MODE)//Ä¬ÐíÉè¶¨
+		{					 
+			Work_State = UI_STATE_NON_INVASIVE_MODE;
+			HmiEnterToWorkStateFunc(UI_STATE_NON_INVASIVE_MODE);
+		}
+		else//ÉÏÒ»´ÎµÄÉè¶¨
+		{
+			Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+			HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);					 
+		}				 
+	}
+	else
+	{
+		//do nothing
+	}
 
-	if(HmiFac_Mode_Changed)
+	if(HmiFac_Mode_Changed!=(uint8_t)0)
 	{
 		HmiFac_Mode_Changed = 0;					
-					
-			data_flash.Language = Lan_English;//·ÇFANEMÖ»ÓÐÓ¢Óï
+				
+		data_flash.Language = Lan_English;//·ÇFANEMÖ»ÓÐÓ¢Óï
 
 		
 		if(data_flash.Work_Mode==Noninvasive_Mode)	 	//¼ÆËãÒªÏÔÊ¾µÄÊý¾Ý	
@@ -647,82 +692,88 @@ void	HmiFactoryDefaultFunc(void)//GUI ---
 					
 		if(defalut_mode == Load_User_Pre_MODE)  //ÓÃ»§ÉÏÒ»´ÎµÄÉè¶¨   
 		{ 	  //»­ºìÉ«¿ò
-					Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,WHITE18,4);
-					Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y+242,RED18,4);//
-					
-					Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,WHITE18);//
-					Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,WHITE18);// 
-				 
-					Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,RED18);//
-					Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,RED18);//		
-					
-					if(data_flash.Work_Mode==Noninvasive_Mode)	 	//
-					{
+			Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,WHITE18,4);
+			Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y+242,RED18,4);//
+			
+			Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,WHITE18);//
+			Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,WHITE18);// 
+		 
+			Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,RED18);//
+			Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,RED18);//		
+			
+			if(data_flash.Work_Mode==Noninvasive_Mode)	 	//
+			{
+				CHAR str_modeNoinvasive[]="Mode:Noninvasive      ";
+				strcpy(show_str,str_modeNoinvasive);				
+				LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
+			}
+			else
+			{
+				CHAR str_modeInvasive[]="Mode:Invasive         ";
+				strcpy(show_str,str_modeInvasive);
+				LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
+			}
+			
+			LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8),16,2,Pre_Disp_Deg_10,0x00,BLUE18);//»¼Õß¶ËÎÂ¶È
+			if(Pre_Disp_Deg_1 == 0)//ÎÞÐ¡Êý
+			{
+				LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*11),16,280,"C  ",0,BLUE18);//
+				Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
+			}
+			else//ÓÐÐ¡Êý
+			{
+				LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*10),16,280,".5",0,BLUE18);//.5
+				LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*13),16,280,"C ",0,BLUE18);//
+				Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*12),2,BLUE18);//ÎÂ¶ÈÍ¼±ê								
+			}	
 
-							strcpy(show_str,"Mode:Noninvasive      ");				
-						LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
-					}
-					else
-					{
-							strcpy(show_str,"Mode:Invasive         ");
-						LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
-					}
-					
-					LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*8,16,2,Pre_Disp_Deg_10,0x00,BLUE18);//»¼Õß¶ËÎÂ¶È
-					if(Pre_Disp_Deg_1 == 0)//ÎÞÐ¡Êý
-					{
-						LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*11,16,280,"C  ",0,BLUE18);//
-						Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*10,2,BLUE18);//ÎÂ¶ÈÍ¼±ê
-					}
-					else//ÓÐÐ¡Êý
-					{
-						LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*10,16,280,".5",0,BLUE18);//.5
-						LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*13,16,280,"C ",0,BLUE18);//
-						Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*12,2,BLUE18);//ÎÂ¶ÈÍ¼±ê								
-					}	
-
-					LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*8+8*15,16,2,Pre_Disp_Deg_CQK_10,0x00,BLUE18);//³öÆø¿Ú¶ËÎÂ¶È
-					if(Pre_Disp_Deg_CQK_1 == 0)//ÎÞÐ¡Êý
-					{
-						LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*11+8*15,16,280,"C  ",0,BLUE18);//
-						Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*10+8*15,2,BLUE18);//ÎÂ¶ÈÍ¼±ê
-					}
-					else//ÓÐÐ¡Êý
-					{
-						LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*10+8*15,16,280,".5",0,BLUE18);//.5
-						LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*13+8*15,16,280,"C ",0,BLUE18);//
-						Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*12+8*15,2,BLUE18);//ÎÂ¶ÈÍ¼±ê								
-					}								
-					
-					if(data_flash.In_Exp_Ratio == 1)//1:1
-					{
-						LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+8*10,16,280,"  ",0,BLUE18);//1:1
-					}
-					else
-					{
-						LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+8*10,16,280,".",0,BLUE18); 
-						LCD_ShowxNum(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+8*11,16,1,data_flash.In_Exp_Ratio-1,0x0,BLUE18);//
-					}							       	  
+			LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8)+(8*15),16,2,Pre_Disp_Deg_CQK_10,0x00,BLUE18);//³öÆø¿Ú¶ËÎÂ¶È
+			if(Pre_Disp_Deg_CQK_1 == 0)//ÎÞÐ¡Êý
+			{
+				LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*11)+(8*15),16,280,"C  ",0,BLUE18);//
+				Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
+			}
+			else//ÓÐÐ¡Êý
+			{
+				LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*10)+(8*15),16,280,".5",0,BLUE18);//.5
+				LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*13)+(8*15),16,280,"C ",0,BLUE18);//
+				Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*12)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê								
+			}								
+			
+			if(data_flash.In_Exp_Ratio == 1)//1:1
+			{
+				LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,"  ",0,BLUE18);//1:1
+			}
+			else
+			{
+				LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,".",0,BLUE18); 
+				LCD_ShowxNum(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*11),16,1,data_flash.In_Exp_Ratio-1,0x0,BLUE18);//
+			}							       	  
 		}
 		else  //¹¤³§Éè¶¨
-		{						
-					Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,RED18,4);
-					Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y+242,WHITE18,4);//
-				 
-					Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,WHITE18);//						 
-					Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,WHITE18);//
-				 
-					Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,RED18);//
-					Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,RED18);//	
-						strcpy(show_str,"Invasive         ");
-					LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y+8*5,16,280,show_str,0,BLUE18);//ÓÐ´´					
-						strcpy(show_str,"Patient:39 C  ");				
-					LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
-					Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*10,2,BLUE18);//ÎÂ¶ÈÍ¼±ê	
-						strcpy(show_str,"Chambre:36 C  ");						
-					LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+8*15,16,280,show_str,0,BLUE18);
-					Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+8*10+8*15,2,BLUE18);//ÎÂ¶ÈÍ¼±ê
-					LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+8*10,16,280,".3",0,BLUE18);//1:1.3 
+		{
+			CHAR str_invasive[]="Invasive         ";
+			CHAR str_patient39C[]="Patient:39 C  ";
+			CHAR str_chamber36C[]="Chamber:36 C  ";
+			
+			
+			Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,RED18,4);
+			Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y+242,WHITE18,4);//
+		 
+			Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,WHITE18);//						 
+			Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,WHITE18);//
+		 
+			Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,RED18);//
+			Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,RED18);//	
+			strcpy(show_str,str_invasive);
+			LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y+(8*5),16,280,show_str,0,BLUE18);//ÓÐ´´					
+			strcpy(show_str,str_patient39C);				
+			LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
+			Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê	
+			strcpy(show_str,str_chamber36C);						
+			LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*15),16,280,show_str,0,BLUE18);
+			Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
+			LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,".3",0,BLUE18);//1:1.3 
 		}
 		LCD_LIGHT_OPEN; 
 	}	
@@ -733,42 +784,53 @@ void	HmiFactoryDefaultFunc(void)//GUI ---
 
 void HmiNon_InvasiveSel_Tik_Cnt(void)
 {
-	if(Tik_HmiNon_InvasiveSel_Tick_100mS < 250)Tik_HmiNon_InvasiveSel_Tick_100mS++;
+	if(Tik_HmiNon_InvasiveSel_Tick_100mS < 250)
+	{
+		Tik_HmiNon_InvasiveSel_Tick_100mS++;
+	}
 }
 
 void	HmiNon_InvasiveSelFunc(void)//ÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ
 {
 	WDT_CONTR = 0x3F; //¿ªÆôWDT,ÔÚ22.1184Ê±Ê±¼äÎª4.55S	
 	{
-			 if((Key_State_Present == KEY_STATE_UP_Short)//
-						 ||(Key_State_Present ==KEY_STATE_UP_Long_First))
-       {
+		if((Key_State_Present == KEY_STATE_UP_Short)//
+				 ||(Key_State_Present ==KEY_STATE_UP_Long_First))
+		{
 
-       	  if(Work_Mode==0)
-       	    Work_Mode=1;
-       	  else
-       	  	Work_Mode=0;  
-					
-				if(Work_Mode==0)  //ÎÞ´´Ä£Ê½
-				 { 
-						Draw_Rectangle(75,182,162,262,RED18,4);//
-						Draw_Rectangle(75,58,162,136,WHITE18,4);
-				 }else  //ÎÞ´´Ä£Ê½
-				 {	
-						Draw_Rectangle(75,182,162,262,WHITE18,4);
-						Draw_Rectangle(75,58,162,136,RED18,4);
-				 }
+			if(Work_Mode==0)
+			{
+				Work_Mode=1;
+			}
+			else
+			{
+				Work_Mode=0;  
+			}
 
-       }
-			 else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈëÔËÐÐ×´Ì¬
-						 ||(Key_State_Present ==KEY_STATE_OK_Long_First)
-						 ||(Tik_HmiNon_InvasiveSel_Tick_100mS > 30))
+			if(Work_Mode==0)  //ÎÞ´´Ä£Ê½
+			{ 
+				Draw_Rectangle(75,182,162,262,RED18,4);//
+				Draw_Rectangle(75,58,162,136,WHITE18,4);
+			}else  //ÎÞ´´Ä£Ê½
+			{	
+				Draw_Rectangle(75,182,162,262,WHITE18,4);
+				Draw_Rectangle(75,58,162,136,RED18,4);
+			}
 
-       {
-				 LCD_LIGHT_CLOSE;		 
-				 Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-				 HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);
-       }				      	 
+		}
+		else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈëÔËÐÐ×´Ì¬
+				 ||(Key_State_Present ==KEY_STATE_OK_Long_First)
+				 ||(Tik_HmiNon_InvasiveSel_Tick_100mS > 30))
+
+		{
+		 LCD_LIGHT_CLOSE;		 
+		 Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+		 HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);
+		}
+		else
+		{
+			//do nothing
+		}
   }	
 	data_flash.Work_Mode = Work_Mode;//Ñ¡¶¨µÄÄ£Ê½
 
@@ -783,7 +845,7 @@ DISPLAY_Temp_Kind Display_Temp_Kind = DISPLAY_Temperature_Patient;     //ÏÔÊ¾ÎÂ¶
 
 void	HmiRunningFunc(void)//
 {
-	static unsigned char Display_Return_Cnt = 0;
+	static uint8_t Display_Return_Cnt = 0;
 	if((Key_State_Present == KEY_STATE_UP_Short)//ÇÐ»»ÏÔÊ¾
 		||(Key_State_Present == KEY_STATE_UP_Long_First))
 	{
@@ -810,26 +872,26 @@ void	HmiRunningFunc(void)//
 		Set_RT_YCTemp = 390;//
 		Set_CQK_WCTemp = 310;//
 		Set_CQK_YCTemp = 360;//
-	
+
 		RT_Temp_Reach_Set_Cnt = 0;//ÈËÌå¶Ë´ïµ½ÎÂ¶È¼ÆÊýÇåÁã
 		CQK_Temp_Reach_Set_Cnt = 0;
 
 		if(Work_Mode==Invasive_Mode)	
 		{ 
 			Work_Mode=Noninvasive_Mode;	
-			Set_RT_Temp=Set_RT_WCTemp;	
+			Set_RT_Temp=(INT)Set_RT_WCTemp;	
 			Set_CQK_Temp=Set_CQK_WCTemp;		
 		}
 		else
 		{
 			Work_Mode=Invasive_Mode;	
-			Set_RT_Temp=Set_RT_YCTemp;		
+			Set_RT_Temp=(INT)Set_RT_YCTemp;		
 			Set_CQK_Temp=Set_CQK_YCTemp;				
 		}
-		data_flash.Set_RT_WCTemp = (Set_RT_WCTemp/5);//
-		data_flash.Set_RT_YCTemp = (Set_RT_YCTemp/5);//
-		data_flash.Set_CQK_WCTemp = (Set_CQK_WCTemp/5);//
-		data_flash.Set_CQK_YCTemp = (Set_CQK_YCTemp/5);//
+		data_flash.Set_RT_WCTemp = (uint8_t)(Set_RT_WCTemp/5);//
+		data_flash.Set_RT_YCTemp = (uint8_t)(Set_RT_YCTemp/5);//
+		data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/5);//
+		data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/5);//
 		data_flash.Work_Mode = Work_Mode;// 
 		Setting_write_to_flash(); 
 		Refresh_Work_Mode();//ÇÐ»»Í¼±ê			  
@@ -841,7 +903,7 @@ void	HmiRunningFunc(void)//
 		{
 			Work_State = UI_STATE_SetTempPatient_MODE;//Éè¶¨»¼Õß¶ËÎÂ¶È
 			HmiEnterToWorkStateFunc(UI_STATE_SetTempPatient_MODE);	
-			Remeber_Temp_Value= Set_RT_Temp;
+			Remeber_Temp_Value= (uint16_t)Set_RT_Temp;
 		}
 		else
 		{
@@ -865,10 +927,20 @@ void	HmiRunningFunc(void)//
 		Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+45,WHITE18);
 	  WireInOut_State_Confirm();//Õý³£ÔËÐÐ½çÃæ,°´ÏÂÈ·ÈÏ¼üÈ·¶¨»ØÂ·µÄÄ£Ê½		
 	}
+	else
+	{
+		//do nothing
+	}
 
   //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø	
-	if(Key_State_Present)Display_Return_Cnt = 0;
-	if(Display_Return_Cnt < 90)Display_Return_Cnt++;
+	if((uint16_t)Key_State_Present!=(uint16_t)0)
+	{
+		Display_Return_Cnt = 0;
+	}
+	if(Display_Return_Cnt < 90)
+	{
+		Display_Return_Cnt++;
+	}
 	else
 	{
 		if(Display_Temp_Kind == DISPLAY_Temperature_Chamber)
@@ -886,8 +958,8 @@ void	HmiRunningFunc(void)//
 //-----------»¼Õß¶ËÎÂ¶ÈÉèÖÃ½çÃæ
 void	HmiSetTempPatientFunc(void)//GUI --- 
 {
-	static unsigned char  xdata   Set_Temp_Cnt; 
-	static unsigned char Display_Return_Cnt = 0;
+	static uint8_t Set_Temp_Cnt=0; 
+	static uint8_t Display_Return_Cnt = 0;
 	Set_Temp_Cnt++;
 	if(Set_Temp_Cnt > 10)
 	{
@@ -895,9 +967,18 @@ void	HmiSetTempPatientFunc(void)//GUI ---
  	}
 	Back_Color=WHITE18;
 	if(Set_Temp_Cnt == 0)
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+	{
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+	}
 	else if(Set_Temp_Cnt == 5)
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,WHITE18);
+	{
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,WHITE18);
+	}
+	else
+	{
+		//do nothing
+	}
+		
 	
 	if((Key_State_Present == KEY_STATE_UP_Short)//Ôö¼Ó
 			||(Key_State_Present == KEY_STATE_UP_Long_First)
@@ -905,13 +986,17 @@ void	HmiSetTempPatientFunc(void)//GUI ---
 	{	
 		if(Work_Mode==Noninvasive_Mode)
 		{
-			if(Remeber_Temp_Value<Const_NoninvasivePatientTemperature_Max)
-				 Remeber_Temp_Value=Remeber_Temp_Value+5;
+			if(Remeber_Temp_Value<Const_NoninvasPatientTemp_Max)
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value+5;
+			} 
 		}
 		else
 		{
-			if(Remeber_Temp_Value<Const_InvasivePatientTemperature_Max)
-				 Remeber_Temp_Value=Remeber_Temp_Value+5;
+			if(Remeber_Temp_Value<Const_InvasPatientTemp_Max)
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value+5;
+			}	 
 		}	
 		Display_SET_Temp(Remeber_Temp_Value);				
 	}
@@ -921,13 +1006,17 @@ void	HmiSetTempPatientFunc(void)//GUI ---
 	{	
 		if(Work_Mode==Noninvasive_Mode)  //ÎÞ´´
 		{
-			if(Remeber_Temp_Value>Const_NoninvasivePatientTemperature_Min)
-				 Remeber_Temp_Value=Remeber_Temp_Value-5;
+			if(Remeber_Temp_Value>Const_NoninvasPatientTemp_Min)
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value-5;
+			} 
 		} 
 		else
 		{
-			if(Remeber_Temp_Value>Const_InvasivePatientTemperature_Min)
-				 Remeber_Temp_Value=Remeber_Temp_Value-5;
+			if(Remeber_Temp_Value>Const_InvasPatientTemp_Min)
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value-5;
+			}
 		}
 		Display_SET_Temp(Remeber_Temp_Value);		
 	}
@@ -935,35 +1024,47 @@ void	HmiSetTempPatientFunc(void)//GUI ---
 	{		
 		Work_State = UI_STATE_SetInExp_MODE;
 		HmiEnterToWorkStateFunc(UI_STATE_SetInExp_MODE);
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
 		RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾	
 		Display_Return_Cnt = 0;		
 	}
 	else if(Key_State_Present == KEY_STATE_OK_Short)//È·ÈÏ
 	{
 		Sound_Short();
-		if(Set_RT_Temp != Remeber_Temp_Value)//ÈôÎ´¸Ä±äÈËÌå¶ËÎÂ¶ÈÉè¶¨Ôò²»½øÐÐ²Ù×÷
+		if(Set_RT_Temp != (INT)Remeber_Temp_Value)//ÈôÎ´¸Ä±äÈËÌå¶ËÎÂ¶ÈÉè¶¨Ôò²»½øÐÐ²Ù×÷
 		{
 			Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
-			Set_RT_Temp=Remeber_Temp_Value;
+			Set_RT_Temp=(INT)Remeber_Temp_Value;
 			if(Work_Mode == Noninvasive_Mode)
 			{
-				Set_RT_WCTemp=Set_RT_Temp;
-				data_flash.Set_RT_WCTemp = Set_RT_WCTemp/5;//ÎÞ´´Éè¶¨ÎÂ¶È 
+				Set_RT_WCTemp=(uint16_t)Set_RT_Temp;
+				data_flash.Set_RT_WCTemp = (uint8_t)(Set_RT_WCTemp/5);//ÎÞ´´Éè¶¨ÎÂ¶È 
 				
-				if(Set_RT_WCTemp >= 320) Set_CQK_WCTemp = 310;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31
-				else Set_CQK_WCTemp = 300;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31	
-				data_flash.Set_CQK_WCTemp = Set_CQK_WCTemp/5;														
-				Set_CQK_Temp = Set_CQK_WCTemp;	
+				if(Set_RT_WCTemp >= 320) 
+				{
+					Set_CQK_WCTemp = 310;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31
+				}
+				else
+				{
+					Set_CQK_WCTemp = 300;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31	
+				}					
+				data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/5);														
+				Set_CQK_Temp = (uint8_t)Set_CQK_WCTemp;	
 			}
 			else
 			{
-				Set_RT_YCTemp=Set_RT_Temp; 
-				data_flash.Set_RT_YCTemp = Set_RT_YCTemp/5;//ÓÐ´´Éè¶¨ÎÂ¶È 
+				Set_RT_YCTemp=(uint16_t)Set_RT_Temp; 
+				data_flash.Set_RT_YCTemp = (uint8_t)(Set_RT_YCTemp/5);//ÓÐ´´Éè¶¨ÎÂ¶È 
 				
-				if(Set_RT_YCTemp >= 370) Set_CQK_YCTemp = Set_RT_YCTemp - 30;//ÈËÌå¶Ë>=37Ê±³öÆø¿ÚÎÂ¶ÈÎªRT-3
-				else Set_CQK_YCTemp = 340; //ÓÐ´´³öÆø¿ÚÉè¶¨ÎÂ¶È 
-				data_flash.Set_CQK_YCTemp = Set_CQK_YCTemp/5;
+				if(Set_RT_YCTemp >= 370) 
+				{
+					Set_CQK_YCTemp = Set_RT_YCTemp - 30;//ÈËÌå¶Ë>=37Ê±³öÆø¿ÚÎÂ¶ÈÎªRT-3
+				}
+				else
+				{
+					Set_CQK_YCTemp = 340; //ÓÐ´´³öÆø¿ÚÉè¶¨ÎÂ¶È 
+				}
+				data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/5);
 				Set_CQK_Temp = Set_CQK_YCTemp;													
 			}
 		}		
@@ -971,19 +1072,29 @@ void	HmiSetTempPatientFunc(void)//GUI ---
 		Setting_write_to_flash(); 
 		Display_Return_Cnt = 0;
 		Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
 		RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾		
+	}
+	else
+	{
+		//do nothing
 	}
 	
 	
 	//ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø	
-	if(Key_State_Present)Display_Return_Cnt = 0;
-	if(Display_Return_Cnt < 90)Display_Return_Cnt++;
+	if((uint16_t)Key_State_Present!=(uint16_t)0)
+	{
+		Display_Return_Cnt = 0;
+	}
+	if(Display_Return_Cnt < 90)
+	{
+		Display_Return_Cnt++;
+	}
 	else
 	{
 		Display_Return_Cnt = 0;
 		Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
 		RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾		
 	}
 	Key_State_Present = KEY_STATE_NONE;	//Çå³ý°´¼ü	
@@ -992,8 +1103,8 @@ void	HmiSetTempPatientFunc(void)//GUI ---
 //-----------³öÆø¿ÚÎÂ¶ÈÉèÖÃ½çÃæ
 void	HmiSetTempChamberFunc(void)//GUI
 {
-	static unsigned char  xdata   Set_Temp_Cnt; 
-	static unsigned char Display_Return_Cnt = 0;
+	static uint8_t Set_Temp_Cnt=0; 
+	static uint8_t Display_Return_Cnt = 0;
 	Set_Temp_Cnt++;
 	if(Set_Temp_Cnt > 10)
 	{
@@ -1001,9 +1112,18 @@ void	HmiSetTempChamberFunc(void)//GUI
  	}
 	Back_Color=WHITE18;
 	if(Set_Temp_Cnt == 0)
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+	{
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+	}	
 	else if(Set_Temp_Cnt == 5)
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,WHITE18);
+	{
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,WHITE18);
+	}
+	else
+	{
+		//do nothing
+	}
+		
 	
 	if((Key_State_Present == KEY_STATE_UP_Short)//Ôö¼Ó
 			||(Key_State_Present == KEY_STATE_UP_Long_First)
@@ -1011,14 +1131,22 @@ void	HmiSetTempChamberFunc(void)//GUI
 	{	
 		if(Work_Mode==Noninvasive_Mode)//ÎÞ´´
 		{//³öÆø¿ÚÎÂ¶È×î´ó32¶È
-			if(Remeber_Temp_Value<Const_NoninvasiveChamberTemperature_Max)
-				 Remeber_Temp_Value=Remeber_Temp_Value+5;
+			if(Remeber_Temp_Value<(uint16_t)Const_NoninvasChamberTemp_Max)
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value+5;
+			} 
 		}
-		else if(Work_Mode==Invasive_Mode)
+		else if(Work_Mode==(uint8_t)Invasive_Mode)
 		{//³öÆø¿ÚºÍ»¼Õß¶ËÎÂ¶È²îÎª-4/+3
-			if((Remeber_Temp_Value<Const_InvasiveChamberTemperature_Max)&&(Remeber_Temp_Value<Set_RT_Temp+30))
-				 Remeber_Temp_Value=Remeber_Temp_Value+5;
-		}					
+			if((Remeber_Temp_Value<Const_InvasChamberTemp_Max)&&(Remeber_Temp_Value<((uint16_t)Set_RT_Temp+30)))
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value+5;
+			}
+		}	
+		else
+		{
+			//do nothing
+		}
 		Display_SET_Temp(Remeber_Temp_Value);				
 	}
 	else if((Key_State_Present == KEY_STATE_Down_Short)//¼õÐ¡
@@ -1027,14 +1155,22 @@ void	HmiSetTempChamberFunc(void)//GUI
 	{	
 		if(Work_Mode==Noninvasive_Mode)  //ÎÞ´´
 		{//×îÐ¡30¶È
-			if(Remeber_Temp_Value>Const_NoninvasiveChamberTemperature_Min)
-				 Remeber_Temp_Value=Remeber_Temp_Value-5;
+			if(Remeber_Temp_Value>Const_NoninvasChamberTemp_Min)
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value-5;
+			} 
 		} 
 		else if(Work_Mode==Invasive_Mode) //ÓÐ´´ ³öÆø¿ÚºÍ»¼Õß¶ËÎÂ¶È²îÎª-4/+3 //×îÐ¡34¶È
 		{
-			if((Remeber_Temp_Value>Const_InvasiveChamberTemperature_Min)&&(Remeber_Temp_Value>Set_RT_Temp-40))
-				 Remeber_Temp_Value=Remeber_Temp_Value-5;
+			if((Remeber_Temp_Value>Const_InvasChamberTemp_Min)&&(Remeber_Temp_Value>((uint16_t)Set_RT_Temp-40)))
+			{
+				Remeber_Temp_Value=Remeber_Temp_Value-5;
+			}
 		}	
+		else
+		{
+			//do nothing
+		}
 		Display_SET_Temp(Remeber_Temp_Value);		
 	}
 	else if(Key_State_Present == KEY_STATE_OK_Short)//È·ÈÏ
@@ -1047,39 +1183,49 @@ void	HmiSetTempChamberFunc(void)//GUI
 			if(Work_Mode==Noninvasive_Mode)
 			{
 				Set_CQK_WCTemp=Set_CQK_Temp;
-				data_flash.Set_CQK_WCTemp = Set_CQK_WCTemp/5;//ÎÞ´´Éè¶¨ÎÂ¶È 																		
+				data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/5);//ÎÞ´´Éè¶¨ÎÂ¶È 																		
 			}
 			else
 			{
 				Set_CQK_YCTemp=Set_CQK_Temp; 
-				data_flash.Set_CQK_YCTemp = Set_CQK_YCTemp/5;//ÓÐ´´Éè¶¨ÎÂ¶È 																					
+				data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/5);//ÓÐ´´Éè¶¨ÎÂ¶È 																					
 			}	
 			
 			Display_Return_Cnt = 0;
 			Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-			DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+			DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
 			RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾	
 		}		
+	}
+	else
+	{
+		//do nothing
 	}
 	
 	Setting_write_to_flash(); 
 		
 	//ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø	
-	if(Key_State_Present)Display_Return_Cnt = 0;
-	if(Display_Return_Cnt < 90)Display_Return_Cnt++;
+	if((uint16_t)Key_State_Present!=(uint16_t)0)
+	{
+		Display_Return_Cnt = 0;
+	}
+	if(Display_Return_Cnt < 90)
+	{
+		Display_Return_Cnt++;
+	}
 	else
 	{
 		Display_Return_Cnt = 0;
 		Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+		DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
 		RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾		
 	}
 	Key_State_Present = KEY_STATE_NONE;	//Çå³ý°´¼ü	
 }
 
 
-static unsigned char SetTimeKind = 2;//2-7//Äê/ÔÂ/ÈÕ/Ê±/·Ö/Ãë
-static unsigned char TempTime[7];
+static uint8_t SetTimeKind = 2;//2-7//Äê/ÔÂ/ÈÕ/Ê±/·Ö/Ãë
+static uint8_t TempTime[7];
 
 static void EnterSetTime(void)//½øÈëÊ±¼äÉè¶¨
 {
@@ -1090,42 +1236,51 @@ static void EnterSetTime(void)//½øÈëÊ±¼äÉè¶¨
 
 static void  Date_Is_Correct(void)
 {
-        unsigned int temp1;
-        bit  Temp_Bit1;
-    	  //½«BCDÂë×ª»¯Îª10½øÖÆ,Éè¶¨Ê±¼ä´Ó2000Äêµ½2099Äê======================================
-    	  Temp_Bit1=0;
-    	  temp1=((TempTime[6]& 0x0F)%10)+ ((TempTime[6]>>4)%10)*10;
-    	  //ÄÜ±»4Õû³ý£¬µ«ÊÇ²»ÄÜ±»100Õû³ýÎªÈòÄê£¬»òÕßÄÜ±»400Õû³ý=====
-    	  if(temp1%4==0 )
-    	  {
-    	  	 Temp_Bit1=1;
-    	  }	
-    	  if(TempTime[4]==0x04 || TempTime[4]==0x06 || TempTime[4]==0x09 || TempTime[4]==0x11)
-    	  {
-    	  	  if(TempTime[3]>0x30) TempTime[3]=0x30;
-    	  }
-    	  if(Temp_Bit1) //ÈòÄê29Ìì£¬Æ½Äê28Ìì
-    	  {
-    	  	  if(TempTime[4]==2)
-    	  	  {
-    	  	  	  if(TempTime[3]>0x29) TempTime[3]=0x29;
-    	  	  }
-    	  }else
-    	  {
-    	  	  if(TempTime[4]==2)
-    	  	  {
-    	  	  	  if(TempTime[3]>0x28) TempTime[3]=0x28;
-    	  	  }
-    	  }	
+	uint16_t temp1;
+	bit  Temp_Bit1;
+	//½«BCDÂë×ª»¯Îª10½øÖÆ,Éè¶¨Ê±¼ä´Ó2000Äêµ½2099Äê======================================
+	Temp_Bit1=0;
+	temp1=((TempTime[6]& 0x0F)%10)+ (((TempTime[6]>>4)%10)*10);
+	//ÄÜ±»4Õû³ý£¬µ«ÊÇ²»ÄÜ±»100Õû³ýÎªÈòÄê£¬»òÕßÄÜ±»400Õû³ý=====
+	if((temp1%4)==0 )
+	{
+		Temp_Bit1=1;
+	}	
+	if((TempTime[4]==0x04) || (TempTime[4]==0x06) || (TempTime[4]==0x09) || (TempTime[4]==0x11))
+	{
+		if(TempTime[3]>0x30) 
+		{
+			TempTime[3]=0x30;
+		}
+	}
+	if(Temp_Bit1) //ÈòÄê29Ìì£¬Æ½Äê28Ìì
+	{
+		if(TempTime[4]==2)
+		{
+			if(TempTime[3]>0x29)
+			{
+				TempTime[3]=0x29;
+			}				
+		}
+	}else
+	{
+		if(TempTime[4]==2)
+		{
+			if(TempTime[3]>0x28)
+			{
+				TempTime[3]=0x28;
+			}				
+		}
+	}	
 }
 
 //-----------ÈÕÆÚÊ±¼äÉèÖÃ½çÃæ
 void	HmiSetTimeFunc(void)
 {
-	static unsigned char Display_Return_Cnt = 0;
-	static unsigned char  xdata   Set_Time_Cnt; 
-//	unsigned char i;
-	unsigned char color;
+	static uint8_t Display_Return_Cnt = 0;
+	static uint8_t Set_Time_Cnt=0; 
+//	uint8_t i;
+//	uint8_t color;
 	
 	Set_Time_Cnt++;
 	if(Set_Time_Cnt > 6)
@@ -1138,7 +1293,7 @@ void	HmiSetTimeFunc(void)
 		SetTimeKind++;
 		
 		Back_Color=WHITE18;	
-		color=BLACK18;		
+//		color=BLACK18;		
 		DisPlayTime(TempTime,2); //ÏÔÊ¾Ê±¼ä
 		DisPlayTime(TempTime,3); //ÏÔÊ¾Ê±¼ä
 		DisPlayTime(TempTime,4); //ÏÔÊ¾Ê±¼ä
@@ -1159,113 +1314,138 @@ void	HmiSetTimeFunc(void)
 		Set_Time_Cnt = 0;//Ç¿ÖÆË¢ÐÂ
 		if(SetTimeKind==2) //Éè¶¨Äê·Ý
 		{
-				TempTime[6]++;
-				if((TempTime[6]&0x0F)>=10)
-				{
-						 TempTime[6]=(TempTime[6]& 0xF0)+0x10;;
-				}
-				if(TempTime[6]>0x99)
-				{
-							TempTime[6]=0x99;
-				}
-				Date_Is_Correct();	 	   	    
+			TempTime[6]++;
+			if((TempTime[6]&0x0F)>=10)
+			{
+					 TempTime[6]=(TempTime[6]& 0xF0)+0x10;;
+			}
+			if(TempTime[6]>0x99)
+			{
+						TempTime[6]=0x99;
+			}
+			Date_Is_Correct();	 	   	    
 
 		}else if(SetTimeKind==3) //Éè¶¨ÔÂ·Ý
 		{
-				TempTime[4]++;
-				if((TempTime[4]&0x0F)>=10)
-				{
-						 TempTime[4]=(TempTime[4]& 0xF0)+0x10;
-				}
-				if(TempTime[4]>0x12)
-				{
-							TempTime[4]=0x12;
-				}
-				Date_Is_Correct();
+			TempTime[4]++;
+			if((TempTime[4]&0x0F)>=10)
+			{
+					 TempTime[4]=(TempTime[4]& 0xF0)+0x10;
+			}
+			if(TempTime[4]>0x12)
+			{
+						TempTime[4]=0x12;
+			}
+			Date_Is_Correct();
 		}else if(SetTimeKind==4) //Éè¶¨ÈÕ
 		{
-				TempTime[3]++;
-				if((TempTime[3]&0x0F)>=10)
-				{
-						 TempTime[3]=(TempTime[3]& 0xF0)+0x10;
-				}
-				if(TempTime[3]>0x31)
-				{
-							TempTime[3]=0x31;
-				}
-				Date_Is_Correct();	
+			TempTime[3]++;
+			if((TempTime[3]&0x0F)>=10)
+			{
+					 TempTime[3]=(TempTime[3]& 0xF0)+0x10;
+			}
+			if(TempTime[3]>0x31)
+			{
+						TempTime[3]=0x31;
+			}
+			Date_Is_Correct();	
 		}else if(SetTimeKind==5) //Éè¶¨Ê±
 		{
+			{
+				TempTime[2]++;								
+				if((TempTime[2]&0x0F)>=10)
 				{
-					TempTime[2]++;								
-					if((TempTime[2]&0x0F)>=10)
-					{
-							 TempTime[2]=(TempTime[2] & 0xF0)+0x10;
-					}
-					if(TempTime[2]>0x23)
-					{
-								TempTime[2]=0x23;	
-					}
-				}							
+						 TempTime[2]=(TempTime[2] & 0xF0)+0x10;
+				}
+				if(TempTime[2]>0x23)
+				{
+							TempTime[2]=0x23;	
+				}
+			}							
 		}else if(SetTimeKind==6) //Éè¶¨·Ö
 		{
-				TempTime[1]++;
-				if((TempTime[1]&0x0F)>=10)
-				{
-						 TempTime[1]=(TempTime[1]& 0xF0)+0x10;
-				}
-				if(TempTime[1]>0x59)
-				{
-							TempTime[1]=0x59;
-				}
+			TempTime[1]++;
+			if((TempTime[1]&0x0F)>=10)
+			{
+					 TempTime[1]=(TempTime[1]& 0xF0)+0x10;
+			}
+			if(TempTime[1]>0x59)
+			{
+						TempTime[1]=0x59;
+			}
 		}else if(SetTimeKind==7) //Éè¶¨Ãë
 		{
-				TempTime[0]++;
-				if((TempTime[0]&0x0F)>=10)
-				{
-						 TempTime[0]=(TempTime[0]& 0xF0)+0x10;
-				}
-				if(TempTime[0]>0x59)
-				{
-							TempTime[0]=0x59;
-				}
-		}		
+			TempTime[0]++;
+			if((TempTime[0]&0x0F)>=10)
+			{
+					 TempTime[0]=(TempTime[0]& 0xF0)+0x10;
+			}
+			if(TempTime[0]>0x59)
+			{
+						TempTime[0]=0x59;
+			}
+		}
+		else
+		{
+			//do nothing
+		}
 	}
 	else if((Key_State_Present == KEY_STATE_Down_Short)//
 			   ||(Key_State_Present == KEY_STATE_Down_Long_First)
 				 ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
 	{
 		Set_Time_Cnt = 0;//Ç¿ÖÆË¢ÐÂ
-		if(SetTimeKind==2 && TempTime[6]>0x10) //Éè¶¨Äê·Ý
+		if((SetTimeKind==2) && (TempTime[6]>0x10)) //Éè¶¨Äê·Ý
 		{
-				TempTime[6]--;
-				if((TempTime[6]&0x0F)>9) TempTime[6]&=0xF9;
-				Date_Is_Correct();	
-		}else if(SetTimeKind==3 && TempTime[4]>1) //Éè¶¨ÔÂ·Ý
+			TempTime[6]--;
+			if((TempTime[6]&0x0F)>9)
+			{
+				TempTime[6]&=0xF9;
+			}				
+			Date_Is_Correct();	
+		}else if((SetTimeKind==3) && (TempTime[4]>1)) //Éè¶¨ÔÂ·Ý
 		{
-				TempTime[4]--;
-				if((TempTime[4]&0x0F)>9) TempTime[4]&=0xF9;
-				Date_Is_Correct();	
-		}else if(SetTimeKind==4 && TempTime[3]>1) //Éè¶¨ÈÕ
+			TempTime[4]--;
+			if((TempTime[4]&0x0F)>9)
+			{
+				TempTime[4]&=0xF9;
+			}				
+			Date_Is_Correct();	
+		}else if((SetTimeKind==4) && (TempTime[3]>1)) //Éè¶¨ÈÕ
 		{
-				TempTime[3]--;
-				if((TempTime[3]&0x0F)>9) TempTime[3]&=0xF9;
-				
-		}else if(SetTimeKind==5 && TempTime[2]>0)  //Éè¶¨Ê±
+			TempTime[3]--;
+			if((TempTime[3]&0x0F)>9)
+			{
+				TempTime[3]&=0xF9;
+			}				
+		}else if((SetTimeKind==5) && (TempTime[2]>0))  //Éè¶¨Ê±
 		{	
 			{
 				TempTime[2]--;
-			 if((TempTime[2]&0x0F)>9) TempTime[2]&=0xF9;  
+				if((TempTime[2]&0x0F)>9)
+				{
+					TempTime[2]&=0xF9;
+				}					  
 			}
-		}else if(SetTimeKind==6  && TempTime[1]>0) //Éè¶¨·Ö
+		}else if((SetTimeKind==6)  && (TempTime[1]>0)) //Éè¶¨·Ö
 		{
-				TempTime[1]--;
-				if((TempTime[1]&0x0F)>9) TempTime[1]&=0xF9;
-		}else if(SetTimeKind==7 && TempTime[0]>0) //Éè¶¨Ãë
+			TempTime[1]--;
+			if((TempTime[1]&0x0F)>9)
+			{
+				TempTime[1]&=0xF9;
+			}				
+		}else if((SetTimeKind==7) && (TempTime[0]>0)) //Éè¶¨Ãë
 		{
-				TempTime[0]--;
-				if((TempTime[0]&0x0F)>9) TempTime[0]&=0xF9;
-		}		
+			TempTime[0]--;
+			if((TempTime[0]&0x0F)>9)
+			{
+				TempTime[0]&=0xF9;
+			}				
+		}
+		else
+		{
+			//do nothing
+		}
 	}	
 	else if(Key_State_Present == KEY_STATE_OK_Short)//
 	{
@@ -1274,12 +1454,25 @@ void	HmiSetTimeFunc(void)
 		Display_Return_Cnt = 0;
 		Work_State = UI_STATE_RUNNING_NORMAL_MODE;		
 	}	
+	else
+	{
+		//do nothing
+	}
 	
-	color = BLACK18;
+//	color = BLACK18;
 	if(Set_Time_Cnt == 0)
+	{
 		Back_Color=GREEN18;
+	}
 	else if(Set_Time_Cnt == 3)
-		Back_Color=WHITE18;		
+	{
+		Back_Color=WHITE18;	
+	}
+	else
+	{
+		//do nothing
+	}
+			
 	
 	if((Set_Time_Cnt == 0) ||(Set_Time_Cnt == 3))
 	{
@@ -1287,8 +1480,14 @@ void	HmiSetTimeFunc(void)
 	 }
 		
 	//ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø	
-	if(Key_State_Present)Display_Return_Cnt = 0;
-	if(Display_Return_Cnt < 90)Display_Return_Cnt++;
+	if((uint16_t)Key_State_Present!=(uint16_t)0)
+	{
+		Display_Return_Cnt = 0;
+	}
+	if(Display_Return_Cnt < 90)
+	{
+		Display_Return_Cnt++;
+	}
 	else
 	{
 		Display_Return_Cnt = 0;
@@ -1302,8 +1501,8 @@ void	HmiSetTimeFunc(void)
 }
 
 
-//unsigned char  In_Exp_Ratio=4;	 //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀý  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
-static unsigned char  In_Exp_Ratio_temp=3;	 //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀýÁÙÊ±±äÁ¿
+//uint8_t  In_Exp_Ratio=4;	 //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀý  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
+static uint8_t  In_Exp_Ratio_temp=3;	 //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀýÁÙÊ±±äÁ¿
 static void	EnterSetInExp(void)//½øÈëInExpÉè¶¨
 {	
 	In_Exp_Ratio_temp = In_Exp_Ratio;	
@@ -1312,8 +1511,8 @@ static void	EnterSetInExp(void)//½øÈëInExpÉè¶¨
 
 void	HmiSetInExpFunc(void)//InExpÉèÖÃ½çÃæ
 {
-	static unsigned char Display_Return_Cnt = 0;
-	static unsigned char Set_InExp_Cnt; 
+	static uint8_t Display_Return_Cnt = 0;
+	static uint8_t Set_InExp_Cnt=0; 
 	
 	Set_InExp_Cnt++;
 	if(Set_InExp_Cnt > 6)
@@ -1322,9 +1521,18 @@ void	HmiSetInExpFunc(void)//InExpÉèÖÃ½çÃæ
  	}
 	Back_Color=WHITE18;
 	if(Set_InExp_Cnt == 0)
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);		
+	{
+		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);
+	}	
 	else if(Set_InExp_Cnt == 3)
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18);		
+	{
+		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18);	
+	}
+	else
+	{
+		//do nothing
+	}
+			
 	
 	if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
 	{
@@ -1357,11 +1565,21 @@ void	HmiSetInExpFunc(void)//InExpÉèÖÃ½çÃæ
 		data_flash.In_Exp_Ratio = In_Exp_Ratio;// 
 		Setting_write_to_flash(); 		
 	}	
+	else
+	{
+		//do nothing
+	}
 	
 	//	Setting_write_to_flash(); 
 		//ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø	
-	if(Key_State_Present)Display_Return_Cnt = 0;
-	if(Display_Return_Cnt < 90)Display_Return_Cnt++;
+	if((uint16_t)Key_State_Present!=(uint16_t)0)
+	{
+		Display_Return_Cnt = 0;
+	}
+	if(Display_Return_Cnt < 90)
+	{
+		Display_Return_Cnt++;
+	}
 	else
 	{
 		Display_Return_Cnt = 0;
@@ -1377,16 +1595,19 @@ void	HmiSetInExpFunc(void)//InExpÉèÖÃ½çÃæ
 //¼ÆÊ±º¯Êý,·ÅÈëÖÐ¶Ï
 void HmiScreenSaverMode_Tik_Cnt(void)
 {
-	if(Tik_ScreenSaver_Tick_100mS < 30000)Tik_ScreenSaver_Tick_100mS++;
+	if(Tik_ScreenSaver_Tick_100mS < 30000)
+	{
+		Tik_ScreenSaver_Tick_100mS++;
+	}
 }
 
 void	HmiScreenSaverModeFunc(void)
 {
-	unsigned int i;
-	unsigned char DispEnable = 0;
-	static unsigned char ReCnt;
+	uint16_t i=0;
+	uint8_t DispEnable = 0;
+	static uint8_t ReCnt=0;
 	
-	DispEnable = 0;
+//	DispEnable = 0;
 	ReCnt++;
 	if(ReCnt > 10)//1S
 	{
@@ -1409,12 +1630,12 @@ void	HmiScreenSaverModeFunc(void)
 	}
 	else//ÔÚÆÁ±£Ä£Ê½
 	{		
-		
+		//do nothing
 	}	
 	
-	if((Key_State_Present)//°´ÏÂ°´¼ü
+	if(((uint16_t)Key_State_Present!=(uint16_t)0)//°´ÏÂ°´¼ü
 	//»ò³öÏÖ´íÎó
-				||(ERR_Kind)!=0 //ÎÞË®,´«¸ÐÆ÷´íÎó,¸ßÎÂµÈ´íÎó
+				||((ERR_Kind)!=0) //ÎÞË®,´«¸ÐÆ÷´íÎó,¸ßÎÂµÈ´íÎó
 	      ||(Wire_Mode_Mismatch == 1)  //·¢ÈÈË¿Î´Ñ¡¶¨
 				||(HeaterPlate_State==0))//Ë®¹ÞÎ´×°ºÃ»ò·¢ÈÈÅÌ¿ªÂ·
 	{
@@ -1426,13 +1647,13 @@ void	HmiScreenSaverModeFunc(void)
 		{
 			Work_State = UI_STATE_RUNNING_NORMAL_MODE;
 			HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);	
-			Error_Base_HeaterWire_DISP_Enable();//ÆÁ±£Ê±ÖÃÏà¹Ø±êÖ¾,ÒÔ±ãÁÁÆÁÊ±ÏÔÊ¾Ö÷»úºÍÏßµÄÍ¼ÐÎ
+			Err_Base_HeaterWire_DISP_Enable();//ÆÁ±£Ê±ÖÃÏà¹Ø±êÖ¾,ÒÔ±ãÁÁÆÁÊ±ÏÔÊ¾Ö÷»úºÍÏßµÄÍ¼ÐÎ
 		}
 	}		
 		
-	if(DispEnable)
+	if(DispEnable!=(uint8_t)0)
 	{
-		DispEnable = 0;		
+//		DispEnable = 0;		
 		Back_Color=BLACK18;
 		i=Diplay_RTtemp;
 		if(i>=1000)//ÏÔÊ¾ÎÂ¶È

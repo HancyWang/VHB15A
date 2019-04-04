@@ -1,11 +1,11 @@
- #include "STC12C32AD.h"
+// #include "STC12C32AD.h"
  #include "all.h"
- #include "INTRINS.H" 
- #include "delay.h"
- #include "ds18b20.h"
+// #include "INTRINS.H" 
+// #include "delay.h"
+// #include "ds18b20.h"
  
-unsigned char   Read_18B20_Value;
-unsigned char   Read_18B20_Value2; 
+uint8_t   Read_18B20_Value;
+uint8_t   Read_18B20_Value2; 
 
 //2019.03.30
 sbit P10 = 0x90^0;
@@ -32,14 +32,20 @@ void DS18B20_ReadByte(void)
         delay_us(2);              //接收延时
         Wei=HeatingPlateSensor_Port;
         Wei2=ChamberOutletSensor_Port;
-        if (Wei==1) Read_18B20_Value |= 0x80;        //读取数据
-        if (Wei2==1) Read_18B20_Value2 |= 0x80;        //读取数据
+        if (Wei==1)
+				{
+					Read_18B20_Value |= 0x80;        //读取数据
+				}					
+        if (Wei2==1) 
+				{
+					Read_18B20_Value2 |= 0x80;        //读取数据
+				}
         delay_us(90);                  //等待60us时间片结束
     }
     //EA=1; 
 }
 
-void DS18B20_WriteByte(unsigned char dat)
+void DS18B20_WriteByte(uint8_t dat)
 {
     BYTE  i;
     //EA=0;
@@ -67,28 +73,31 @@ void DS18B20_WriteByte(unsigned char dat)
     //EA=1;
 }
 
-u8t DS18B20_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum)
+u8t DS18B20_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum)
 //==============================================================================
 {
-  u8t crc = 0;	
-  u8t byteCtr;
-  u8t bit8;
+	u8t crc = 0;	
+	u8t byteCtr;
+	u8t bit8;
 	u8t crc_1byte = 0;
-  //calculates 8-Bit checksum with given polynomial
-	crc = 0;
-  for (byteCtr = 0; byteCtr < nbrOfBytes; ++byteCtr)
-  { 
-    crc ^= (Cdata[byteCtr]);
+	//calculates 8-Bit checksum with given polynomial
+//	crc = 0;
+	for (byteCtr = 0; byteCtr < nbrOfBytes; ++byteCtr)
+	{ 
+		crc ^= (Cdata[byteCtr]);
 		crc_1byte ^= 0;
-    for (bit8 = 0; bit8 < 8; bit8++)
-    {
-			if ((crc_1byte^crc) & 0x01)
+		for (bit8 = 0; bit8 < 8; bit8++)
+		{
+			if (((crc_1byte^crc) & (u8t)0x01)!=(u8t)0)
 			{
 				crc_1byte ^= 0x18;
 				crc_1byte >>= 1;
 				crc_1byte |= 0x80;
 			}
-			else crc_1byte >>= 1;
+			else
+			{
+				crc_1byte >>= 1;
+			}				
 			crc >>= 1;  
 		}
 		//crc = crc ^ crc_1byte;
@@ -97,5 +106,8 @@ u8t DS18B20_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum)
   {
   	return CHECKSUM_ERROR;
   }
-  else return 0;
+  else 
+	{
+		return 0;
+	}
 } 

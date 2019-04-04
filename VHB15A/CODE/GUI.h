@@ -34,7 +34,7 @@ void	HmiSetTimeFunc(void);//时间设定
 void	HmiScreenSaverModeFunc(void);//屏保模式
 void  HmiScreenSaverMode_Tik_Cnt(void);
 //void  HmiScreenSaverModeFunc_TimeRestFunc(void);//注意进运行模式时要清一次
-void  DisPlayTime(unsigned char TempTime[7],unsigned char TimeKind);//显示时间
+void  DisPlayTime(const uint8_t TempTime[7],uint8_t TimeKind);//显示时间
 
 
 

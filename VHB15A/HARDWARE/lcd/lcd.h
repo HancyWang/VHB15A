@@ -3,7 +3,7 @@
 
 #include "all.h" 
 
-extern uint8_t  xdata  Back_Color;
+extern uint8_t    Back_Color;
 
 
 void LCD_ILI9341V_Parameter(uint8_t data8); //2014-06-10 V1.04更换夏瑞的LCD屏，驱动由ILI9328变更为ILI9341
@@ -47,7 +47,7 @@ void Disp_ShangBiao8(uint8_t  X, uint16_t Y,uint8_t color);
 void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color);
 void DISP_FNT12X24(u16  X, u16 Y,u8 NUM,u8 mode,u8 color);
 void LCD_ShowChar(u16 x,u16 y,u8 size,u8 num,u8 mode,u8 color); 
-void LCD_ShowString(u16 x, u16 y,u16 height_x,u16 width_y, u8 *p,u8 mode,u8 color);
+void LCD_ShowString(u16 x, u16 y,u16 height_x,u16 width_y,const u8 *p,u8 mode,u8 color);
 void LCD_ShowxNum(u16 x,u16 y,u8 size,u8 len,u32 num,u8 mode,u8 color);
 void Draw_Circle(u16 x0,u16 y0,u8 r,u8 color);//画圆
 

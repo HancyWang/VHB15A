@@ -1,7 +1,7 @@
- #include "STC12C32AD.h"
+// #include "STC12C32AD.h"
  #include "all.h"
- #include "sht21.h"
- #include "delay.h"	
+// #include "sht21.h"
+// #include "delay.h"	
  //#include "lcd.h" 
  
 #define	WriteCmd  0x80
@@ -27,11 +27,11 @@
 
 static void SHT21_Start(void);
 static void SHT21_Stop(void);
-u8t SHT2x_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum);
-static unsigned char SHT21_Write8Bit(unsigned char input);
-static unsigned char SHT21_Read8Bit(bit ask);
+static u8t SHT2x_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum);
+static uint8_t SHT21_Write8Bit(uint8_t i_input);
+static uint8_t SHT21_Read8Bit(uint8_t ask);
 
-//extern unsigned char  Test_Mode_Dis_Data_Flag; //测试模式显示数据DATA的标志	外部变量
+//extern uint8_t  Test_Mode_Dis_Data_Flag; //测试模式显示数据DATA的标志	外部变量
 
 
 //2019.03.29
@@ -64,21 +64,25 @@ static void SHT21_Stop(void)
 
 /***************************************************************************/
 /***************************************************************************/
-static unsigned char SHT21_Write8Bit(unsigned char i_input)
+static uint8_t SHT21_Write8Bit(uint8_t i_input)
 {
-		unsigned int  i;
+		uint16_t  i;
 
-		for(i=0x80; i>0; i>>=1)           //shift bit for masking (8 times)
+		for(i=(uint16_t)0x80; i>0; i>>=1)           //shift bit for masking (8 times)
 		{
 			SCL_OUTPUT_LOW();
-			if ((i & i_input))
-			  { SDA_INPUT_HIGH();   }			
-		  else
-				{	  SDA_OUTPUT_LOW();   }                 //masking txByte, write bit to SDA-Line
+			if((i &(uint8_t)i_input)!=(uint8_t)0)
+			{	
+				SDA_INPUT_HIGH();
+			}			
+			else
+			{	
+				SDA_OUTPUT_LOW(); //masking txByte, write bit to SDA-Line
+			}              
 
-		  delay_us(10);                        //data set-up time (t_SU;DAT)
-		  SCL_INPUT_HIGH();                                //generate clock pulse on SCL
-		  delay_us(10);                        //SCL input_high time (t_HIGH)
+			delay_us(10);                        //data set-up time (t_SU;DAT)
+			SCL_INPUT_HIGH();                                //generate clock pulse on SCL
+			delay_us(10);                        //SCL input_high time (t_HIGH)
 		}
 		SCL_OUTPUT_LOW();
 		delay_us(10); 
@@ -97,9 +101,9 @@ static unsigned char SHT21_Write8Bit(unsigned char i_input)
 }
 
 /***************************************************************************/
-static unsigned char SHT21_Read8Bit(bit ask)
+static uint8_t SHT21_Read8Bit(uint8_t ask)
 {
-		unsigned char  mask,rxByte=0; 		
+		uint8_t  mask,rxByte=0; 		
 
 		SDA_INPUT_HIGH(); //release SDA-line
 
@@ -107,11 +111,14 @@ static unsigned char SHT21_Read8Bit(bit ask)
 		{
 			SCL_INPUT_HIGH();                   //sht21_start clock on SCL-line
 		  delay_us(10);                     //SCL input_high time (t_HIGH)
-		  if (SDA_CONF==1) rxByte=(rxByte | mask); //read bit
+		  if (SDA_CONF==1) 
+			{
+				rxByte=(rxByte | mask); //read bit
+			}
 		  SCL_OUTPUT_LOW();
 		  delay_us(10);                     //data hold time(t_HD;DAT)
 		}
-		if(ask)
+		if(ask!=(uint8_t)0)
 		{
 		  SDA_INPUT_HIGH();
 		}
@@ -133,9 +140,9 @@ static unsigned char SHT21_Read8Bit(bit ask)
 
 
 /***************************************************************************/
-unsigned char SHT21_WriteTemp(void)
+uint8_t SHT21_WriteTemp(void)
 {
-	unsigned char  Read_SHT21_Err;
+	uint8_t  Read_SHT21_Err;
 	SHT21_Start();
 	Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
 	Read_SHT21_Err=SHT21_Write8Bit(TempCmd);
@@ -146,9 +153,9 @@ unsigned char SHT21_WriteTemp(void)
 	return Read_SHT21_Err;
 }
 
-unsigned char SHT21_WriteRH(void)
+uint8_t SHT21_WriteRH(void)
 {
-	unsigned char  Read_SHT21_Err;
+	uint8_t  Read_SHT21_Err;
 	SHT21_Start();
 	Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
 	Read_SHT21_Err=SHT21_Write8Bit(RHCmd);
@@ -161,42 +168,42 @@ unsigned char SHT21_WriteRH(void)
 }
 
 
-/*
-//打开或关闭SHT21内部加热功能
-void	SHT21_Heater_On_Off(unsigned char Heater_State)
-{
-	unsigned char  Read_SHT21_Err;
-	unsigned char UserReg;
-	SHT21_Start();
-	Read_SHT21_Err = SHT21_Write8Bit(WriteCmd);	
-	Read_SHT21_Err = SHT21_Write8Bit(0xE7);	 //读用户寄存器指令
-	SHT21_Start();
-	Read_SHT21_Err = SHT21_Write8Bit(0x81);	
-	UserReg =  SHT21_Read8Bit(NO_ASK);//读取用户寄存器
-	UserReg &= 0x38;//保留3-4-5预留位
-	UserReg |= 0x02;//不能启动OTP加载，RH 12bit T 14bit
-	if(Heater_State)
-	{
-		UserReg |= 0x04;//启动片上加热器	
-	} 
 
-	SHT21_Start();
-	Read_SHT21_Err = SHT21_Write8Bit(WriteCmd);
-	Read_SHT21_Err = SHT21_Write8Bit(0xE6);	 //写用户寄存器指令
-	Read_SHT21_Err = SHT21_Write8Bit(UserReg);	 //写用户寄存器指令
-	SHT21_Stop();
-}
-*/
+//// 打开或关闭SHT21内部加热功能
+//void	SHT21_Heater_On_Off(uint8_t Heater_State)
+//{
+//	uint8_t  Read_SHT21_Err;
+//	uint8_t UserReg;
+//	SHT21_Start();
+//	Read_SHT21_Err = SHT21_Write8Bit(WriteCmd);	
+//	Read_SHT21_Err = SHT21_Write8Bit(0xE7);	 *读用户寄存器指令
+//	SHT21_Start();
+//	Read_SHT21_Err = SHT21_Write8Bit(0x81);	
+//	UserReg =  SHT21_Read8Bit(NO_ASK);//读取用户寄存器
+//	UserReg &= 0x38;//保留3-4-5预留位
+//	UserReg |= 0x02;//不能启动OTP加载，RH 12bit T 14bit
+//	if(Heater_State)
+//	{
+//		UserReg |= 0x04;//启动片上加热器	
+//	} 
+
+//	SHT21_Start();
+//	Read_SHT21_Err = SHT21_Write8Bit(WriteCmd);
+//	Read_SHT21_Err = SHT21_Write8Bit(0xE6);	 //写用户寄存器指令
+//	Read_SHT21_Err = SHT21_Write8Bit(UserReg);	 //写用户寄存器指令
+//	SHT21_Stop();
+//}
+
 
 
 /***************************************************************************/
 //返回SHT21_ERROR --- 未收到正确的数据
 //返回温度数据
 //返回湿度数据
-unsigned int SHT21_ReadData(void)
+uint16_t SHT21_ReadData(void)
 {
-	unsigned char TempH,TempL;
-	unsigned long  TempLong; 
+	uint8_t TempH,TempL;
+	UINT32  TempLong; 
 	u8t  checksum;   //checksum
     u8t  Cdata[2];    //data array for checksum verification
 	u8t  CRC8_error;   //checksum
@@ -228,7 +235,10 @@ unsigned int SHT21_ReadData(void)
 	}
 	
 	//if(TempL& 0x01==0x01) return SHT21_ERROR;
-	if(TempLong==0x0) return SHT21_ERROR;//数据为0
+	if(TempLong==0x0)
+	{
+		return SHT21_ERROR;//数据为0
+	}		
 
 	if((TempL&0x02)==0x0)  //温度
 	{
@@ -246,10 +256,10 @@ unsigned int SHT21_ReadData(void)
 		
 		TempLong |= 0x8000;//区别温度和湿度数据,温度最高位为1
 	  return  TempLong; 
-  }
+	}
 } 
 
-u8t SHT2x_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum)
+static u8t SHT2x_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum)
 //==============================================================================
 {
   u8t crc = 0;	
@@ -261,13 +271,24 @@ u8t SHT2x_CheckCrc(u8t Cdata[], u8t nbrOfBytes, u8t checksum)
     crc ^= (Cdata[byteCtr]);
     for (bit8 = 8; bit8 > 0; --bit8)
     {
-	  if (crc & 0x80) crc = (crc << 1) ^ POLYNOMIAL;
-      else crc = (crc << 1);
+//	  if (crc & 0x80) crc = (crc << 1) ^ POLYNOMIAL;
+//			else crc = (crc << 1);
+			if ((crc & (u8t)0x80)!=(u8t)0)
+			{
+				crc = (u8t)((crc << 1) ^ POLYNOMIAL);
+			}				
+			else
+			{
+				crc = (uint8_t)((crc << 1));
+			}				
     }
   }
   if(crc != checksum) 
   {
   	return CHECKSUM_ERROR;
   }
-  else return 0;
+  else
+	{
+		return 0;
+	}		
 } 

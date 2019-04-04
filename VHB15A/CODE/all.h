@@ -8,53 +8,53 @@
 #ifndef __ALL_H
 #define __ALL_H
 
-#ifndef BYTE
-typedef unsigned char BYTE;
-#endif
-#ifndef uchar
-typedef unsigned char uchar;
-#endif
-#ifndef u8t
-typedef unsigned char u8t;
-#endif
-#ifndef uint8_t
-typedef unsigned char uint8_t;
-#endif
-#ifndef uint8
-typedef unsigned char uint8;
-#endif
-#ifndef UINT8
-typedef unsigned char UINT8;
-#endif
+//#ifndef BYTE
+//typedef unsigned char BYTE;
+//#endif
+//#ifndef uchar
+//typedef unsigned char uchar;
+//#endif
+//#ifndef u8t
+//typedef unsigned char u8t;
+//#endif
+//#ifndef uint8_t
+//typedef unsigned char uint8_t;
+//#endif
+//#ifndef uint8
+//typedef unsigned char uint8;
+//#endif
+//#ifndef UINT8
+//typedef unsigned char UINT8;
+//#endif
 
-#ifndef uint
-typedef unsigned int  uint;
-#endif
-#ifndef u16t
-typedef unsigned int  u16t;
-#endif
-#ifndef uint16
-typedef unsigned int uint16;
-#endif
-#ifndef uint16_t
-typedef unsigned int uint16_t;
-#endif
+//#ifndef uint
+//typedef unsigned int  uint;
+//#endif
+//#ifndef u16t
+//typedef unsigned int  u16t;
+//#endif
+//#ifndef uint16
+//typedef unsigned int uint16;
+//#endif
+//#ifndef uint16_t
+//typedef unsigned int uint16_t;
+//#endif
 
-#ifndef int16_t
-typedef int int16_t;
-#endif
-
-
-#ifndef uint32
-typedef unsigned long uint32;
-#endif
-#ifndef UINT32
-typedef unsigned long UINT32;
-#endif
+//#ifndef int16_t
+//typedef int int16_t;
+//#endif
 
 
-typedef enum {RESET = 0, SET = !RESET} FlagStatus, ITStatus, BitStatus, BitAction;
+//#ifndef uint32
+//typedef unsigned long uint32;
+//#endif
+//#ifndef UINT32
+//typedef unsigned long UINT32;
+//#endif
 
+
+//typedef enum {RESET = 0, SET = !RESET} FlagStatus, ITStatus, BitStatus, BitAction;
+#include "data_type.h"
 #include "STC12C32AD.h"
 #include "stc_eeprom.h"
 #include "INTRINS.H" 
@@ -80,7 +80,7 @@ typedef enum {RESET = 0, SET = !RESET} FlagStatus, ITStatus, BitStatus, BitActio
 #include "absacc.h"
 #include "StcRomCrc16.h"
 
-#define VHB15A_VER "2.0.3A"//software version
+#define VHB15A_VER "2.0.5"//software version
 #define DATE_VER "190318"	//
 
 #define  Clear_bit(Value,bit_num)    (Value) =(Value)& ( ~ ( 1 << (bit_num) ) )

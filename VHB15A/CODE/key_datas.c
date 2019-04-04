@@ -30,7 +30,7 @@ struct Multifun_Key Key_UP =
   1,			      //处理状态
 };
 
-unsigned char Key_UP_Tik = 0;
+uint8_t Key_UP_Tik = 0;
 void Key_UP_TikFunc(void)
 {
     if(Key_UP_Tik < 250)
@@ -81,7 +81,7 @@ struct Multifun_Key Key_Down =
   1,			      //处理状态
 };
 
-unsigned char Key_Down_Tik = 0;
+uint8_t Key_Down_Tik = 0;
 void Key_Down_TikFunc(void)
 {
     if(Key_Down_Tik < 250)
@@ -133,7 +133,7 @@ struct Multifun_Key Key_OK =
   1,			      //处理状态
 };
 
-unsigned char Key_OK_Tik = 0;
+uint8_t Key_OK_Tik = 0;
 void Key_OK_TikFunc(void)
 {
     if(Key_OK_Tik < 250)
@@ -186,7 +186,7 @@ struct Multifun_Key Key_Mute =
   1,			      //处理状态
 };
 
-unsigned char Key_Mute_Tik = 0;
+uint8_t Key_Mute_Tik = 0;
 void Key_Mute_TikFunc(void)
 {
     if(Key_Mute_Tik < 250)
@@ -200,7 +200,7 @@ static void	KeyMutePressShortAction(void)
 {
 	Key_State_Present = KEY_STATE_Mute_Short;	
 	
-	if(AlarmInfoIndex)//有报警
+	if(AlarmInfoIndex!=(uint8_t)0)//有报警
 	{
 		if(AlarmSoundPauseStatus == 0)//正常报警
 		{

@@ -21,7 +21,7 @@
 uint8_t SHT21_WriteTemp(void);
 uint8_t SHT21_WriteRH(void);
 uint16_t  SHT21_ReadData(void);
-uint8_t SHT2x_CheckCrc(uint8_t Cdata[], uint8_t nbrOfBytes, uint8_t checksum);
+//uint8_t SHT2x_CheckCrc(uint8_t Cdata[], uint8_t nbrOfBytes, uint8_t checksum);
 //void SHT21_Heater_On_Off(uint8_t);
 
 

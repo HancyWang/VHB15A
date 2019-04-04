@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   STC_EEPROM                                                        03/30/2019 11:43:02 PAGE 1   
+C51 COMPILER V9.52.0.0   STC_EEPROM                                                        04/04/2019 14:50:14 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE STC_EEPROM
@@ -10,7 +10,7 @@ COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\SYSTEM\stc_eeprom\stc_eeprom.c 
 
 line level    source
 
-   1          #include <reg51.H>
+   1          //#include <reg51.H>
    2          #include <intrins.H>
    3          #include "stc_eeprom.h"
    4          
@@ -26,14 +26,14 @@ line level    source
   14          
   15          //#define DATA_FLASH_START_ADDRESS 0x00  //STC5Axx Series EEPROM Starting Address
   16          
-  17          static union union_temp16
+  17          static union 
   18          {
   19              INT16U un_temp16;
   20              INT8U  un_temp8[2];
   21          }my_unTemp16;
   22          
   23          
-  24          static void IAP_Disable();  //Disable IAP function 
+  24          static void IAP_Disable(void);  //Disable IAP function 
   25          
   26          
   27          
@@ -62,7 +62,7 @@ line level    source
   50   1          IAP_CMD = 0x02;                 //IAP/ISP/EEPROM write byte command
   51   1      
   52   1          my_unTemp16.un_temp16 = add;
-C51 COMPILER V9.52.0.0   STC_EEPROM                                                        03/30/2019 11:43:02 PAGE 2   
+C51 COMPILER V9.52.0.0   STC_EEPROM                                                        04/04/2019 14:50:14 PAGE 2   
 
   53   1          IAP_ADDRH = my_unTemp16.un_temp8[0];    //Setting target address high 8bit
   54   1          IAP_ADDRL = my_unTemp16.un_temp8[1];    //Setting target address low 8bit
@@ -92,7 +92,7 @@ line level    source
   78   1          IAP_Disable();  //Disable IAP
   79   1      }
   80          
-  81          static void IAP_Disable() //Disable IAP
+  81          static void IAP_Disable(void) //Disable IAP
   82          { 
   83   1          IAP_CONTR = 0;      //
   84   1          IAP_CMD   = 0;      //
