@@ -1,7 +1,8 @@
 #include "all.h"
 
 //2019.03.30
-sbit P20 = (uint8_t)0xA0^(uint8_t)0;
+//sbit P20 = (uint8_t)0xA0^(uint8_t)0;
+sbit P20 = (uint8_t)0xA0;
 sbit P21 = (uint8_t)0xA0^(uint8_t)1;
 sbit P22 = (uint8_t)0xA0^(uint8_t)2;
 sbit P23 = (uint8_t)0xA0^(uint8_t)3;
@@ -10,9 +11,9 @@ WORK_STATUS Work_State = UI_STATE_POWER_OFF_MODE;//工作状态定义
 
 void ManageTask(void)//Task0:Task Manager ----20mS
 {
-    static uint8_t Manage_Tik_100mS_Cnt = 0;
-	  static uint8_t Manage_Tik_250mS_Cnt = 0;
-	  static uint8_t Manage_Tik_1000mS_Cnt = 0;		     
+    static INT Manage_Tik_100mS_Cnt = 0;
+	  static INT Manage_Tik_250mS_Cnt = 0;
+	  static INT Manage_Tik_1000mS_Cnt = 0;		     
              
     WS_TaskState = ManageTIFG;
     if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)   

@@ -27,29 +27,35 @@
 //#define W25X_ManufactDeviceID	0x90
 //#define W25X_JedecDeviceID		0x9F
 
-#define nop() _nop_()
+//#define nop() _nop_()
+
 
 //2019.03.30
-sbit P17 = 0x90^7;
-sbit P41 = 0xC0^1;
-sbit P42 = 0xC0^2;
-sbit P44 = 0xC0^4;
-sbit P45 = 0xC0^5;
+sbit P17 = (u8)0x90^(u8)7;
+sbit P41 = (u8)0xC0^(u8)1;
+sbit P42 = (u8)0xC0^(u8)2;
+sbit P44 = (u8)0xC0^(u8)4;
+sbit P45 = (u8)0xC0^(u8)5;
 					  
 //unsigned char Read_Data; 
 
- void    SPI_Write_Enable() //写使能
- {   W25X_CS = 0;                            //  enable device
-     SPI_Send_Byte(W25X_WriteEnable);        //  send W25X_Write_Enable command
-     W25X_CS = 1;                            //  disable device
- }
- void    SPI_Write_Disable() //写禁止
- {
-     W25X_CS = 0;                            //  enable device
-     SPI_Send_Byte(W25X_WriteDisable);       //  send W25X_WriteW25X_DIsable command
-     W25X_CS = 1;                            //  disable device
- }
+void    SPI_Write_Enable() //写使能
+{   W25X_CS = 0;                            //  enable device
+	 SPI_Send_Byte(W25X_WriteEnable);        //  send W25X_Write_Enable command
+	 W25X_CS = 1;                            //  disable device
+}
+void    SPI_Write_Disable() //写禁止
+{
+	 W25X_CS = 0;                            //  enable device
+	 SPI_Send_Byte(W25X_WriteDisable);       //  send W25X_WriteW25X_DIsable command
+	 W25X_CS = 1;                            //  disable device
+}
 
+//void nop(void)
+//{
+//	_nop_();
+//}
+// 
 //读N个字节
 //起始地址
 //读字节的个数,最多128
@@ -60,9 +66,9 @@ void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
 	LCD_1DIR_H;
 	W25X_CS = 0;                                        //  enable device
 	SPI_Send_Byte(W25X_ReadData);                       //  read command
-	SPI_Send_Byte(((Dst_Addr & 0xFFFFFF) >> 16));       //  send 3 address bytes
-	SPI_Send_Byte(((Dst_Addr & 0xFFFF) >> 8));
-	SPI_Send_Byte(Dst_Addr & 0xFF);
+	SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFFFF) >> 16));       //  send 3 address bytes
+	SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFF) >> 8));
+	SPI_Send_Byte(Dst_Addr & (uint32)0xFF);
 	// SPI_Send_Byte(0xFF);                                //  dummy byte
 	for (; i < nBytes_128; i++)                     //  read until no_bytes is reached
 	{
@@ -84,9 +90,9 @@ void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
 	SPI_Write_Enable();             /* set WEL */
 	W25X_CS = 0;
 	SPI_Send_Byte(W25X_PageProgram);        /* send Byte Program command */
-	SPI_Send_Byte(((Dst_Addr & 0xFFFFFF) >> 16)); /* send 3 address bytes */
-	SPI_Send_Byte(((Dst_Addr & 0xFFFF) >> 8));
-	SPI_Send_Byte(Dst_Addr & 0xFF);
+	SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFFFF) >> 16)); /* send 3 address bytes */
+	SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFF) >> 8));
+	SPI_Send_Byte(Dst_Addr & (uint32)0xFF);
 	for (i = 0; i < nBytes_128; i++)
 	{
 		//         byte = *(Data_Adr+i);
@@ -101,7 +107,7 @@ void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
  {
  	 W25X_CLK = 0;                         //  set clock to low initial state for SPI operation mode 0
      W25X_CS = 1;
-     nop();nop(); nop();nop();
+     _nop_();_nop_(); _nop_();_nop_();
      SPI_Write_Disable();
  }
 
@@ -112,7 +118,7 @@ void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
 	uchar OUT=out;
 	for (; i < 8; i++)
 	{
-		if ((OUT & 0x80) == 0x80)           //  check if MSB is high
+		if ((OUT & (uchar)0x80) == 0x80)           //  check if MSB is high
 		{
 			W25X_DI = 1;
 		}
@@ -124,7 +130,7 @@ void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
 
 		W25X_CLK = 1;                       //  toggle clock high
 		OUT = (uint8_t)(OUT << 1);                   //  shift 1 place for next bit
-		nop();nop(); nop();nop();
+		_nop_();_nop_(); _nop_();_nop_();
 		W25X_CLK = 0;                       //  toggle clock low
 	}
 }
@@ -139,16 +145,16 @@ uchar   SPI_Get_Byte(void)
 		in = (uint8_t)(in << 1);                      //  shift 1 place to the left or shift in 0
 		temp = W25X_DO;                      //  save input
 		W25X_CLK = 1; 
-		nop();                              //  toggle clock high
+		_nop_();                              //  toggle clock high
 		if (temp==1)                        //  check to see if bit is high
 		{
-			in |= 0x01;                     //  if high, make bit high
+			in |= (uchar)0x01;                     //  if high, make bit high
 		}
 			 
-		nop();
-		nop();
-		nop(); 
-		nop(); 
+		_nop_();
+		_nop_();
+		_nop_(); 
+		_nop_(); 
 		W25X_CLK = 0;                       //  toggle clock low
 	}
 	return in;
@@ -161,9 +167,9 @@ uchar   SPI_Get_Byte(void)
      SPI_Write_Enable();                                 //  set WEL
      W25X_CS = 0;
      SPI_Send_Byte(W25X_SectorErase);                    //  send Sector Erase command
-     SPI_Send_Byte((uchar)((Dst_Addr & 0xFFFFFF) >> 16));//    send 3 address bytes
-     SPI_Send_Byte((uchar)((Dst_Addr & 0xFFFF) >> 8));
-     SPI_Send_Byte((uchar)Dst_Addr & 0xFF);
+     SPI_Send_Byte((uchar)((Dst_Addr & (uint32)0xFFFFFF) >> 16));//    send 3 address bytes
+     SPI_Send_Byte((uchar)((Dst_Addr & (uint32)0xFFFF) >> 8));
+     SPI_Send_Byte((uchar)Dst_Addr & (uint32)0xFF);
      W25X_CS = 1;                                        //  disable device
  }
 

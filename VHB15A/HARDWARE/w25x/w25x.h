@@ -1,6 +1,8 @@
 #ifndef __W25X_H
 #define __W25X_H 
 
+//void nop(void);
+
 void	SPI_Write_Enable(void);
 void	SPI_Write_Disable(void);
 void	SPI_init(void);

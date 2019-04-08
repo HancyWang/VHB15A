@@ -18,9 +18,9 @@ sbit TR0 = (uint8_t)0x88^(uint8_t)4;
 //******************************************************************************
 void Main_Tik_Tok_Initial_Fun(void)//Initialize the timer(20mS)
 {
-	AUXR &= 0x7F;		//Timer 12T mode
-	TMOD &= 0xF0;		//set Timer mode
-	TMOD |= 0x01;		//
+	AUXR &= (u8)0x7F;		//Timer 12T mode
+	TMOD &= (u8)0xF0;		//set Timer mode
+	TMOD |= (u8)0x01;		//
 	TL0 = 0x00;		 	//Timer0 Initial Value
 	TH0 = 0x70;			//
 	TF0 = 0;		 		//clear TF0 flag

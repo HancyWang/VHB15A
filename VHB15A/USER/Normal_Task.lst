@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 1   
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE NORMAL_TASK
@@ -13,504 +13,504 @@ line level    source
    1          #include "all.h"
    2          
    3          //2019.03.30
-   4          sbit P20 = (uint8_t)0xA0^(uint8_t)0;
-   5          sbit P21 = (uint8_t)0xA0^(uint8_t)1;
-   6          sbit P22 = (uint8_t)0xA0^(uint8_t)2;
-   7          sbit P23 = (uint8_t)0xA0^(uint8_t)3;
-   8          
-   9          WORK_STATUS Work_State = UI_STATE_POWER_OFF_MODE;//工作状态定义
-  10          
-  11          void ManageTask(void)//Task0:Task Manager ----20mS
-  12          {
-  13   1          static uint8_t Manage_Tik_100mS_Cnt = 0;
-  14   1          static uint8_t Manage_Tik_250mS_Cnt = 0;
-  15   1          static uint8_t Manage_Tik_1000mS_Cnt = 0;        
-  16   1                   
-  17   1          WS_TaskState = ManageTIFG;
-  18   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)   
-  19   1          { 
-  20   2              WS_DelTaskIfg(WS_TaskState); 
-  21   2              {         
-  22   3                //20mS任务
-  23   3                WS_SetTaskIfg(KeyScanTIFG);//按键扫描任务 20mS          
-  24   3                WS_SetTaskIfg(UartRecTIFG);//串口接收进程
-  25   3                
-  26   3                if(Work_State != UI_STATE_DATAREADER_MODE)//数据传输界面屏蔽以下任务
-  27   3                {         
-  28   4                  if(Work_State != UI_STATE_POWER_OFF_MODE)
-  29   4                  {         
-  30   5                    WS_SetTaskIfg(GetTemp_HpChamberTIFG);      //读取加热盘盘和出气口的温度 20mS
-  31   5                    WS_SetTaskIfg(GetTempHumidity_PatientTIFG); //读取患者端温度和温度 20mS
-  32   5                  }         
-  33   4                  //100mS任务
-  34   4                  Manage_Tik_100mS_Cnt++;
-  35   4                  if(Manage_Tik_100mS_Cnt >= 5)//
-  36   4                  {
-  37   5                    Manage_Tik_100mS_Cnt = 0;
-  38   5        //            time_test_lcd_backlight();
-  39   5                    if(Work_State == UI_STATE_SERVICE_MODE)
-  40   5                    {         
-  41   6                      WS_SetTaskIfg(HmiServiceModeTIFG);//服务模式
-  42   6                    }
-  43   5                    else if(Work_State == UI_STATE_POST_MODE)
-  44   5                    {
-  45   6                      WS_SetTaskIfg(HmiPostTIFG);//开机自检
-  46   6                    }         
-  47   5                    else if(Work_State == UI_STATE_FACTORY_DEFAULT_SEL_MODE)
-  48   5                    {
-  49   6                      WS_SetTaskIfg(HmiFactoryDefaultSelTIFG);//开机选择功能
-  50   6                    }
-  51   5                    else if(Work_State == UI_STATE_NON_INVASIVE_MODE)
-  52   5                    {
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 2   
+   4          //sbit P20 = (uint8_t)0xA0^(uint8_t)0;
+   5          sbit P20 = (uint8_t)0xA0;
+   6          sbit P21 = (uint8_t)0xA0^(uint8_t)1;
+   7          sbit P22 = (uint8_t)0xA0^(uint8_t)2;
+   8          sbit P23 = (uint8_t)0xA0^(uint8_t)3;
+   9          
+  10          WORK_STATUS Work_State = UI_STATE_POWER_OFF_MODE;//工作状态定义
+  11          
+  12          void ManageTask(void)//Task0:Task Manager ----20mS
+  13          {
+  14   1          static INT Manage_Tik_100mS_Cnt = 0;
+  15   1          static INT Manage_Tik_250mS_Cnt = 0;
+  16   1          static INT Manage_Tik_1000mS_Cnt = 0;        
+  17   1                   
+  18   1          WS_TaskState = ManageTIFG;
+  19   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)   
+  20   1          { 
+  21   2              WS_DelTaskIfg(WS_TaskState); 
+  22   2              {         
+  23   3                //20mS任务
+  24   3                WS_SetTaskIfg(KeyScanTIFG);//按键扫描任务 20mS          
+  25   3                WS_SetTaskIfg(UartRecTIFG);//串口接收进程
+  26   3                
+  27   3                if(Work_State != UI_STATE_DATAREADER_MODE)//数据传输界面屏蔽以下任务
+  28   3                {         
+  29   4                  if(Work_State != UI_STATE_POWER_OFF_MODE)
+  30   4                  {         
+  31   5                    WS_SetTaskIfg(GetTemp_HpChamberTIFG);      //读取加热盘盘和出气口的温度 20mS
+  32   5                    WS_SetTaskIfg(GetTempHumidity_PatientTIFG); //读取患者端温度和温度 20mS
+  33   5                  }         
+  34   4                  //100mS任务
+  35   4                  Manage_Tik_100mS_Cnt++;
+  36   4                  if(Manage_Tik_100mS_Cnt >= 5)//
+  37   4                  {
+  38   5                    Manage_Tik_100mS_Cnt = 0;
+  39   5        //            time_test_lcd_backlight();
+  40   5                    if(Work_State == UI_STATE_SERVICE_MODE)
+  41   5                    {         
+  42   6                      WS_SetTaskIfg(HmiServiceModeTIFG);//服务模式
+  43   6                    }
+  44   5                    else if(Work_State == UI_STATE_POST_MODE)
+  45   5                    {
+  46   6                      WS_SetTaskIfg(HmiPostTIFG);//开机自检
+  47   6                    }         
+  48   5                    else if(Work_State == UI_STATE_FACTORY_DEFAULT_SEL_MODE)
+  49   5                    {
+  50   6                      WS_SetTaskIfg(HmiFactoryDefaultSelTIFG);//开机选择功能
+  51   6                    }
+  52   5                    else if(Work_State == UI_STATE_NON_INVASIVE_MODE)
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 2   
 
-  53   6                      WS_SetTaskIfg(HmiNon_InvasiveSelTIFG);//开机有创无创选择
-  54   6                    }
-  55   5                    else if(Work_State == UI_STATE_RUNNING_NORMAL_MODE)
-  56   5                    {
-  57   6                      WS_SetTaskIfg(HmiRunningTIFG);//正常运行状态
-  58   6                    }
-  59   5                    else if(Work_State == UI_STATE_SetTempPatient_MODE)
-  60   5                    {
-  61   6                      WS_SetTaskIfg(HmiSetTempPatientTIFG);//患者端温度设定
-  62   6                    }
-  63   5                    else if(Work_State == UI_STATE_SetTempChamber_MODE)
-  64   5                    {
-  65   6                      WS_SetTaskIfg(HmiSetTempChamberTIFG);//出气口温度设定
-  66   6                    }
-  67   5                    else if(Work_State == UI_STATE_SetInExp_MODE)
-  68   5                    {
-  69   6                      WS_SetTaskIfg(HmiSetInExpTIFG);//InExp设定
-  70   6                    }
-  71   5                    else if(Work_State == UI_STATE_SetTime_MODE)
-  72   5                    {
-  73   6                      WS_SetTaskIfg(HmiSetTimeTIFG);//时间设定
-  74   6                    }
-  75   5                    else
-  76   5                    {
-  77   6                      //do nothing
-  78   6                    }             
-  79   5                    
-  80   5                    if((Work_State != UI_STATE_POWER_OFF_MODE)
-  81   5                      &&(Work_State != UI_STATE_POST_MODE)
-  82   5                      &&(Work_State != UI_STATE_FACTORY_DEFAULT_SEL_MODE)
-  83   5                      &&(Work_State != UI_STATE_NON_INVASIVE_MODE)  
-  84   5                      &&(Work_State != UI_STATE_SERVICE_MODE))//除以上模式外          
-  85   5                    {
-  86   6                      WS_SetTaskIfg(HmiScreenSaverModeTIFG);//屏保模式 
-  87   6                    }
-  88   5      
-  89   5                    
-  90   5                    if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
-  91   5                      ||(Work_State == UI_STATE_SetTempPatient_MODE)
-  92   5                      ||(Work_State == UI_STATE_SetTempChamber_MODE)
-  93   5                      ||(Work_State == UI_STATE_SetInExp_MODE)
-  94   5                      ||(Work_State == UI_STATE_SetTime_MODE))
-  95   5                    { 
-  96   6                      if((Work_State != UI_STATE_SetTime_MODE)//设定时间时不刷新实时RTC时间 
-  97   6                        &&(Work_State != UI_STATE_SCREENSAVER_MODE))
-  98   6                      {
-  99   7                        WS_SetTaskIfg(RefreshRTCTimeTIFG);//刷新RTC时间     
- 100   7                      }               
- 101   6                    }
- 102   5                  }
- 103   4                  
- 104   4                  //240mS任务
- 105   4                  Manage_Tik_250mS_Cnt++;
- 106   4                  if(Manage_Tik_250mS_Cnt >= 12)//
- 107   4                  {
- 108   5                    Manage_Tik_250mS_Cnt = 0;
- 109   5                    if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
- 110   5                      ||(Work_State == UI_STATE_SetInExp_MODE)
- 111   5                      ||(Work_State == UI_STATE_SetTime_MODE))
- 112   5                    {
- 113   6                      if((Work_State != UI_STATE_SetTempPatient_MODE)
- 114   6                        &&(Work_State != UI_STATE_SetTempChamber_MODE))
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 3   
+  53   5                    {
+  54   6                      WS_SetTaskIfg(HmiNon_InvasiveSelTIFG);//开机有创无创选择
+  55   6                    }
+  56   5                    else if(Work_State == UI_STATE_RUNNING_NORMAL_MODE)
+  57   5                    {
+  58   6                      WS_SetTaskIfg(HmiRunningTIFG);//正常运行状态
+  59   6                    }
+  60   5                    else if(Work_State == UI_STATE_SetTempPatient_MODE)
+  61   5                    {
+  62   6                      WS_SetTaskIfg(HmiSetTempPatientTIFG);//患者端温度设定
+  63   6                    }
+  64   5                    else if(Work_State == UI_STATE_SetTempChamber_MODE)
+  65   5                    {
+  66   6                      WS_SetTaskIfg(HmiSetTempChamberTIFG);//出气口温度设定
+  67   6                    }
+  68   5                    else if(Work_State == UI_STATE_SetInExp_MODE)
+  69   5                    {
+  70   6                      WS_SetTaskIfg(HmiSetInExpTIFG);//InExp设定
+  71   6                    }
+  72   5                    else if(Work_State == UI_STATE_SetTime_MODE)
+  73   5                    {
+  74   6                      WS_SetTaskIfg(HmiSetTimeTIFG);//时间设定
+  75   6                    }
+  76   5                    else
+  77   5                    {
+  78   6                      //do nothing
+  79   6                    }             
+  80   5                    
+  81   5                    if((Work_State != UI_STATE_POWER_OFF_MODE)
+  82   5                      &&(Work_State != UI_STATE_POST_MODE)
+  83   5                      &&(Work_State != UI_STATE_FACTORY_DEFAULT_SEL_MODE)
+  84   5                      &&(Work_State != UI_STATE_NON_INVASIVE_MODE)  
+  85   5                      &&(Work_State != UI_STATE_SERVICE_MODE))//除以上模式外          
+  86   5                    {
+  87   6                      WS_SetTaskIfg(HmiScreenSaverModeTIFG);//屏保模式 
+  88   6                    }
+  89   5      
+  90   5                    
+  91   5                    if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
+  92   5                      ||(Work_State == UI_STATE_SetTempPatient_MODE)
+  93   5                      ||(Work_State == UI_STATE_SetTempChamber_MODE)
+  94   5                      ||(Work_State == UI_STATE_SetInExp_MODE)
+  95   5                      ||(Work_State == UI_STATE_SetTime_MODE))
+  96   5                    { 
+  97   6                      if((Work_State != UI_STATE_SetTime_MODE)//设定时间时不刷新实时RTC时间 
+  98   6                        &&(Work_State != UI_STATE_SCREENSAVER_MODE))
+  99   6                      {
+ 100   7                        WS_SetTaskIfg(RefreshRTCTimeTIFG);//刷新RTC时间     
+ 101   7                      }               
+ 102   6                    }
+ 103   5                  }
+ 104   4                  
+ 105   4                  //240mS任务
+ 106   4                  Manage_Tik_250mS_Cnt++;
+ 107   4                  if(Manage_Tik_250mS_Cnt >= 12)//
+ 108   4                  {
+ 109   5                    Manage_Tik_250mS_Cnt = 0;
+ 110   5                    if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
+ 111   5                      ||(Work_State == UI_STATE_SetInExp_MODE)
+ 112   5                      ||(Work_State == UI_STATE_SetTime_MODE))
+ 113   5                    {
+ 114   6                      if((Work_State != UI_STATE_SetTempPatient_MODE)
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 3   
 
- 115   6                      {   
- 116   7                        WS_SetTaskIfg(RefreshTempHumidyTIFG);//刷新实时温度和湿度
- 117   7                      }
- 118   6                    }
- 119   5                    
- 120   5                    if((Work_State != UI_STATE_POWER_OFF_MODE)
- 121   5                      &&(Work_State != UI_STATE_POST_MODE)
- 122   5                      &&(Work_State != UI_STATE_FACTORY_DEFAULT_SEL_MODE)
- 123   5                      &&(Work_State != UI_STATE_NON_INVASIVE_MODE)
- 124   5                      &&(Work_State != UI_STATE_SERVICE_MODE))//除以上模式外                  
- 125   5                    {
- 126   6                      WS_SetTaskIfg(AlarmErrorTIFG);//报警和错误事件处理,错误事件刷新 
- 127   6                    }
- 128   5                  }
- 129   4                            
- 130   4                  //1000mS任务
- 131   4                  Manage_Tik_1000mS_Cnt++;
- 132   4                  if(Manage_Tik_1000mS_Cnt >= 50)//
- 133   4                  {
- 134   5                    Manage_Tik_1000mS_Cnt = 0;
- 135   5                    if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
- 136   5                      ||(Work_State == UI_STATE_SCREENSAVER_MODE)
- 137   5                      ||(Work_State == UI_STATE_SetTempPatient_MODE)
- 138   5                      ||(Work_State == UI_STATE_SetTempChamber_MODE)
- 139   5                      ||(Work_State == UI_STATE_SetInExp_MODE)
- 140   5                      ||(Work_State == UI_STATE_SetTime_MODE))
- 141   5                    {             
- 142   6                      WS_SetTaskIfg(HeaterWireModeDetTIFG); //加热线状态检测 1S
- 143   6                      WS_SetTaskIfg(HeaterPlateWireControlTIFG);//回路加热线温度的控制 1S(仅运算，驱动在定时中断)
- 144   6                      WS_SetTaskIfg(LowPowerModeTIFG);//低功率模式 1S
- 145   6                      WS_SetTaskIfg(SaveDateToFlashTIFG);//保存数据到FLASH 1S 
- 146   6                      WS_SetTaskIfg(LowTempDet1STIFG);//低温低湿检测1S
- 147   6                      WS_SetTaskIfg(RefreshRunTimeTIFG);//刷新运行时间 1S
- 148   6                    }             
- 149   5                  }         
- 150   4                } 
- 151   3              }          
- 152   2          }
- 153   1      }
- 154          
- 155          KEY_STATUS KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 156          void KeyScanTask(void) //1
- 157          {
- 158   1          BitStatus bit_status;
- 159   1          WS_TaskState = KeyScanTIFG;
- 160   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 161   1          {   
- 162   2              WS_DelTaskIfg(WS_TaskState);
- 163   2              {
- 164   3                bit_status = KEY_LEFT_UP_IN;//UP
- 165   3                if((INT)bit_status == (INT)RESET)
- 166   3                {
- 167   4                  KeyToFuncVal = KEY_STATE_PressValue;     
- 168   4                }
- 169   3                else
- 170   3                {
- 171   4                  KeyToFuncVal = KEY_STATE_ReleaseValue;
- 172   4                }
- 173   3                Key_Multifun(Key_UP_Element,&Key_UP);
- 174   3                
- 175   3                bit_status = KEY_LEFT_DOWN_IN;//DOWN
- 176   3                if((INT)bit_status == (INT)RESET)
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 4   
+ 115   6                        &&(Work_State != UI_STATE_SetTempChamber_MODE))
+ 116   6                      {   
+ 117   7                        WS_SetTaskIfg(RefreshTempHumidyTIFG);//刷新实时温度和湿度
+ 118   7                      }
+ 119   6                    }
+ 120   5                    
+ 121   5                    if((Work_State != UI_STATE_POWER_OFF_MODE)
+ 122   5                      &&(Work_State != UI_STATE_POST_MODE)
+ 123   5                      &&(Work_State != UI_STATE_FACTORY_DEFAULT_SEL_MODE)
+ 124   5                      &&(Work_State != UI_STATE_NON_INVASIVE_MODE)
+ 125   5                      &&(Work_State != UI_STATE_SERVICE_MODE))//除以上模式外                  
+ 126   5                    {
+ 127   6                      WS_SetTaskIfg(AlarmErrorTIFG);//报警和错误事件处理,错误事件刷新 
+ 128   6                    }
+ 129   5                  }
+ 130   4                            
+ 131   4                  //1000mS任务
+ 132   4                  Manage_Tik_1000mS_Cnt++;
+ 133   4                  if(Manage_Tik_1000mS_Cnt >= 50)//
+ 134   4                  {
+ 135   5                    Manage_Tik_1000mS_Cnt = 0;
+ 136   5                    if((Work_State == UI_STATE_RUNNING_NORMAL_MODE)
+ 137   5                      ||(Work_State == UI_STATE_SCREENSAVER_MODE)
+ 138   5                      ||(Work_State == UI_STATE_SetTempPatient_MODE)
+ 139   5                      ||(Work_State == UI_STATE_SetTempChamber_MODE)
+ 140   5                      ||(Work_State == UI_STATE_SetInExp_MODE)
+ 141   5                      ||(Work_State == UI_STATE_SetTime_MODE))
+ 142   5                    {             
+ 143   6                      WS_SetTaskIfg(HeaterWireModeDetTIFG); //加热线状态检测 1S
+ 144   6                      WS_SetTaskIfg(HeaterPlateWireControlTIFG);//回路加热线温度的控制 1S(仅运算，驱动在定时中断)
+ 145   6                      WS_SetTaskIfg(LowPowerModeTIFG);//低功率模式 1S
+ 146   6                      WS_SetTaskIfg(SaveDateToFlashTIFG);//保存数据到FLASH 1S 
+ 147   6                      WS_SetTaskIfg(LowTempDet1STIFG);//低温低湿检测1S
+ 148   6                      WS_SetTaskIfg(RefreshRunTimeTIFG);//刷新运行时间 1S
+ 149   6                    }             
+ 150   5                  }         
+ 151   4                } 
+ 152   3              }          
+ 153   2          }
+ 154   1      }
+ 155          
+ 156          KEY_STATUS KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 157          void KeyScanTask(void) //1
+ 158          {
+ 159   1          BitStatus bit_status;
+ 160   1          WS_TaskState = KeyScanTIFG;
+ 161   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 162   1          {   
+ 163   2              WS_DelTaskIfg(WS_TaskState);
+ 164   2              {
+ 165   3                bit_status = KEY_LEFT_UP_IN;//UP
+ 166   3                if((INT)bit_status == (INT)RESET)
+ 167   3                {
+ 168   4                  KeyToFuncVal = KEY_STATE_PressValue;     
+ 169   4                }
+ 170   3                else
+ 171   3                {
+ 172   4                  KeyToFuncVal = KEY_STATE_ReleaseValue;
+ 173   4                }
+ 174   3                Key_Multifun(Key_UP_Element,&Key_UP);
+ 175   3                
+ 176   3                bit_status = KEY_LEFT_DOWN_IN;//DOWN
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 4   
 
- 177   3                {
- 178   4                  KeyToFuncVal = KEY_STATE_PressValue;     
- 179   4                }
- 180   3                else
- 181   3                {
- 182   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 183   4                }
- 184   3                  
- 185   3                Key_Multifun(Key_Down_Element,&Key_Down);
- 186   3                
- 187   3                bit_status = KEY_RIGHT_UP_IN;//OK
- 188   3                if((INT)bit_status == (INT)RESET)
- 189   3                {
- 190   4                  KeyToFuncVal = KEY_STATE_PressValue;     
- 191   4                }
- 192   3                else
- 193   3                {
- 194   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 195   4                }
- 196   3                  
- 197   3                Key_Multifun(Key_OK_Element,&Key_OK);
- 198   3                
- 199   3                bit_status = KEY_RIGHT_DOWN_IN;//MUTE
- 200   3                if((INT)bit_status == (INT)RESET)
- 201   3                {
- 202   4                  KeyToFuncVal = KEY_STATE_PressValue;        
- 203   4                }
- 204   3                else
- 205   3                {
- 206   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 207   4                }
- 208   3                  
- 209   3                Key_Multifun(Key_Mute_Element,&Key_Mute);         
- 210   3              }
- 211   2          }
- 212   1      }
- 213          
- 214          void HmiServiceModeTask(void)//2
- 215          {
- 216   1        WS_TaskState = HmiServiceModeTIFG;
- 217   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 218   1        {   
- 219   2          WS_DelTaskIfg(WS_TaskState);
- 220   2          {
- 221   3            HmiServiceModeFunc();
- 222   3          }
- 223   2        }
- 224   1      }
- 225          
- 226          void HmiPostTask(void)//3
- 227          {
- 228   1        WS_TaskState = HmiPostTIFG;
- 229   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 230   1        {   
- 231   2          WS_DelTaskIfg(WS_TaskState);
- 232   2          {
- 233   3            HmiPostFunc();
- 234   3          }
- 235   2        }
- 236   1      }
- 237          
- 238          void HmiFactoryDefaultSelTask(void)//4
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 5   
+ 177   3                if((INT)bit_status == (INT)RESET)
+ 178   3                {
+ 179   4                  KeyToFuncVal = KEY_STATE_PressValue;     
+ 180   4                }
+ 181   3                else
+ 182   3                {
+ 183   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 184   4                }
+ 185   3                  
+ 186   3                Key_Multifun(Key_Down_Element,&Key_Down);
+ 187   3                
+ 188   3                bit_status = KEY_RIGHT_UP_IN;//OK
+ 189   3                if((INT)bit_status == (INT)RESET)
+ 190   3                {
+ 191   4                  KeyToFuncVal = KEY_STATE_PressValue;     
+ 192   4                }
+ 193   3                else
+ 194   3                {
+ 195   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 196   4                }
+ 197   3                  
+ 198   3                Key_Multifun(Key_OK_Element,&Key_OK);
+ 199   3                
+ 200   3                bit_status = KEY_RIGHT_DOWN_IN;//MUTE
+ 201   3                if((INT)bit_status == (INT)RESET)
+ 202   3                {
+ 203   4                  KeyToFuncVal = KEY_STATE_PressValue;        
+ 204   4                }
+ 205   3                else
+ 206   3                {
+ 207   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 208   4                }
+ 209   3                  
+ 210   3                Key_Multifun(Key_Mute_Element,&Key_Mute);         
+ 211   3              }
+ 212   2          }
+ 213   1      }
+ 214          
+ 215          void HmiServiceModeTask(void)//2
+ 216          {
+ 217   1        WS_TaskState = HmiServiceModeTIFG;
+ 218   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 219   1        {   
+ 220   2          WS_DelTaskIfg(WS_TaskState);
+ 221   2          {
+ 222   3            HmiServiceModeFunc();
+ 223   3          }
+ 224   2        }
+ 225   1      }
+ 226          
+ 227          void HmiPostTask(void)//3
+ 228          {
+ 229   1        WS_TaskState = HmiPostTIFG;
+ 230   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 231   1        {   
+ 232   2          WS_DelTaskIfg(WS_TaskState);
+ 233   2          {
+ 234   3            HmiPostFunc();
+ 235   3          }
+ 236   2        }
+ 237   1      }
+ 238          
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 5   
 
- 239          {
- 240   1        WS_TaskState = HmiFactoryDefaultSelTIFG;
- 241   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 242   1        {   
- 243   2          WS_DelTaskIfg(WS_TaskState);
- 244   2          {
- 245   3            HmiFactoryDefaultFunc();
- 246   3      //      time_test_lcd_backlight();
- 247   3          }
- 248   2        }
- 249   1      }
- 250          
- 251          void HmiNon_InvasiveSelTask(void)//5
- 252          {
- 253   1        WS_TaskState = HmiNon_InvasiveSelTIFG;
- 254   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 255   1        {   
- 256   2          WS_DelTaskIfg(WS_TaskState);
- 257   2          {
- 258   3            HmiNon_InvasiveSelFunc();
- 259   3          }
- 260   2        } 
- 261   1      }
- 262          
- 263          void HmiRunningTask(void)//6
- 264          {
- 265   1        WS_TaskState = HmiRunningTIFG;
- 266   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 267   1        {   
- 268   2          WS_DelTaskIfg(WS_TaskState);
- 269   2          {
- 270   3            HmiRunningFunc();
- 271   3          }
- 272   2        }   
- 273   1      }
- 274          
- 275          void HmiSetTempPatientTask(void)//7
- 276          {
- 277   1        WS_TaskState = HmiSetTempPatientTIFG;
- 278   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 279   1        {   
- 280   2          WS_DelTaskIfg(WS_TaskState);
- 281   2          {
- 282   3            HmiSetTempPatientFunc();
- 283   3          }
- 284   2        } 
- 285   1      }
- 286          
- 287          void HmiSetTempChamberTask(void)//8
- 288          {
- 289   1        WS_TaskState = HmiSetTempChamberTIFG;
- 290   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 291   1        {   
- 292   2          WS_DelTaskIfg(WS_TaskState);
- 293   2          {
- 294   3            HmiSetTempChamberFunc();
- 295   3          }
- 296   2        } 
- 297   1      } 
- 298          
- 299          void HmiSetInExpTask(void)//9
- 300          {
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 6   
+ 239          void HmiFactoryDefaultSelTask(void)//4
+ 240          {
+ 241   1        WS_TaskState = HmiFactoryDefaultSelTIFG;
+ 242   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 243   1        {   
+ 244   2          WS_DelTaskIfg(WS_TaskState);
+ 245   2          {
+ 246   3            HmiFactoryDefaultFunc();
+ 247   3      //      time_test_lcd_backlight();
+ 248   3          }
+ 249   2        }
+ 250   1      }
+ 251          
+ 252          void HmiNon_InvasiveSelTask(void)//5
+ 253          {
+ 254   1        WS_TaskState = HmiNon_InvasiveSelTIFG;
+ 255   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 256   1        {   
+ 257   2          WS_DelTaskIfg(WS_TaskState);
+ 258   2          {
+ 259   3            HmiNon_InvasiveSelFunc();
+ 260   3          }
+ 261   2        } 
+ 262   1      }
+ 263          
+ 264          void HmiRunningTask(void)//6
+ 265          {
+ 266   1        WS_TaskState = HmiRunningTIFG;
+ 267   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 268   1        {   
+ 269   2          WS_DelTaskIfg(WS_TaskState);
+ 270   2          {
+ 271   3            HmiRunningFunc();
+ 272   3          }
+ 273   2        }   
+ 274   1      }
+ 275          
+ 276          void HmiSetTempPatientTask(void)//7
+ 277          {
+ 278   1        WS_TaskState = HmiSetTempPatientTIFG;
+ 279   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 280   1        {   
+ 281   2          WS_DelTaskIfg(WS_TaskState);
+ 282   2          {
+ 283   3            HmiSetTempPatientFunc();
+ 284   3          }
+ 285   2        } 
+ 286   1      }
+ 287          
+ 288          void HmiSetTempChamberTask(void)//8
+ 289          {
+ 290   1        WS_TaskState = HmiSetTempChamberTIFG;
+ 291   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 292   1        {   
+ 293   2          WS_DelTaskIfg(WS_TaskState);
+ 294   2          {
+ 295   3            HmiSetTempChamberFunc();
+ 296   3          }
+ 297   2        } 
+ 298   1      } 
+ 299          
+ 300          void HmiSetInExpTask(void)//9
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 6   
 
- 301   1        WS_TaskState = HmiSetInExpTIFG;
- 302   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 303   1        {   
- 304   2          WS_DelTaskIfg(WS_TaskState);
- 305   2          {
- 306   3            HmiSetInExpFunc();
- 307   3          }
- 308   2        }
- 309   1      }
- 310          
- 311          void HmiSetTimeTask(void)//10
- 312          {
- 313   1        WS_TaskState = HmiSetTimeTIFG;
- 314   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 315   1        {   
- 316   2          WS_DelTaskIfg(WS_TaskState);
- 317   2          {
- 318   3            HmiSetTimeFunc();
- 319   3          }
- 320   2        }
- 321   1      }
- 322          
- 323          void HmiScreenSaverModeTask(void)//11
- 324          {
- 325   1        WS_TaskState = HmiScreenSaverModeTIFG;
- 326   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 327   1        {   
- 328   2          WS_DelTaskIfg(WS_TaskState);
- 329   2          {
- 330   3            HmiScreenSaverModeFunc();
- 331   3          }
- 332   2        }
- 333   1      }
- 334          
- 335          void GetTemp_HpChamberTask(void)//12
- 336          {
- 337   1        WS_TaskState = GetTemp_HpChamberTIFG;
- 338   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 339   1        {   
- 340   2          WS_DelTaskIfg(WS_TaskState);
- 341   2          {
- 342   3            GetTemp_HpChamberFunc();
- 343   3          }
- 344   2        }   
- 345   1      }
- 346          
- 347          void GetTempHumidity_PatientTask(void)//13
- 348          {
- 349   1        WS_TaskState = GetTempHumidity_PatientTIFG;
- 350   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 351   1        {   
- 352   2          WS_DelTaskIfg(WS_TaskState);
- 353   2          {
- 354   3            GetTempHumidity_PatientFunc();
- 355   3          }
- 356   2        }   
- 357   1      }
- 358          
- 359          void RefreshTempHumidyTask(void)//14
- 360          {
- 361   1        WS_TaskState = RefreshTempHumidyTIFG;
- 362   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 7   
+ 301          {
+ 302   1        WS_TaskState = HmiSetInExpTIFG;
+ 303   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 304   1        {   
+ 305   2          WS_DelTaskIfg(WS_TaskState);
+ 306   2          {
+ 307   3            HmiSetInExpFunc();
+ 308   3          }
+ 309   2        }
+ 310   1      }
+ 311          
+ 312          void HmiSetTimeTask(void)//10
+ 313          {
+ 314   1        WS_TaskState = HmiSetTimeTIFG;
+ 315   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 316   1        {   
+ 317   2          WS_DelTaskIfg(WS_TaskState);
+ 318   2          {
+ 319   3            HmiSetTimeFunc();
+ 320   3          }
+ 321   2        }
+ 322   1      }
+ 323          
+ 324          void HmiScreenSaverModeTask(void)//11
+ 325          {
+ 326   1        WS_TaskState = HmiScreenSaverModeTIFG;
+ 327   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 328   1        {   
+ 329   2          WS_DelTaskIfg(WS_TaskState);
+ 330   2          {
+ 331   3            HmiScreenSaverModeFunc();
+ 332   3          }
+ 333   2        }
+ 334   1      }
+ 335          
+ 336          void GetTemp_HpChamberTask(void)//12
+ 337          {
+ 338   1        WS_TaskState = GetTemp_HpChamberTIFG;
+ 339   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 340   1        {   
+ 341   2          WS_DelTaskIfg(WS_TaskState);
+ 342   2          {
+ 343   3            GetTemp_HpChamberFunc();
+ 344   3          }
+ 345   2        }   
+ 346   1      }
+ 347          
+ 348          void GetTempHumidity_PatientTask(void)//13
+ 349          {
+ 350   1        WS_TaskState = GetTempHumidity_PatientTIFG;
+ 351   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 352   1        {   
+ 353   2          WS_DelTaskIfg(WS_TaskState);
+ 354   2          {
+ 355   3            GetTempHumidity_PatientFunc();
+ 356   3          }
+ 357   2        }   
+ 358   1      }
+ 359          
+ 360          void RefreshTempHumidyTask(void)//14
+ 361          {
+ 362   1        WS_TaskState = RefreshTempHumidyTIFG;
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 7   
 
- 363   1        {   
- 364   2          WS_DelTaskIfg(WS_TaskState);
- 365   2          {
- 366   3            RefreshTempHumidyFunc(0);
- 367   3          }
- 368   2        }   
- 369   1      }
- 370          
- 371          void RefreshRunTimeTask(void)//15
- 372          {
- 373   1        WS_TaskState = RefreshRunTimeTIFG;
- 374   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 375   1        {   
- 376   2          WS_DelTaskIfg(WS_TaskState);
- 377   2          {
- 378   3            RefreshRunTimeFunc(0);
- 379   3          }
- 380   2        }     
- 381   1      }
- 382          
- 383          void RefreshRTCTimeTask(void)//16
- 384          {
- 385   1        WS_TaskState = RefreshRTCTimeTIFG;
- 386   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 387   1        {   
- 388   2          WS_DelTaskIfg(WS_TaskState);
- 389   2          {
- 390   3            if((Work_State != UI_STATE_SetTime_MODE)//设定时间时不刷新实时RTC时间 
- 391   3                &&(Work_State != UI_STATE_SCREENSAVER_MODE))
- 392   3            {
- 393   4              RefreshRTCTimeFunc(); 
- 394   4            } 
- 395   3            
- 396   3          }
- 397   2        }   
- 398   1      }
- 399          
- 400          void HeaterWireControlTask(void)//17
- 401          {
- 402   1        WS_TaskState = HeaterPlateWireControlTIFG;
- 403   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 404   1        {   
- 405   2          WS_DelTaskIfg(WS_TaskState);
- 406   2          {
- 407   3            HeaterPlateWireControlFunc();
- 408   3          }
- 409   2        }
- 410   1      }
- 411          
- 412          void LowPowerModeTask(void)//18
- 413          {
- 414   1        WS_TaskState = LowPowerModeTIFG;
- 415   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 416   1        {   
- 417   2          WS_DelTaskIfg(WS_TaskState);
- 418   2          {
- 419   3            LowPowerModeFunc();
- 420   3          }
- 421   2        }
- 422   1      }
- 423          
- 424          void HeaterWireModeDetTask(void)//19
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 8   
+ 363   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 364   1        {   
+ 365   2          WS_DelTaskIfg(WS_TaskState);
+ 366   2          {
+ 367   3            RefreshTempHumidyFunc(0);
+ 368   3          }
+ 369   2        }   
+ 370   1      }
+ 371          
+ 372          void RefreshRunTimeTask(void)//15
+ 373          {
+ 374   1        WS_TaskState = RefreshRunTimeTIFG;
+ 375   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 376   1        {   
+ 377   2          WS_DelTaskIfg(WS_TaskState);
+ 378   2          {
+ 379   3            RefreshRunTimeFunc(0);
+ 380   3          }
+ 381   2        }     
+ 382   1      }
+ 383          
+ 384          void RefreshRTCTimeTask(void)//16
+ 385          {
+ 386   1        WS_TaskState = RefreshRTCTimeTIFG;
+ 387   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 388   1        {   
+ 389   2          WS_DelTaskIfg(WS_TaskState);
+ 390   2          {
+ 391   3            if((Work_State != UI_STATE_SetTime_MODE)//设定时间时不刷新实时RTC时间 
+ 392   3                &&(Work_State != UI_STATE_SCREENSAVER_MODE))
+ 393   3            {
+ 394   4              RefreshRTCTimeFunc(); 
+ 395   4            } 
+ 396   3            
+ 397   3          }
+ 398   2        }   
+ 399   1      }
+ 400          
+ 401          void HeaterWireControlTask(void)//17
+ 402          {
+ 403   1        WS_TaskState = HeaterPlateWireControlTIFG;
+ 404   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 405   1        {   
+ 406   2          WS_DelTaskIfg(WS_TaskState);
+ 407   2          {
+ 408   3            HeaterPlateWireControlFunc();
+ 409   3          }
+ 410   2        }
+ 411   1      }
+ 412          
+ 413          void LowPowerModeTask(void)//18
+ 414          {
+ 415   1        WS_TaskState = LowPowerModeTIFG;
+ 416   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 417   1        {   
+ 418   2          WS_DelTaskIfg(WS_TaskState);
+ 419   2          {
+ 420   3            LowPowerModeFunc();
+ 421   3          }
+ 422   2        }
+ 423   1      }
+ 424          
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 8   
 
- 425          {
- 426   1        WS_TaskState = HeaterWireModeDetTIFG;
- 427   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 428   1        {   
- 429   2          WS_DelTaskIfg(WS_TaskState);
- 430   2          {
- 431   3            HeaterWireModeDetFunc();
- 432   3          }
- 433   2        }
- 434   1      }
- 435          
- 436          void AlarmErrorTask(void)//20
- 437          {
- 438   1        WS_TaskState = AlarmErrorTIFG;
- 439   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 440   1        {   
- 441   2          WS_DelTaskIfg(WS_TaskState);
- 442   2          {
- 443   3            AlarmErrorFunc();
- 444   3          }
- 445   2        }
- 446   1      }
- 447          
- 448          void LowTempDet1STask(void)//21
- 449          {
- 450   1        WS_TaskState = LowTempDet1STIFG;
- 451   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 452   1        {   
- 453   2          WS_DelTaskIfg(WS_TaskState);
- 454   2          {
- 455   3            LowTempDet1SFunc();
- 456   3          }
- 457   2        }
- 458   1      }
- 459          
- 460          void SaveDateToFlashTask(void)//22
- 461          {
- 462   1        WS_TaskState = SaveDateToFlashTIFG;
- 463   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 464   1        {   
- 465   2          WS_DelTaskIfg(WS_TaskState);
- 466   2          {
- 467   3            SaveDateToFlashFunc();
- 468   3          }
- 469   2        }
- 470   1      }
- 471          
- 472          void UartRecTask(void)//23
- 473          {
- 474   1          WS_TaskState = UartRecTIFG;
- 475   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 476   1          {   
- 477   2              WS_DelTaskIfg(WS_TaskState);         
- 478   2              UART_RecData_Func();   
- 479   2          }
- 480   1      }
- 481          
+ 425          void HeaterWireModeDetTask(void)//19
+ 426          {
+ 427   1        WS_TaskState = HeaterWireModeDetTIFG;
+ 428   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 429   1        {   
+ 430   2          WS_DelTaskIfg(WS_TaskState);
+ 431   2          {
+ 432   3            HeaterWireModeDetFunc();
+ 433   3          }
+ 434   2        }
+ 435   1      }
+ 436          
+ 437          void AlarmErrorTask(void)//20
+ 438          {
+ 439   1        WS_TaskState = AlarmErrorTIFG;
+ 440   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 441   1        {   
+ 442   2          WS_DelTaskIfg(WS_TaskState);
+ 443   2          {
+ 444   3            AlarmErrorFunc();
+ 445   3          }
+ 446   2        }
+ 447   1      }
+ 448          
+ 449          void LowTempDet1STask(void)//21
+ 450          {
+ 451   1        WS_TaskState = LowTempDet1STIFG;
+ 452   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 453   1        {   
+ 454   2          WS_DelTaskIfg(WS_TaskState);
+ 455   2          {
+ 456   3            LowTempDet1SFunc();
+ 457   3          }
+ 458   2        }
+ 459   1      }
+ 460          
+ 461          void SaveDateToFlashTask(void)//22
+ 462          {
+ 463   1        WS_TaskState = SaveDateToFlashTIFG;
+ 464   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 465   1        {   
+ 466   2          WS_DelTaskIfg(WS_TaskState);
+ 467   2          {
+ 468   3            SaveDateToFlashFunc();
+ 469   3          }
+ 470   2        }
+ 471   1      }
+ 472          
+ 473          void UartRecTask(void)//23
+ 474          {
+ 475   1          WS_TaskState = UartRecTIFG;
+ 476   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 477   1          {   
+ 478   2              WS_DelTaskIfg(WS_TaskState);         
+ 479   2              UART_RecData_Func();   
+ 480   2          }
+ 481   1      }
  482          
  483          
  484          
  485          
  486          
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/04/2019 16:21:57 PAGE 9   
+C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 9   
 
  487          
  488          
@@ -522,12 +522,13 @@ line level    source
  494          
  495          
  496          
+ 497          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1436    ----
+   CODE SIZE        =   1487    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =      5    ----
+   XDATA SIZE       =      8    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

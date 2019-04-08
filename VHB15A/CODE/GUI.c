@@ -2,10 +2,11 @@
 
 //2019.03.29
 sfr WDT_CONTR = 0xC1;
-sbit P21 = 0xA0^1;
-sbit P22 = 0xA0^2;
-sbit P23 = 0xA0^3;
-sbit P40 = 0xC0^0;
+sbit P21 = (u8)0xA0^(u8)1;
+sbit P22 = (u8)0xA0^(u8)2;
+sbit P23 = (u8)0xA0^(u8)3;
+//sbit P40 = (u8)0xC0^(u8)0;
+sbit P40 = (u8)0xC0;
 
 static uint8_t Tik_POST_Tick_100mS = 0;//运行模式的时标
 static uint8_t Tik_HmiFac_Tick_100mS_10S = 0;//10S内不响应则闪烁放入前台任务
@@ -27,12 +28,12 @@ static void Display_In_Exp_Ratio(uint8_t Dis,uint8_t Dp_en)//显示In/Exp
 {
 	if(Dp_en!=(uint8_t)0)
 	{
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);		
+		LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);		
 
 		show_str[0]='1';
 		show_str[1]=':';
 		show_str[2]='1';
-		if(Dis <= 1)  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
+		if(Dis <= (uint8_t)1)  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
 		{
 			show_str[3]=' ';
 			show_str[4]=' ';
@@ -43,12 +44,12 @@ static void Display_In_Exp_Ratio(uint8_t Dis,uint8_t Dp_en)//显示In/Exp
 			show_str[4]='0' + Dis-1;
 		}
 		show_str[5] = '\0';
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+180,16,200,show_str,0,BLACK18); 
+		LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,show_str,0,BLACK18); 
 	}
 	else
 	{
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18); //不显示
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+180,16,200,"      ",0,WHITE18);	
+		LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18); //不显示
+		LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,"      ",0,WHITE18);	
 	}
 	
 }
@@ -60,42 +61,42 @@ void DisPlayTime(const uint8_t TempTime[7],uint8_t TimeKind)//显示时间
 	//2-7//年/月/日/时/分/秒
 	
 	color = BLACK18;
-	if(TimeKind == 7)
+	if(TimeKind == (uint8_t)7)
 	{	//显示秒-------------------------------------------------	   
-		i=(TempTime[0]&0xF)%10;
+		i=(TempTime[0]&(uint8_t)0xF)%10;
 		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+68,i,BLACK18);	 
-		i=(TempTime[0]>>4)& 0x7;
+		i=(TempTime[0]>>4)& (uint8_t)0x7;
 		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+56,i,color);
 	}
-	else if(TimeKind == 6)
+	else if(TimeKind == (uint8_t)6)
 	{ //显示分========------------------------------------------	   
-		i=(TempTime[1]&0xF)%10;
+		i=(TempTime[1]&(uint8_t)0xF)%10;
 		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+40,i,color);
-		i=(TempTime[1]>>4) & 0x7;
+		i=(TempTime[1]>>4) & (uint8_t)0x7;
 		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+28,i,color);
 	}
-	else if(TimeKind == 5)
+	else if(TimeKind == (uint8_t)5)
 	{ //显示时,采用24小制=========================== 		  
 		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y,TempTime[2]>>4,color);//BCD码
-		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+12,TempTime[2]&0x0f,color);
+		DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+12,TempTime[2]&(uint8_t)0x0f,color);
 	}
-	else if(TimeKind == 4)	 
+	else if(TimeKind == (uint8_t)4)	 
 	{//显示日
-		i=(TempTime[3]&0xF)%10;
+		i=(TempTime[3]&(uint8_t)0xF)%10;
 		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+92,i,color);
-		i=(TempTime[3]>>4)& 0x03;
+		i=(TempTime[3]>>4)& (uint8_t)0x03;
 		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+80,i,color);	 
 	}
-	else if(TimeKind == 3)	 	   
+	else if(TimeKind == (uint8_t)3)	 	   
 	{//显示月
-		i=(TempTime[4]&0xF)%10;
+		i=(TempTime[4]&(uint8_t)0xF)%10;
 		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+64,i,color);
-		i=(TempTime[4]>>4)& 0x1;
+		i=(TempTime[4]>>4)& (uint8_t)0x1;
 		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+52,i,color);
 	}
-	else if(TimeKind == 2)
+	else if(TimeKind == (uint8_t)2)
 	{//显示年	 
-		i=(TempTime[6]&0xF)%10;
+		i=(TempTime[6]&(uint8_t)0xF)%10;
 		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+36,i,color);
 		i=(TempTime[6]>>4)%10;
 		DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+24,i,color);
@@ -256,7 +257,7 @@ void	HmiEnterToWorkStateFunc(WORK_STATUS State)
 //
 void HmiServiceModeFunc(void)
 {
-	static uint8_t ServiceMode_Step = 0;
+	static INT ServiceMode_Step = 0;
   //显示屏纯色测试 	
 	if(ServiceMode_Step == 0)
 	{
@@ -1240,7 +1241,7 @@ static void  Date_Is_Correct(void)
 	bit  Temp_Bit1;
 	//将BCD码转化为10进制,设定时间从2000年到2099年======================================
 	Temp_Bit1=0;
-	temp1=((TempTime[6]& 0x0F)%10)+ (((TempTime[6]>>4)%10)*10);
+	temp1=((TempTime[6]& (uint8_t)0x0F)%10)+ (((TempTime[6]>>4)%10)*10);
 	//能被4整除，但是不能被100整除为闰年，或者能被400整除=====
 	if((temp1%4)==0 )
 	{
@@ -1315,9 +1316,9 @@ void	HmiSetTimeFunc(void)
 		if(SetTimeKind==2) //设定年份
 		{
 			TempTime[6]++;
-			if((TempTime[6]&0x0F)>=10)
+			if((TempTime[6]&(uint8_t)0x0F)>=10)
 			{
-					 TempTime[6]=(TempTime[6]& 0xF0)+0x10;;
+					 TempTime[6]=(TempTime[6]& (uint8_t)0xF0)+0x10;;
 			}
 			if(TempTime[6]>0x99)
 			{
@@ -1328,9 +1329,9 @@ void	HmiSetTimeFunc(void)
 		}else if(SetTimeKind==3) //设定月份
 		{
 			TempTime[4]++;
-			if((TempTime[4]&0x0F)>=10)
+			if((TempTime[4]&(uint8_t)0x0F)>=10)
 			{
-					 TempTime[4]=(TempTime[4]& 0xF0)+0x10;
+					 TempTime[4]=(TempTime[4]& (uint8_t)0xF0)+0x10;
 			}
 			if(TempTime[4]>0x12)
 			{
@@ -1340,9 +1341,9 @@ void	HmiSetTimeFunc(void)
 		}else if(SetTimeKind==4) //设定日
 		{
 			TempTime[3]++;
-			if((TempTime[3]&0x0F)>=10)
+			if((TempTime[3]&(uint8_t)0x0F)>=10)
 			{
-					 TempTime[3]=(TempTime[3]& 0xF0)+0x10;
+					 TempTime[3]=(TempTime[3]& (uint8_t)0xF0)+0x10;
 			}
 			if(TempTime[3]>0x31)
 			{
@@ -1353,9 +1354,9 @@ void	HmiSetTimeFunc(void)
 		{
 			{
 				TempTime[2]++;								
-				if((TempTime[2]&0x0F)>=10)
+				if((TempTime[2]&(uint8_t)0x0F)>=10)
 				{
-						 TempTime[2]=(TempTime[2] & 0xF0)+0x10;
+						 TempTime[2]=(TempTime[2] & (uint8_t)0xF0)+0x10;
 				}
 				if(TempTime[2]>0x23)
 				{
@@ -1365,9 +1366,9 @@ void	HmiSetTimeFunc(void)
 		}else if(SetTimeKind==6) //设定分
 		{
 			TempTime[1]++;
-			if((TempTime[1]&0x0F)>=10)
+			if((TempTime[1]&(uint8_t)0x0F)>=10)
 			{
-					 TempTime[1]=(TempTime[1]& 0xF0)+0x10;
+					 TempTime[1]=(TempTime[1]& (uint8_t)0xF0)+0x10;
 			}
 			if(TempTime[1]>0x59)
 			{
@@ -1376,9 +1377,9 @@ void	HmiSetTimeFunc(void)
 		}else if(SetTimeKind==7) //设定秒
 		{
 			TempTime[0]++;
-			if((TempTime[0]&0x0F)>=10)
+			if((TempTime[0]&(uint8_t)0x0F)>=10)
 			{
-					 TempTime[0]=(TempTime[0]& 0xF0)+0x10;
+					 TempTime[0]=(TempTime[0]& (uint8_t)0xF0)+0x10;
 			}
 			if(TempTime[0]>0x59)
 			{
@@ -1398,48 +1399,48 @@ void	HmiSetTimeFunc(void)
 		if((SetTimeKind==2) && (TempTime[6]>0x10)) //设定年份
 		{
 			TempTime[6]--;
-			if((TempTime[6]&0x0F)>9)
+			if((TempTime[6]&(uint8_t)0x0F)>9)
 			{
-				TempTime[6]&=0xF9;
+				TempTime[6]&=(uint8_t)0xF9;
 			}				
 			Date_Is_Correct();	
 		}else if((SetTimeKind==3) && (TempTime[4]>1)) //设定月份
 		{
 			TempTime[4]--;
-			if((TempTime[4]&0x0F)>9)
+			if((TempTime[4]&(uint8_t)0x0F)>9)
 			{
-				TempTime[4]&=0xF9;
+				TempTime[4]&=(uint8_t)0xF9;
 			}				
 			Date_Is_Correct();	
 		}else if((SetTimeKind==4) && (TempTime[3]>1)) //设定日
 		{
 			TempTime[3]--;
-			if((TempTime[3]&0x0F)>9)
+			if((TempTime[3]&(uint8_t)0x0F)>9)
 			{
-				TempTime[3]&=0xF9;
+				TempTime[3]&=(uint8_t)0xF9;
 			}				
 		}else if((SetTimeKind==5) && (TempTime[2]>0))  //设定时
 		{	
 			{
 				TempTime[2]--;
-				if((TempTime[2]&0x0F)>9)
+				if((TempTime[2]&(uint8_t)0x0F)>9)
 				{
-					TempTime[2]&=0xF9;
+					TempTime[2]&=(uint8_t)0xF9;
 				}					  
 			}
 		}else if((SetTimeKind==6)  && (TempTime[1]>0)) //设定分
 		{
 			TempTime[1]--;
-			if((TempTime[1]&0x0F)>9)
+			if((TempTime[1]&(uint8_t)0x0F)>9)
 			{
-				TempTime[1]&=0xF9;
+				TempTime[1]&=(uint8_t)0xF9;
 			}				
 		}else if((SetTimeKind==7) && (TempTime[0]>0)) //设定秒
 		{
 			TempTime[0]--;
-			if((TempTime[0]&0x0F)>9)
+			if((TempTime[0]&(uint8_t)0x0F)>9)
 			{
-				TempTime[0]&=0xF9;
+				TempTime[0]&=(uint8_t)0xF9;
 			}				
 		}
 		else
@@ -1522,11 +1523,11 @@ void	HmiSetInExpFunc(void)//InExp设置界面
 	Back_Color=WHITE18;
 	if(Set_InExp_Cnt == 0)
 	{
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);
+		LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);
 	}	
 	else if(Set_InExp_Cnt == 3)
 	{
-		LCD_ShowString(POS_RT_RH_X + 0,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18);	
+		LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18);	
 	}
 	else
 	{
@@ -1636,7 +1637,7 @@ void	HmiScreenSaverModeFunc(void)
 	if(((uint16_t)Key_State_Present!=(uint16_t)0)//按下按键
 	//或出现错误
 				||((ERR_Kind)!=0) //无水,传感器错误,高温等错误
-	      ||(Wire_Mode_Mismatch == 1)  //发热丝未选定
+	      ||(Wire_Mode_Mismatch == (uint8_t)1)  //发热丝未选定
 				||(HeaterPlate_State==0))//水罐未装好或发热盘开路
 	{
 		Key_State_Present = KEY_STATE_NONE;	//清除按键	

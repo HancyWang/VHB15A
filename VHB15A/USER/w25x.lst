@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   W25X                                                              04/04/2019 16:21:58 PAGE 1   
+C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE W25X
@@ -39,191 +39,197 @@ line level    source
   27          //#define W25X_ManufactDeviceID 0x90
   28          //#define W25X_JedecDeviceID    0x9F
   29          
-  30          #define nop() _nop_()
+  30          //#define nop() _nop_()
   31          
-  32          //2019.03.30
-  33          sbit P17 = 0x90^7;
-  34          sbit P41 = 0xC0^1;
-  35          sbit P42 = 0xC0^2;
-  36          sbit P44 = 0xC0^4;
-  37          sbit P45 = 0xC0^5;
-  38                      
-  39          //unsigned char Read_Data; 
-  40          
-  41           void    SPI_Write_Enable() //写使能
-  42           {   W25X_CS = 0;                            //  enable device
-  43   1           SPI_Send_Byte(W25X_WriteEnable);        //  send W25X_Write_Enable command
-  44   1           W25X_CS = 1;                            //  disable device
-  45   1       }
-  46           void    SPI_Write_Disable() //写禁止
-  47           {
-  48   1           W25X_CS = 0;                            //  enable device
-  49   1           SPI_Send_Byte(W25X_WriteDisable);       //  send W25X_WriteW25X_DIsable command
-  50   1           W25X_CS = 1;                            //  disable device
-  51   1       }
-  52          
-C51 COMPILER V9.52.0.0   W25X                                                              04/04/2019 16:21:58 PAGE 2   
+  32          
+  33          //2019.03.30
+  34          sbit P17 = (u8)0x90^(u8)7;
+  35          sbit P41 = (u8)0xC0^(u8)1;
+  36          sbit P42 = (u8)0xC0^(u8)2;
+  37          sbit P44 = (u8)0xC0^(u8)4;
+  38          sbit P45 = (u8)0xC0^(u8)5;
+  39                      
+  40          //unsigned char Read_Data; 
+  41          
+  42          void    SPI_Write_Enable() //写使能
+  43          {   W25X_CS = 0;                            //  enable device
+  44   1         SPI_Send_Byte(W25X_WriteEnable);        //  send W25X_Write_Enable command
+  45   1         W25X_CS = 1;                            //  disable device
+  46   1      }
+  47          void    SPI_Write_Disable() //写禁止
+  48          {
+  49   1         W25X_CS = 0;                            //  enable device
+  50   1         SPI_Send_Byte(W25X_WriteDisable);       //  send W25X_WriteW25X_DIsable command
+  51   1         W25X_CS = 1;                            //  disable device
+  52   1      }
+C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 2   
 
-  53          //读N个字节
-  54          //起始地址
-  55          //读字节的个数,最多128
-  56          //存放的地址
-  57          void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
-  58          {
-  59   1        uchar i = 0;
-  60   1        LCD_1DIR_H;
-  61   1        W25X_CS = 0;                                        //  enable device
-  62   1        SPI_Send_Byte(W25X_ReadData);                       //  read command
-  63   1        SPI_Send_Byte(((Dst_Addr & 0xFFFFFF) >> 16));       //  send 3 address bytes
-  64   1        SPI_Send_Byte(((Dst_Addr & 0xFFFF) >> 8));
-  65   1        SPI_Send_Byte(Dst_Addr & 0xFF);
-  66   1        // SPI_Send_Byte(0xFF);                                //  dummy byte
-  67   1        for (; i < nBytes_128; i++)                     //  read until no_bytes is reached
-  68   1        {
-  69   2          Read_Adr[i] = SPI_Get_Byte();                  //  receive byte and store at address 80H - FFH
-  70   2        }
-  71   1           
-  72   1        W25X_CS = 1;                                         //  disable device
-  73   1        LCD_1DIR_L;
-  74   1      }
-  75          
-  76          //写N个字节
-  77          //起始地址
-  78          //写字节的个数,最多128
-  79          //存放的地址
-  80           void    SPI_Write_nBytes(uint32 Dst_Addr, uchar nBytes_128,const uchar * Data_Adr)
-  81          {
-  82   1        uchar i, byte;
-  83   1        W25X_CS = 0;                    /* enable device */
-  84   1        SPI_Write_Enable();             /* set WEL */
-  85   1        W25X_CS = 0;
-  86   1        SPI_Send_Byte(W25X_PageProgram);        /* send Byte Program command */
-  87   1        SPI_Send_Byte(((Dst_Addr & 0xFFFFFF) >> 16)); /* send 3 address bytes */
-  88   1        SPI_Send_Byte(((Dst_Addr & 0xFFFF) >> 8));
-  89   1        SPI_Send_Byte(Dst_Addr & 0xFF);
-  90   1        for (i = 0; i < nBytes_128; i++)
-  91   1        {
-  92   2          //         byte = *(Data_Adr+i);
-  93   2          byte = Data_Adr[i];
-  94   2          SPI_Send_Byte(byte);        /* send byte to be programmed */
-  95   2        }
-  96   1        W25X_CS = 1;                /* disable device */
-  97   1      }
-  98          
-  99           //初始化
- 100           void    SPI_init()
- 101           {
- 102   1         W25X_CLK = 0;                         //  set clock to low initial state for SPI operation mode 0
- 103   1           W25X_CS = 1;
- 104   1           nop();nop(); nop();nop();
- 105   1           SPI_Write_Disable();
- 106   1       }
- 107          
- 108           //发送一个字节
- 109           void    SPI_Send_Byte(uchar out)
- 110          {
- 111   1        uchar i = 0;
- 112   1        uchar OUT=out;
- 113   1        for (; i < 8; i++)
- 114   1        {
-C51 COMPILER V9.52.0.0   W25X                                                              04/04/2019 16:21:58 PAGE 3   
+  53          
+  54          //void nop(void)
+  55          //{
+  56          //  _nop_();
+  57          //}
+  58          // 
+  59          //读N个字节
+  60          //起始地址
+  61          //读字节的个数,最多128
+  62          //存放的地址
+  63          void   SPI_Read_nBytes(uint32 Dst_Addr, uchar nBytes_128,uchar * Read_Adr)
+  64          {
+  65   1        uchar i = 0;
+  66   1        LCD_1DIR_H;
+  67   1        W25X_CS = 0;                                        //  enable device
+  68   1        SPI_Send_Byte(W25X_ReadData);                       //  read command
+  69   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFFFF) >> 16));       //  send 3 address bytes
+  70   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFF) >> 8));
+  71   1        SPI_Send_Byte(Dst_Addr & (uint32)0xFF);
+  72   1        // SPI_Send_Byte(0xFF);                                //  dummy byte
+  73   1        for (; i < nBytes_128; i++)                     //  read until no_bytes is reached
+  74   1        {
+  75   2          Read_Adr[i] = SPI_Get_Byte();                  //  receive byte and store at address 80H - FFH
+  76   2        }
+  77   1           
+  78   1        W25X_CS = 1;                                         //  disable device
+  79   1        LCD_1DIR_L;
+  80   1      }
+  81          
+  82          //写N个字节
+  83          //起始地址
+  84          //写字节的个数,最多128
+  85          //存放的地址
+  86           void    SPI_Write_nBytes(uint32 Dst_Addr, uchar nBytes_128,const uchar * Data_Adr)
+  87          {
+  88   1        uchar i, byte;
+  89   1        W25X_CS = 0;                    /* enable device */
+  90   1        SPI_Write_Enable();             /* set WEL */
+  91   1        W25X_CS = 0;
+  92   1        SPI_Send_Byte(W25X_PageProgram);        /* send Byte Program command */
+  93   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFFFF) >> 16)); /* send 3 address bytes */
+  94   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFF) >> 8));
+  95   1        SPI_Send_Byte(Dst_Addr & (uint32)0xFF);
+  96   1        for (i = 0; i < nBytes_128; i++)
+  97   1        {
+  98   2          //         byte = *(Data_Adr+i);
+  99   2          byte = Data_Adr[i];
+ 100   2          SPI_Send_Byte(byte);        /* send byte to be programmed */
+ 101   2        }
+ 102   1        W25X_CS = 1;                /* disable device */
+ 103   1      }
+ 104          
+ 105           //初始化
+ 106           void    SPI_init()
+ 107           {
+ 108   1         W25X_CLK = 0;                         //  set clock to low initial state for SPI operation mode 0
+ 109   1           W25X_CS = 1;
+ 110   1           _nop_();_nop_(); _nop_();_nop_();
+ 111   1           SPI_Write_Disable();
+ 112   1       }
+ 113          
+ 114           //发送一个字节
+C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 3   
 
- 115   2          if ((OUT & 0x80) == 0x80)           //  check if MSB is high
- 116   2          {
- 117   3            W25X_DI = 1;
- 118   3          }
- 119   2          else
- 120   2          {
- 121   3            W25X_DI = 0;                    //  if not, set to low
- 122   3          }
- 123   2            
- 124   2      
- 125   2          W25X_CLK = 1;                       //  toggle clock high
- 126   2          OUT = (uint8_t)(OUT << 1);                   //  shift 1 place for next bit
- 127   2          nop();nop(); nop();nop();
- 128   2          W25X_CLK = 0;                       //  toggle clock low
- 129   2        }
- 130   1      }
- 131          
- 132          //读取一个字节
- 133          uchar   SPI_Get_Byte(void)
- 134          {
- 135   1        uchar i = 0, in = 0;
- 136   1        bit temp;
- 137   1        for (; i < 8; i++)
- 138   1        {
- 139   2          in = (uint8_t)(in << 1);                      //  shift 1 place to the left or shift in 0
- 140   2          temp = W25X_DO;                      //  save input
- 141   2          W25X_CLK = 1; 
- 142   2          nop();                              //  toggle clock high
- 143   2          if (temp==1)                        //  check to see if bit is high
- 144   2          {
- 145   3            in |= 0x01;                     //  if high, make bit high
- 146   3          }
- 147   2             
- 148   2          nop();
- 149   2          nop();
- 150   2          nop(); 
- 151   2          nop(); 
- 152   2          W25X_CLK = 0;                       //  toggle clock low
- 153   2        }
- 154   1        return in;
- 155   1      }
- 156          
- 157           //擦除指定的扇区
- 158           void    SPI_Erase_Sector(uint32 Dst_Addr)
- 159           {
- 160   1         W25X_CS = 0;                                        //  enable device
- 161   1           SPI_Write_Enable();                                 //  set WEL
- 162   1           W25X_CS = 0;
- 163   1           SPI_Send_Byte(W25X_SectorErase);                    //  send Sector Erase command
- 164   1           SPI_Send_Byte((uchar)((Dst_Addr & 0xFFFFFF) >> 16));//    send 3 address bytes
- 165   1           SPI_Send_Byte((uchar)((Dst_Addr & 0xFFFF) >> 8));
- 166   1           SPI_Send_Byte((uchar)Dst_Addr & 0xFF);
- 167   1           W25X_CS = 1;                                        //  disable device
- 168   1       }
- 169          
- 170          //读取SPI_FLASH的状态寄存器
- 171          //BIT7  6   5   4   3   2   1   0
- 172          //SPR   RV  TB BP2 BP1 BP0 WEL BUSY
- 173          //SPR:默认0,状态寄存器保护位,配合WP使用
- 174          //TB,BP2,BP1,BP0:FLASH区域写保护设置
- 175          //WEL:写使能锁定
- 176          //BUSY:忙标记位(1,忙;0,空闲)
-C51 COMPILER V9.52.0.0   W25X                                                              04/04/2019 16:21:58 PAGE 4   
+ 115           void    SPI_Send_Byte(uchar out)
+ 116          {
+ 117   1        uchar i = 0;
+ 118   1        uchar OUT=out;
+ 119   1        for (; i < 8; i++)
+ 120   1        {
+ 121   2          if ((OUT & (uchar)0x80) == 0x80)           //  check if MSB is high
+ 122   2          {
+ 123   3            W25X_DI = 1;
+ 124   3          }
+ 125   2          else
+ 126   2          {
+ 127   3            W25X_DI = 0;                    //  if not, set to low
+ 128   3          }
+ 129   2            
+ 130   2      
+ 131   2          W25X_CLK = 1;                       //  toggle clock high
+ 132   2          OUT = (uint8_t)(OUT << 1);                   //  shift 1 place for next bit
+ 133   2          _nop_();_nop_(); _nop_();_nop_();
+ 134   2          W25X_CLK = 0;                       //  toggle clock low
+ 135   2        }
+ 136   1      }
+ 137          
+ 138          //读取一个字节
+ 139          uchar   SPI_Get_Byte(void)
+ 140          {
+ 141   1        uchar i = 0, in = 0;
+ 142   1        bit temp;
+ 143   1        for (; i < 8; i++)
+ 144   1        {
+ 145   2          in = (uint8_t)(in << 1);                      //  shift 1 place to the left or shift in 0
+ 146   2          temp = W25X_DO;                      //  save input
+ 147   2          W25X_CLK = 1; 
+ 148   2          _nop_();                              //  toggle clock high
+ 149   2          if (temp==1)                        //  check to see if bit is high
+ 150   2          {
+ 151   3            in |= (uchar)0x01;                     //  if high, make bit high
+ 152   3          }
+ 153   2             
+ 154   2          _nop_();
+ 155   2          _nop_();
+ 156   2          _nop_(); 
+ 157   2          _nop_(); 
+ 158   2          W25X_CLK = 0;                       //  toggle clock low
+ 159   2        }
+ 160   1        return in;
+ 161   1      }
+ 162          
+ 163           //擦除指定的扇区
+ 164           void    SPI_Erase_Sector(uint32 Dst_Addr)
+ 165           {
+ 166   1         W25X_CS = 0;                                        //  enable device
+ 167   1           SPI_Write_Enable();                                 //  set WEL
+ 168   1           W25X_CS = 0;
+ 169   1           SPI_Send_Byte(W25X_SectorErase);                    //  send Sector Erase command
+ 170   1           SPI_Send_Byte((uchar)((Dst_Addr & (uint32)0xFFFFFF) >> 16));//    send 3 address bytes
+ 171   1           SPI_Send_Byte((uchar)((Dst_Addr & (uint32)0xFFFF) >> 8));
+ 172   1           SPI_Send_Byte((uchar)Dst_Addr & (uint32)0xFF);
+ 173   1           W25X_CS = 1;                                        //  disable device
+ 174   1       }
+ 175          
+ 176          //读取SPI_FLASH的状态寄存器
+C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 4   
 
- 177          //默认:0x00
- 178          //uchar SPI_Flash_ReadSR(void)   
- 179          //{  
- 180          //  uchar byte=0;   
- 181          //  W25X_CS=0;                            //使能器件 
- 182          //  SPI_Send_Byte(W25X_ReadStatusReg);    //发送读取状态寄存器命令 
- 183          //  LCD_1DIR_H;
- 184          //  byte=SPI_Get_Byte();             //读取一个字节  
- 185          //  LCD_1DIR_L;
- 186          //  W25X_CS=1;                            //取消片选     
- 187          //  return byte;   
- 188          //}
- 189          
- 190          
- 191          ////等待空闲
- 192          //void SPI_Flash_Wait_Busy(void)   
- 193          //{   
- 194          //  while((SPI_Flash_ReadSR()&0x01)==0x01);   // 等待BUSY位清空
- 195          //}  
+ 177          //BIT7  6   5   4   3   2   1   0
+ 178          //SPR   RV  TB BP2 BP1 BP0 WEL BUSY
+ 179          //SPR:默认0,状态寄存器保护位,配合WP使用
+ 180          //TB,BP2,BP1,BP0:FLASH区域写保护设置
+ 181          //WEL:写使能锁定
+ 182          //BUSY:忙标记位(1,忙;0,空闲)
+ 183          //默认:0x00
+ 184          //uchar SPI_Flash_ReadSR(void)   
+ 185          //{  
+ 186          //  uchar byte=0;   
+ 187          //  W25X_CS=0;                            //使能器件 
+ 188          //  SPI_Send_Byte(W25X_ReadStatusReg);    //发送读取状态寄存器命令 
+ 189          //  LCD_1DIR_H;
+ 190          //  byte=SPI_Get_Byte();             //读取一个字节  
+ 191          //  LCD_1DIR_L;
+ 192          //  W25X_CS=1;                            //取消片选     
+ 193          //  return byte;   
+ 194          //}
+ 195          
  196          
- 197          ////擦除整个芯片      
- 198          ////等待时间超长...
- 199          //void SPI_Flash_Erase_Chip(void)   
- 200          //{                                   
- 201          //    SPI_Write_Enable();                     //SET WEL 
- 202          //    SPI_Flash_Wait_Busy();   
- 203          //    W25X_CS=0;                            //使能器件   
- 204          //    SPI_Send_Byte(W25X_ChipErase);        //发送片擦除命令  
- 205          //  W25X_CS=1;                            //取消片选            
- 206          //  SPI_Flash_Wait_Busy();             //等待芯片擦除结束
- 207          //}   
- 208          
+ 197          ////等待空闲
+ 198          //void SPI_Flash_Wait_Busy(void)   
+ 199          //{   
+ 200          //  while((SPI_Flash_ReadSR()&0x01)==0x01);   // 等待BUSY位清空
+ 201          //}  
+ 202          
+ 203          ////擦除整个芯片      
+ 204          ////等待时间超长...
+ 205          //void SPI_Flash_Erase_Chip(void)   
+ 206          //{                                   
+ 207          //    SPI_Write_Enable();                     //SET WEL 
+ 208          //    SPI_Flash_Wait_Busy();   
+ 209          //    W25X_CS=0;                            //使能器件   
+ 210          //    SPI_Send_Byte(W25X_ChipErase);        //发送片擦除命令  
+ 211          //  W25X_CS=1;                            //取消片选            
+ 212          //  SPI_Flash_Wait_Busy();             //等待芯片擦除结束
+ 213          //}   
+ 214          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE

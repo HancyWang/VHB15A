@@ -77,17 +77,21 @@
 #include "GUI.h"
 #include "uart_fun.h"
 #include "Sound_Type.h"
-#include "absacc.h"
+//#include "absacc.h"
 #include "StcRomCrc16.h"
 
 #define VHB15A_VER "2.0.5"//software version
 #define DATE_VER "190318"	//
 
-#define  Clear_bit(Value,bit_num)    (Value) =(Value)& ( ~ ( 1 << (bit_num) ) )
-#define  Set_bit(Value,bit_num)     (Value) =(Value)| ( 1 << (bit_num) )
-#define  Cpl_bit(Value,bit_num)      (Value) =(Value)^ ( 1 << (bit_num) )
-#define  Bit_is_one(Value,bit_num)   ( (Value) & (1<< (bit_num) ) )
-#define  Bit_is_zero(Value,bit_num)  ( !( (Value) & ( 1<< (bit_num) ) ) ) 
+//#define  Clear_bit(Value,bit_num)    (Value) =(Value)& ( ~ ( 1 << (bit_num) ) )
+//#define  Set_bit(Value,bit_num)     (Value) =(Value)| ( 1 << (bit_num) )
+//#define  Cpl_bit(Value,bit_num)      (Value) =(Value)^ ( 1 << (bit_num) )
+//#define  Bit_is_one(Value,bit_num)   ( (Value) & (1<< (bit_num) ) )
+//#define  Bit_is_zero(Value,bit_num)  ( !( (Value) & ( 1<< (bit_num) ) ) ) 
+
+
+
+
 
 
 //端口定义区===============================================

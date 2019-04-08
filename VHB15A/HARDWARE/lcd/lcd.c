@@ -7,11 +7,12 @@ uint8_t    Back_Color;
 
 //2019.03.29
 sfr P0   = 0x80;
-sbit P14 = 0x90^4;
-sbit P15 = 0x90^5;
-sbit P16 = 0x90^6;
-sbit P40 = 0xC0^0;
-sbit P46 = 0xC0^6;
+sbit P14 = (u8)0x90^(u8)4;
+sbit P15 = (u8)0x90^(u8)5;
+sbit P16 = (u8)0x90^(u8)6;
+//sbit P40 = (u8)0xC0^(u8)0;
+sbit P40 = (u8)0xC0;
+sbit P46 = (u8)0xC0^(u8)6;
 
 static const uint16_t code Table_Color[]=
 {
@@ -261,9 +262,9 @@ static void DISP_MONO_GRAP(uint8_t  X1, uint16_t Y1,uint8_t  H, uint8_t  W,const
 	LCD_CrtlWrite_Area(X1,X1+H-1,Y1,Y1+W-1);
 	for(w=0;w<((INT)H*((INT)W)/8);w++)
 	{
-		for(j=0;j<8;j++)
+		for(j=0;j<(uint16_t)8;j++)
 		{
-			if((gp[w]&(0x01<<j))!=0)
+			if((gp[w]&((uint16_t)0x01<<j))!=0)
 			{
 				LCD_CtrlWrite_Color(color);
 			}
@@ -423,9 +424,9 @@ void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color)
 	{
 		for(j=0;j<8;j++)
 		{
-			if((asc2_1608[num][(w*2)+1]&(0x01<<j))!=0)
+			if((asc2_1608[num][(w*2)+1]&((uint16_t)0x01<<j))!=0)
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(color); //快速写
 				}
@@ -436,7 +437,7 @@ void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color)
 			}
 			else
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(Back_Color);
 				}
@@ -446,9 +447,9 @@ void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color)
 		
 		for(j=0;j<8;j++)
 		{
-			if((asc2_1608[num][w*2]&(0x01<<j))!=0)
+			if((asc2_1608[num][w*2]&((uint16_t)0x01<<j))!=0)
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(color); //快速写
 				}
@@ -459,7 +460,7 @@ void DISP_FNT8X16(u16  X, u16 Y,u8 NUM,u8 mode,u8 color)
 			}
 			else
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(Back_Color);
 				}	
@@ -494,9 +495,9 @@ void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 	{
 		for(j=0;j<8;j++)
 		{
-			if((asc2_2412[num][(w*3)+2]&(0x01<<j))!=0)
+			if((asc2_2412[num][(w*3)+2]&((uint16_t)0x01<<j))!=0)
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(color); //快速写
 				}
@@ -507,7 +508,7 @@ void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 			}
 			else
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(Back_Color);
 				}
@@ -517,9 +518,9 @@ void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 		
 		for(j=0;j<8;j++)
 		{
-			if((asc2_2412[num][(w*3)+1]&(0x01<<j))!=0)
+			if((asc2_2412[num][(w*3)+1]&((uint16_t)0x01<<j))!=0)
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(color); //快速写
 				}
@@ -530,7 +531,7 @@ void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 			}
 			else
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(Back_Color);
 				}
@@ -539,9 +540,9 @@ void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 		} 
 		for(j=0;j<8;j++)
 		{
-			if((asc2_2412[num][w*3]&(0x01<<j))!=0)
+			if((asc2_2412[num][w*3]&((uint16_t)0x01<<j))!=0)
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(color); //快速写
 				}
@@ -552,7 +553,7 @@ void DISP_FNT12X24(u16 X, u16 Y,u8 NUM,u8 mode,u8 color)
 			}
 			else
 			{
-				if(mode == 0)
+				if(mode == (u8)0)
 				{
 					LCD_CtrlWrite_Color(Back_Color);
 				}	
@@ -681,11 +682,11 @@ void LCD_ShowxNum(u16 x,u16 y,u8 size,u8 len,u32 num,u8 mode,u8 color)
 			{
 				if((mode&(u8)0X80)!=(u8)0)
 				{
-					LCD_ShowChar(x,y+((size/2)*t),size,'0',mode&0X01,color);  //为0也要显示
+					LCD_ShowChar(x,y+((size/2)*t),size,'0',mode&(u8)0x01,color);  //为0也要显示
 				}
 				else
 				{
-					LCD_ShowChar(x,y+((size/2)*t),size,' ',mode&0X01,color);  //为0不显示
+					LCD_ShowChar(x,y+((size/2)*t),size,' ',mode&(u8)0x01,color);  //为0不显示
 				}					
 				continue;
 			}
@@ -694,7 +695,7 @@ void LCD_ShowxNum(u16 x,u16 y,u8 size,u8 len,u32 num,u8 mode,u8 color)
 				enshow=1; //最高位不是0或	
 			}				 		 	 
 		}
-	 	LCD_ShowChar(x,y+((size/2)*t),size,temp+'0',mode&0X01,color); 
+	 	LCD_ShowChar(x,y+((size/2)*t),size,temp+'0',mode&(u8)0x01,color); 
 	}
 } 
 

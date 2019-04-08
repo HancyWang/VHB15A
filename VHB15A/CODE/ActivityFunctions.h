@@ -31,6 +31,34 @@
 
 #define HeatingTemperature_MAX      1050   //发热盘最高限制温度
 
+typedef enum
+{
+	UART_REC_STATE_READY = 0, //准备接收,初始化计数,  1
+	UART_REC_STATE_HEADER_DET,//检测命令头 "NEUNIT=1," 共9个字符 
+	UART_REC_STATE_DATA_TAIL_DET,//接收命令(最多9个字符)，检测命令尾"\CR"共3个字符 
+	UART_REC_STATE_DONE //接收正确完成
+}UART_RECSTATE;
+
+
+typedef enum  //heating wire mode
+{	
+	Wire_Sel_Double = 0,  //double heating wire
+	Wire_Sel_In_Only,	    //INSP Only heating wire
+	Wire_Sel_None		    //Whithout heating wire
+}WIRE_MODE_SEL;	
+
+
+//typedef struct 
+//{
+//	INT Uk; //总的控制量
+////	int Uk1;//上次的总控制量
+//	INT Sum_error;//误差总量
+//	INT Ek;//当前的误差量
+//	INT Ek1;//前一次的误差量
+//	INT Ek2;//前二次的误差量       
+//}CONTROLLER_TEMP;//定义一个温度Controller结构
+
+
 void 	Fun_Null(void);
 void	Init_port(void); //初始化端口状态--------------------------------
 void 	Main_Init(void);//初始化
@@ -53,6 +81,9 @@ void  Mem_Flash_Recall(void);//读取上次的记忆
 void  WireInOut_State_Confirm(void);//正常运行界面,按下确认键确定回路的模式
 void  Err_Base_HeaterWire_DISP_Enable(void);//屏保时置相关标志,以便亮屏时显示主机和线的图形
 void  HeaterPlateWireDriveFbTask(void);//
+
+uint8_t  Bit_is_one(uint8_t Value,INT bit_num);
+
 
 extern struct stc_data_flash data_flash;
 extern uint8_t  Work_Mode;		 
@@ -84,7 +115,7 @@ extern uint8_t HeaterPlate_State; //加热盘状态 1-有 0-无
 extern uint16_t  HP_CNT_Int;				//加热盘中断检测计数
 
 extern uint8_t  ERR_Kind;
-extern bit Wire_Mode_Mismatch; //回路发热丝模式和实际不匹配		
+extern uint8_t Wire_Mode_Mismatch; //回路发热丝模式和实际不匹配		
 
 extern uint16_t  	HP_CNT_Int_End_Rem;//8S结束时加热盘中断检测计数
 

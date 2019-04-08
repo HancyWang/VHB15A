@@ -11,20 +11,38 @@
 //#define OUT_LOW        0
 //#define INPUT_HIGH     1
 
-#define SCL_DIR_OUTPUT()   P2M1 |= 0x10;P2M0 |= 0x10  //11 开漏输出
-#define SDA_DIR_INPUT()    P2M1 |= 0x40;P2M0 &= 0xBF  //10 仅为输入
-#define SDA_DIR_OUTPUT()   P2M1 |= 0x40;P2M0 |= 0x40  //11 开漏输出
+//#define SCL_DIR_OUTPUT()   P2M1 |= 0x10;P2M0 |= 0x10  //11 开漏输出
+//#define SDA_DIR_INPUT()    P2M1 |= 0x40;P2M0 &= 0xBF  //10 仅为输入
+//#define SDA_DIR_OUTPUT()   P2M1 |= 0x40;P2M0 |= 0x40  //11 开漏输出
 
 #define	RX8010_WRITE  0x64 //I2C器件地址
 #define RX8010_READ		0x65
 
 //2019.03.29
 sfr WDT_CONTR = 0xC1;
-sbit EA       = 0xA8^7;
-sbit P25 = 0xA0^5;
-sbit P26 = 0xA0^6;
+sbit EA  = (u8)0xA8^(u8)7;
+sbit P25 = (u8)0xA0^(u8)5;
+sbit P26 = (u8)0xA0^(u8)6;
 sfr P2M0 = 0x96;
 sfr P2M1 = 0x95;
+
+
+static void SCL_DIR_OUTPUT(void)
+{
+	P2M1 |= (u8)0x10;
+	P2M0 |= (u8)0x10;
+} 
+
+static void SDA_DIR_INPUT(void)
+{
+	P2M1 |= (u8)0x40;
+	P2M0 &= (u8)0xBF;
+}
+static void SDA_DIR_OUTPUT(void)
+{
+	P2M1 |= (u8)0x40;
+	P2M0 |= (u8)0x40;
+}
 
 //************************************
 //** 函数原型: void IC_start(void); **
@@ -117,7 +135,7 @@ static uint8_t IC_ReadByte(void)
 		SCL=1;
 		delay_us(2);
 		IC_data<<=1;
-		IC_data|=SDA;
+		IC_data|=(uint8_t)SDA;
 		//delay_us(4);
 		SCL=1;
 		delay_us(2);

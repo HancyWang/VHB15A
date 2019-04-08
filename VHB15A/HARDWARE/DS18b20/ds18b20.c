@@ -8,8 +8,9 @@ uint8_t   Read_18B20_Value;
 uint8_t   Read_18B20_Value2; 
 
 //2019.03.30
-sbit P10 = 0x90^0;
-sbit P37 = 0xB0^7;
+//sbit P10 = (u8)0x90^(u8)0;
+sbit P10 = (u8)0x90;
+sbit P37 = (u8)0xB0^(u8)7;
 
 //DS18B20程序=================================================
 void DS18B20_ReadByte(void)
@@ -34,11 +35,11 @@ void DS18B20_ReadByte(void)
         Wei2=ChamberOutletSensor_Port;
         if (Wei==1)
 				{
-					Read_18B20_Value |= 0x80;        //读取数据
+					Read_18B20_Value |= (uint8_t)0x80;        //读取数据
 				}					
         if (Wei2==1) 
 				{
-					Read_18B20_Value2 |= 0x80;        //读取数据
+					Read_18B20_Value2 |= (uint8_t)0x80;        //读取数据
 				}
         delay_us(90);                  //等待60us时间片结束
     }
@@ -54,7 +55,7 @@ void DS18B20_WriteByte(uint8_t dat)
         HeatingPlateSensor_Port = 0;                        //开始时间片
         ChamberOutletSensor_Port=0;
         delay_us(2);                         //延时等待
-        if((dat & 0x01)!=0)
+        if((dat & (uint8_t)0x01)!=0)
         {
            HeatingPlateSensor_Port = 1;
            ChamberOutletSensor_Port=1;
@@ -85,14 +86,14 @@ u8t DS18B20_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum)
 	for (byteCtr = 0; byteCtr < nbrOfBytes; ++byteCtr)
 	{ 
 		crc ^= (Cdata[byteCtr]);
-		crc_1byte ^= 0;
+//		crc_1byte ^= (u8t)0;
 		for (bit8 = 0; bit8 < 8; bit8++)
 		{
 			if (((crc_1byte^crc) & (u8t)0x01)!=(u8t)0)
 			{
-				crc_1byte ^= 0x18;
+				crc_1byte ^= (u8t)0x18;
 				crc_1byte >>= 1;
-				crc_1byte |= 0x80;
+				crc_1byte |= (u8t)0x80;
 			}
 			else
 			{

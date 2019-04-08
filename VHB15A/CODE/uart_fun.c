@@ -11,8 +11,8 @@
 //2019.03.29
 sfr TMOD = 0x89;
 sfr TH1  = 0x8D;
-sbit TI  = 0x98^1;
-sbit TR1 = 0x88^6;
+sbit TI  = (u8)0x98^(u8)1;
+sbit TR1 = (u8)0x88^(u8)6;
 
 /**
   Section: Macro Declarations
@@ -43,10 +43,10 @@ void EUSART_Initialize(void)
 { 
 
     SCON  = 0x50;       //SCON: serail mode 3, 9-bit UART, enable ucvr
-    TMOD |= 0x20;       //TMOD: timer 1, mode 2, 8-bit reload
-    PCON |= 0x24;        //SMOD=1; 24
+    TMOD |= (u8)0x20;       //TMOD: timer 1, mode 2, 8-bit reload
+    PCON |= (u8)0x24;        //SMOD=1; 24
     TH1  = 0xFD;       //fosc=11.0592MHz //9600:FD 22.1184 19200*2
-    IE   |= 0x90;       //Enable Serial Interrupt
+    IE   |= (u8)0x90;       //Enable Serial Interrupt
     TR1   = 1;          // timer 1 run
 
     eusartRxHead = 0;

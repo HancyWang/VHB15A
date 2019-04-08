@@ -18,11 +18,13 @@
 #define NO_ASK         1
 #define OUT_LOW        0
 //#define INPUT_HIGH     1
-#define SCL_INPUT_HIGH()   P1M1 |= 0x04;P1M0 &= 0xFB 				//10 仅为输入
-#define SDA_INPUT_HIGH()   P1M1 |= 0x02;P1M0 &= 0xFD 				//10 仅为输入
-#define SCL_OUTPUT_LOW()   P1M1 |= 0x04;P1M0 |= 0x04;SCL=OUT_LOW    //11 开漏 Set port as output for configuration
-#define SDA_OUTPUT_LOW()   P1M1 |= 0x02;P1M0 |= 0x02;SDA=OUT_LOW    //11 开漏 Set port as output for configuration
+//#define SCL_INPUT_HIGH()   P1M1 |= 0x04;P1M0 &= 0xFB 				//10 仅为输入
+//#define SDA_INPUT_HIGH()   P1M1 |= 0x02;P1M0 &= 0xFD 				//10 仅为输入
+//#define SCL_OUTPUT_LOW()   P1M1 |= 0x04;P1M0 |= 0x04;SCL=OUT_LOW    //11 开漏 Set port as output for configuration
+//#define SDA_OUTPUT_LOW()   P1M1 |= 0x02;P1M0 |= 0x02;SDA=OUT_LOW    //11 开漏 Set port as output for configuration
 //=============================================================
+
+
 
 
 static void SHT21_Start(void);
@@ -37,8 +39,33 @@ static uint8_t SHT21_Read8Bit(uint8_t ask);
 //2019.03.29
 sfr P1M0 = 0x92; // 
 sfr P1M1 = 0x91;
-sbit P11 = 0x90^1;
-sbit P12 = 0x90^2;
+sbit P11 = (u8)0x90^(u8)1;
+sbit P12 = (u8)0x90^(u8)2;
+
+
+static void SCL_INPUT_HIGH(void)
+{
+	P1M1 |= (u8)0x04;
+	P1M0 &= (u8)0xFB;				//10 仅为输入
+}
+
+static void SDA_INPUT_HIGH(void)
+{
+	P1M1 |= (u8)0x02;
+	P1M0 &= (u8)0xFD; 
+}	
+static void SCL_OUTPUT_LOW(void)
+{
+	P1M1 |= (u8)0x04;
+	P1M0 |= (u8)0x04;
+	SCL=OUT_LOW;
+}
+static void SDA_OUTPUT_LOW(void)
+{
+	P1M1 |= (u8)0x02;
+	P1M0 |= (u8)0x02;
+	SDA=OUT_LOW;
+}
 
 static void SHT21_Start(void)
 {
@@ -225,7 +252,7 @@ uint16_t SHT21_ReadData(void)
 	}
 
 	TempLong=TempH;
-	TempLong=(TempLong<<8)+(TempL & 0xFC);
+	TempLong=(TempLong<<8)+(TempL & (uint8_t)0xFC);
 
 //	if(Work_State == UI_STATE_SERVICE_MODE)
 	{
@@ -240,7 +267,7 @@ uint16_t SHT21_ReadData(void)
 		return SHT21_ERROR;//数据为0
 	}		
 
-	if((TempL&0x02)==0x0)  //温度
+	if((TempL&(uint8_t)0x02)==0x0)  //温度
 	{
 	   TempLong=((1757*TempLong)>>16)-468; 
 	   //if(TempLong > 1250)	return SHT21_ERROR;	//温度不能超过125
@@ -254,7 +281,7 @@ uint16_t SHT21_ReadData(void)
 	  //if(TempLong > 1000)	return SHT21_ERROR;	 //湿度不能超过100
 	  //else//20141228发现错误
 		
-		TempLong |= 0x8000;//区别温度和湿度数据,温度最高位为1
+		TempLong |= (UINT32)0x8000;//区别温度和湿度数据,温度最高位为1
 	  return  TempLong; 
 	}
 } 
@@ -275,7 +302,7 @@ static u8t SHT2x_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum)
 //			else crc = (crc << 1);
 			if ((crc & (u8t)0x80)!=(u8t)0)
 			{
-				crc = (u8t)((crc << 1) ^ POLYNOMIAL);
+				crc = (u8t)((uint16_t)(crc << 1) ^ (uint16_t)POLYNOMIAL);
 			}				
 			else
 			{

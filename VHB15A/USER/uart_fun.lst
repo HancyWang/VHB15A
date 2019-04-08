@@ -1,4 +1,4 @@
-C51 COMPILER V9.52.0.0   UART_FUN                                                          04/04/2019 16:21:59 PAGE 1   
+C51 COMPILER V9.52.0.0   UART_FUN                                                          04/08/2019 16:01:02 PAGE 1   
 
 
 C51 COMPILER V9.52.0.0, COMPILATION OF MODULE UART_FUN
@@ -23,8 +23,8 @@ line level    source
   11          //2019.03.29
   12          sfr TMOD = 0x89;
   13          sfr TH1  = 0x8D;
-  14          sbit TI  = 0x98^1;
-  15          sbit TR1 = 0x88^6;
+  14          sbit TI  = (u8)0x98^(u8)1;
+  15          sbit TR1 = (u8)0x88^(u8)6;
   16          
   17          /**
   18            Section: Macro Declarations
@@ -55,14 +55,14 @@ line level    source
   43          { 
   44   1      
   45   1          SCON  = 0x50;       //SCON: serail mode 3, 9-bit UART, enable ucvr
-  46   1          TMOD |= 0x20;       //TMOD: timer 1, mode 2, 8-bit reload
-  47   1          PCON |= 0x24;        //SMOD=1; 24
+  46   1          TMOD |= (u8)0x20;       //TMOD: timer 1, mode 2, 8-bit reload
+  47   1          PCON |= (u8)0x24;        //SMOD=1; 24
   48   1          TH1  = 0xFD;       //fosc=11.0592MHz //9600:FD 22.1184 19200*2
-  49   1          IE   |= 0x90;       //Enable Serial Interrupt
+  49   1          IE   |= (u8)0x90;       //Enable Serial Interrupt
   50   1          TR1   = 1;          // timer 1 run
   51   1      
   52   1          eusartRxHead = 0;
-C51 COMPILER V9.52.0.0   UART_FUN                                                          04/04/2019 16:21:59 PAGE 2   
+C51 COMPILER V9.52.0.0   UART_FUN                                                          04/08/2019 16:01:02 PAGE 2   
 
   53   1          eusartRxTail = 0;
   54   1          eusartRxCount = 0;  
@@ -126,7 +126,7 @@ line level    source
  112   1          eusartRxCount++;
  113   1      }
  114           
-C51 COMPILER V9.52.0.0   UART_FUN                                                          04/04/2019 16:21:59 PAGE 3   
+C51 COMPILER V9.52.0.0   UART_FUN                                                          04/08/2019 16:01:02 PAGE 3   
 
  115          
  116          /************************ (C) COPYRIGHT *****END OF FILE****/
