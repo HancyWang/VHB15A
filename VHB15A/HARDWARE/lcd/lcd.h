@@ -64,27 +64,27 @@ void  LCD_Show_Verion(void);//显示版本号
 #define LCD_RD   P42    //读控制
 #define LCD_CS  P16
 
-#define LCD_RS_H  	P15=1
-#define LCD_RS_L  	P15=0
+#define LCD_RS_H  	(P15=(bit)1)
+#define LCD_RS_L  	(P15=(bit)0)
 
-#define LCD_RD_H  	P42=1
-#define LCD_RD_L  	P42=0
+#define LCD_RD_H  	(P42=(bit)1)
+#define LCD_RD_L  	(P42=(bit)0)
 
-#define LCD_WR_H  	P14=1
-#define LCD_WR_L  	P14=0
+#define LCD_WR_H  	(P14=(bit)1)
+#define LCD_WR_L  	(P14=(bit)0)
 
-#define LCD_RST_H  	P46=1
-#define LCD_RST_L  	P46=0
+#define LCD_RST_H  	(P46=(bit)1)
+#define LCD_RST_L  	(P46=(bit)0)
 
-#define LCD_CS_H  	P16=1
-#define LCD_CS_L  	P16=0
+#define LCD_CS_H  	(P16=(bit)1)
+#define LCD_CS_L  	(P16=(bit)0)
 
-#define LCD_1DIR_H 	P17=1//高电平允许数据从A（3V）送到B（5V）
-#define LCD_1DIR_L 	P17=0//低电平允许数据从B（5V）送到A（3V）
+#define LCD_1DIR_H 	(P17=(bit)1)//高电平允许数据从A（3V）送到B（5V）
+#define LCD_1DIR_L 	(P17=(bit)0)//低电平允许数据从B（5V）送到A（3V）
 
 
-#define LCD_LIGHT_OPEN 		P40=1
-#define LCD_LIGHT_CLOSE 	P40=0
+#define LCD_LIGHT_OPEN 		(P40=(bit)1)
+#define LCD_LIGHT_CLOSE 	(P40=(bit)0)
 
 #define	LCD_PORT  P0
 #define LCD_DATA_PORT P0
@@ -140,7 +140,7 @@ void  LCD_Show_Verion(void);//显示版本号
 #define  POS_SYSTIME_Y   216
 #define  POS_SYSDATE_X   43
 #define  POS_SYSDATE_Y   208
-#define  POS_RT_TEMP_X       POS_ICO_TEMP_X-4 //7
+#define  POS_RT_TEMP_X       (POS_ICO_TEMP_X-4) //7
 #define  POS_RT_TEMP_Y       60
 #define  POS_RT_RH_X         POS_ICO_SHIDU_X 
 #define  POS_RT_RH_Y         65

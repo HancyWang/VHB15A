@@ -23,6 +23,7 @@ const struct Key_Multifun_Element Key_UP_Element =
   KeyUpPressLongRepeatAction,  //连续按下持续,连+连-
 };
 
+
 struct Multifun_Key Key_UP =
 {
   &KeyToFuncVal,		        //按键码值
@@ -33,7 +34,7 @@ struct Multifun_Key Key_UP =
 uint8_t Key_UP_Tik = 0;
 void Key_UP_TikFunc(void)
 {
-    if(Key_UP_Tik < 250)
+    if(Key_UP_Tik < (u8)250)
     {
        Key_UP_Tik++;
     }
@@ -84,7 +85,7 @@ struct Multifun_Key Key_Down =
 uint8_t Key_Down_Tik = 0;
 void Key_Down_TikFunc(void)
 {
-    if(Key_Down_Tik < 250)
+    if(Key_Down_Tik < (u8)250)
     {
        Key_Down_Tik++;
     }
@@ -136,7 +137,7 @@ struct Multifun_Key Key_OK =
 uint8_t Key_OK_Tik = 0;
 void Key_OK_TikFunc(void)
 {
-    if(Key_OK_Tik < 250)
+    if(Key_OK_Tik < (u8)250)
     {
        Key_OK_Tik++;
     }
@@ -189,7 +190,7 @@ struct Multifun_Key Key_Mute =
 uint8_t Key_Mute_Tik = 0;
 void Key_Mute_TikFunc(void)
 {
-    if(Key_Mute_Tik < 250)
+    if(Key_Mute_Tik < (u8)250)
     {
        Key_Mute_Tik++;
     }
@@ -202,7 +203,7 @@ static void	KeyMutePressShortAction(void)
 	
 	if(AlarmInfoIndex!=(uint8_t)0)//有报警
 	{
-		if(AlarmSoundPauseStatus == 0)//正常报警
+		if(AlarmSoundPauseStatus == (u8)0)//正常报警
 		{
 			AlarmSoundPauseStatus = 1;//声音暂停
 			Sound_Alarm_Pause_Enable();

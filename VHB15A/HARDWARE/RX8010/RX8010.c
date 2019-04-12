@@ -4,8 +4,8 @@
  //#include "RX8010.h"
 
  
-#define SCL          P25
-#define SDA          P26
+#define SCL_          P25
+#define SDA_        	P26
 //#define ASK            0
 //#define NO_ASK         1
 //#define OUT_LOW        0
@@ -52,12 +52,12 @@ static void IC_start(void)
 {	
 		SCL_DIR_OUTPUT();
 		SDA_DIR_OUTPUT();	  
-		SCL=1;
-		SDA=1;
+		SCL_=(bit)1;
+		SDA_=(bit)1;
 		delay_us(2);
-		SDA=0;
+		SDA_=(bit)0;
 		delay_us(2);//
-		SCL=0;
+		SCL_=(bit)0;
 }
 
 //**********************************
@@ -66,13 +66,13 @@ static void IC_start(void)
 //**********************************
 static void IC_stop(void)
 {
-		SCL=0;
+		SCL_=(bit)0;
 	  SDA_DIR_OUTPUT();
-		SDA=0;
+		SDA_=(bit)0;
 		delay_us(2);
-		SCL=1;
+		SCL_=(bit)1;
 		delay_us(2); //
-		SDA=1;
+		SDA_=(bit)1;
 		delay_us(2);
 }
 
@@ -85,36 +85,40 @@ static void IC_stop(void)
 static uint8_t IC_WriteByte( uint8_t wdata)
 {
 	uint8_t i;
+	uint8_t ret=1;
 	SDA_DIR_OUTPUT();
-	for(i=0;i<8;i++)
+	for(i=0;i<(u8)8;i++)
 	{
-		SCL=0;
+		SCL_=(bit)0;
 		delay_us(2);
 		if((wdata&(uint8_t)0x80)!=(uint8_t)0)
 		{
-			SDA=1;
+			SDA_=(bit)1;
 		}			
 		else 
 		{
-			SDA=0;
+			SDA_=(bit)0;
 		}
 		delay_us(2);
-		SCL=1;
+		SCL_=(bit)1;
 		delay_us(4);
 		wdata<<=1;
 	}
-	SCL=0;
+	SCL_=(bit)0;
 	delay_us(4);
 	SDA_DIR_INPUT();
-	SCL=1;
+	SCL_=(bit)1;
 	delay_us(4);
 	i=0;
-	while(SDA)
+	while(SDA_)
 	{
-		if(++i>12){SCL=0;return(0);}
+		if(++i>(u8)12){SCL_=(bit)0;ret=(uint8_t)0;break;}
 	}
-	SCL=0;
-	return(1);
+	if(ret==(uint8_t)1)
+	{
+		SCL_=(bit)0;
+	}
+	return ret;
 }
 //***********************************************
 //** 函数原型: uchar IC_readbyte(void); **
@@ -126,26 +130,26 @@ static uint8_t IC_ReadByte(void)
 { 
 	uint8_t i;
 	uint8_t IC_data=0;
-	SCL=0;
+	SCL_=(bit)0;
 	SDA_DIR_OUTPUT();
-	SDA=1;
+	SDA_=(bit)1;
 	SDA_DIR_INPUT();	
-	for(i=0;i<8;i++)
+	for(i=0;i<(uint8_t)8;i++)
 	{
-		SCL=1;
+		SCL_=(bit)1;
 		delay_us(2);
 		IC_data<<=1;
-		IC_data|=(uint8_t)SDA;
+		IC_data|=SDA_;
 		//delay_us(4);
-		SCL=1;
+		SCL_=(bit)1;
 		delay_us(2);
-		SCL=0;
+		SCL_=(bit)0;
 		delay_us(4);
 	}
 	delay_us(4);
-	SCL=0;
+	SCL_=(bit)0;
 	SDA_DIR_OUTPUT();
-	SDA=0;
+	SDA_=(bit)0;
 	return(IC_data);
 }
 //***************************************************************
@@ -156,35 +160,74 @@ static uint8_t IC_ReadByte(void)
 //***************************************************************
 uint8_t readEEone(uint8_t addr,uint8_t num,uint8_t *Data)
 {
+//	uint8_t i;
+//	IC_start();
+//	if(IC_WriteByte(RX8010_WRITE)==0)
+//	{
+//		IC_stop(); return(0);
+//	}
+//	
+//	if(IC_WriteByte(addr)==0)
+//	{
+//		IC_stop(); return(0);
+//	}
+//	IC_start();
+//	if(IC_WriteByte(RX8010_READ)==0)
+//	{
+//		IC_stop(); return(0);
+//	}
+//	for(i=0;i<(num-1);i++)
+//	{
+//		Data[i]=IC_ReadByte();
+//		SDA_DIR_OUTPUT();				
+//		SDA_=0; 	
+//		SCL_=1;
+//	}
+//	Data[num-1]=IC_ReadByte();
+//	SDA_DIR_OUTPUT();	
+//	SDA_=1; 
+//	delay_us(4);
+//	SCL_=1;
+//	IC_stop();
+//	return(1);
+
 	uint8_t i;
+	uint8_t ret=1;
 	IC_start();
-	if(IC_WriteByte(RX8010_WRITE)==0)
+	if(IC_WriteByte(RX8010_WRITE)==(u8)0)
 	{
-		IC_stop(); return(0);
+		IC_stop(); ret=(uint8_t)0;
 	}
-	if(IC_WriteByte(addr)==0)
+	else if(IC_WriteByte(addr)==(u8)0)
 	{
-		IC_stop(); return(0);
+		IC_stop(); ret=(uint8_t)0;
 	}
-	IC_start();
-	if(IC_WriteByte(RX8010_READ)==0)
+	else
 	{
-		IC_stop(); return(0);
+		IC_start();
+		if(IC_WriteByte(RX8010_READ)==(u8)0)
+		{
+			
+			IC_stop(); ret=(uint8_t)0;
+		}
+		else
+		{
+			for(i=0;i<(num-(u8)1);i++)
+			{
+				Data[i]=IC_ReadByte();
+				SDA_DIR_OUTPUT();				
+				SDA_=(bit)0; /** Send ACK **/		
+				SCL_=(bit)1;
+			}
+			Data[num-(u8)1]=IC_ReadByte();
+			SDA_DIR_OUTPUT();	
+			SDA_=(bit)1; /** Send Read End **/
+			delay_us(4);
+			SCL_=(bit)1;
+			IC_stop();
+		}
 	}
-	for(i=0;i<(num-1);i++)
-	{
-		Data[i]=IC_ReadByte();
-		SDA_DIR_OUTPUT();				
-		SDA=0; /** Send ACK **/		
-		SCL=1;
-	}
-	Data[num-1]=IC_ReadByte();
-	SDA_DIR_OUTPUT();	
-	SDA=1; /** Send Read End **/
-	delay_us(4);
-	SCL=1;
-	IC_stop();
-	return(1);
+	return ret;
 }
 
 //****************************************************************
@@ -199,19 +242,19 @@ static void writeEEone(uint8_t addr,uint8_t num,const uint8_t *Data)
 	uint8_t i;
 	//gie=0;
 	IC_start();
-	if(IC_WriteByte(RX8010_WRITE)==0)
+	if(IC_WriteByte(RX8010_WRITE)==(u8)0)
 	{
 //		IC_stop(); return(0);
 		IC_stop();
 	}
-	if(IC_WriteByte(addr)==0)
+	if(IC_WriteByte(addr)==(u8)0)
 	{
 //		IC_stop(); return(0);
 		IC_stop();
 	}
 	for(i=0;i<num;i++)
 	{
-		if(IC_WriteByte(Data[i])==0)
+		if(IC_WriteByte(Data[i])==(u8)0)
 		{
 //			IC_stop(); return(0);
 			IC_stop();
@@ -219,8 +262,8 @@ static void writeEEone(uint8_t addr,uint8_t num,const uint8_t *Data)
 	}
 	IC_stop();
 	delay_us(4);
-	SDA=0;
-	SCL=0;
+	SDA_=(bit)0;
+	SCL_=(bit)0;
 	//gie=1;
 //	return(1);
 } 
@@ -233,13 +276,13 @@ uint8_t RX8010_Initialize(void)
 	uint8_t i;
 	uint8_t Init_State;
 	
-	EA = 0;	
+	EA = (bit)0;	
 	Init_State = RX8010_INIT_NONE;//未初始化
 	
 	Rdata[0] = 0x00;
-	for(i = 0;i < 10;i++)
+	for(i = 0;i < (u8)10;i++)
 	{
-		if(readEEone(0x1E,1,Rdata) == 1)
+		if(readEEone(0x1E,1,Rdata) == (u8)1)
 		{
 			Init_State = RX8010_INIT_NONE;
 			break;//读VLF状态
@@ -249,7 +292,7 @@ uint8_t RX8010_Initialize(void)
 		Init_State = RX8010_INIT_FAIL;//初始化失败
 	}
 	
-	if(Init_State == RX8010_INIT_NONE)
+	if(Init_State == (u8)RX8010_INIT_NONE)
 	{		
 		if(Bit_is_one(Rdata[0],1)!=(uint8_t)0)//判定是否停止,VLF=1
 		{
@@ -287,7 +330,7 @@ uint8_t RX8010_Initialize(void)
 			writeEEone(0x1F,1,Rdata);			
 		}	
 	}
-	EA = 1;
+	EA = (bit)1;
 	return Init_State;
 }
  
@@ -329,34 +372,37 @@ void RX8010_GetTime(BYTE *p)
 {
 	uint8_t Rdata[7];
 	
-	readEEone(0x10,7,Rdata);
-	*p = Rdata[0];//SEC	
-//	*(p+1) = Rdata[1];//MIN
-//	*(p+2) = Rdata[2];//HOUR
-//	*(p+5) = Rdata[3];//WEEK
-	p[1]= Rdata[1];//MIN
-	p[2] = Rdata[2];//HOUR
-	p[5] = Rdata[3];//WEEK
-//	// 注意：未使用星期
-//	for(i = 1;i > 7; i++)
-//	{
-//		if((*(p+5) >> i)==0)break;
-//	}
-//	*(p+5) = i;
-//	if(*(p+5) == 1)//星期天
-//	{
-//		*(p+5) = 7;
-//	}
-//	else
-//	{
-//		*(p+5) -=1;
-//	}
-//	
-	
-//	*(p+3) = Rdata[4];//DAY
-//	*(p+4) = Rdata[5];//MONTH
-//	*(p+6) = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
-	p[3] = Rdata[4];//DAY
-	p[4] = Rdata[5];//MONTH
-	p[6] = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
+//	readEEone(0x10,7,Rdata);
+	if(readEEone(0x10,7,Rdata)==(uint8_t)1)
+	{
+		*p = Rdata[0];//SEC	
+		//	*(p+1) = Rdata[1];//MIN
+		//	*(p+2) = Rdata[2];//HOUR
+		//	*(p+5) = Rdata[3];//WEEK
+		p[1]= Rdata[1];//MIN
+		p[2] = Rdata[2];//HOUR
+		p[5] = Rdata[3];//WEEK
+		//	// 注意：未使用星期
+		//	for(i = 1;i > 7; i++)
+		//	{
+		//		if((*(p+5) >> i)==0)break;
+		//	}
+		//	*(p+5) = i;
+		//	if(*(p+5) == 1)//星期天
+		//	{
+		//		*(p+5) = 7;
+		//	}
+		//	else
+		//	{
+		//		*(p+5) -=1;
+		//	}
+		//	
+
+		//	*(p+3) = Rdata[4];//DAY
+		//	*(p+4) = Rdata[5];//MONTH
+		//	*(p+6) = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
+		p[3] = Rdata[4];//DAY
+		p[4] = Rdata[5];//MONTH
+		p[6] = Rdata[6];//YEAR 2015-01-01-00:00:00-Tursday
+	}
 }

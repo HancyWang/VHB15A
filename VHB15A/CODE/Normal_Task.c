@@ -156,60 +156,60 @@ void ManageTask(void)//Task0:Task Manager ----20mS
 KEY_STATUS KeyToFuncVal = KEY_STATE_ReleaseValue; 
 void KeyScanTask(void) //1
 {
-		BitStatus bit_status;
-    WS_TaskState = KeyScanTIFG;
-    if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
-    {   
-        WS_DelTaskIfg(WS_TaskState);
-        {
-					bit_status = KEY_LEFT_UP_IN;//UP
-          if((INT)bit_status == (INT)RESET)
-          {
-            KeyToFuncVal = KEY_STATE_PressValue;     
-          }
-          else
-					{
-						KeyToFuncVal = KEY_STATE_ReleaseValue;
-					}
-          Key_Multifun(Key_UP_Element,&Key_UP);
-					
-					bit_status = KEY_LEFT_DOWN_IN;//DOWN
-          if((INT)bit_status == (INT)RESET)
-          {
-            KeyToFuncVal = KEY_STATE_PressValue;     
-          }
-          else
-					{
-						KeyToFuncVal = KEY_STATE_ReleaseValue; 
-					}
-            
-          Key_Multifun(Key_Down_Element,&Key_Down);
-					
-					bit_status = KEY_RIGHT_UP_IN;//OK
-          if((INT)bit_status == (INT)RESET)
-          {
-            KeyToFuncVal = KEY_STATE_PressValue;     
-          }
-          else
-					{
-						KeyToFuncVal = KEY_STATE_ReleaseValue; 
-					}
-            
-          Key_Multifun(Key_OK_Element,&Key_OK);
-					
-					bit_status = KEY_RIGHT_DOWN_IN;//MUTE
-          if((INT)bit_status == (INT)RESET)
-          {
-            KeyToFuncVal = KEY_STATE_PressValue;				
-          }
-          else
-					{
-						KeyToFuncVal = KEY_STATE_ReleaseValue; 
-					}
-            
-          Key_Multifun(Key_Mute_Element,&Key_Mute);					
-        }
-    }
+	BitStatus bit_status;
+	WS_TaskState = KeyScanTIFG;
+	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+	{   
+		WS_DelTaskIfg(WS_TaskState);
+		{
+			bit_status = KEY_LEFT_UP_IN;//UP
+			if((INT)bit_status == (INT)RESET)
+			{
+				KeyToFuncVal = KEY_STATE_PressValue;     
+			}
+			else
+			{
+				KeyToFuncVal = KEY_STATE_ReleaseValue;
+			}
+			Key_Multifun(Key_UP_Element,&Key_UP);
+			
+			bit_status = KEY_LEFT_DOWN_IN;//DOWN
+			if((INT)bit_status == (INT)RESET)
+			{
+				KeyToFuncVal = KEY_STATE_PressValue;     
+			}
+			else
+			{
+				KeyToFuncVal = KEY_STATE_ReleaseValue; 
+			}
+				
+			Key_Multifun(Key_Down_Element,&Key_Down);
+			
+			bit_status = KEY_RIGHT_UP_IN;//OK
+			if((INT)bit_status == (INT)RESET)
+			{
+				KeyToFuncVal = KEY_STATE_PressValue;     
+			}
+			else
+			{
+				KeyToFuncVal = KEY_STATE_ReleaseValue; 
+			}
+				
+			Key_Multifun(Key_OK_Element,&Key_OK);
+			
+			bit_status = KEY_RIGHT_DOWN_IN;//MUTE
+			if((INT)bit_status == (INT)RESET)
+			{
+				KeyToFuncVal = KEY_STATE_PressValue;				
+			}
+			else
+			{
+				KeyToFuncVal = KEY_STATE_ReleaseValue; 
+			}
+				
+			Key_Multifun(Key_Mute_Element,&Key_Mute);					
+		}
+	}
 }
 
 void HmiServiceModeTask(void)//2

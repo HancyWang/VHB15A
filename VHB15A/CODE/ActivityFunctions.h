@@ -31,13 +31,13 @@
 
 #define HeatingTemperature_MAX      1050   //发热盘最高限制温度
 
-typedef enum
-{
-	UART_REC_STATE_READY = 0, //准备接收,初始化计数,  1
-	UART_REC_STATE_HEADER_DET,//检测命令头 "NEUNIT=1," 共9个字符 
-	UART_REC_STATE_DATA_TAIL_DET,//接收命令(最多9个字符)，检测命令尾"\CR"共3个字符 
-	UART_REC_STATE_DONE //接收正确完成
-}UART_RECSTATE;
+//typedef enum
+//{
+//	UART_REC_STATE_READY = 0, //准备接收,初始化计数,  1
+//	UART_REC_STATE_HEADER_DET,//检测命令头 "NEUNIT=1," 共9个字符 
+//	UART_REC_STATE_DATA_TAIL_DET,//接收命令(最多9个字符)，检测命令尾"\CR"共3个字符 
+//	UART_REC_STATE_DONE //接收正确完成
+//}UART_RECSTATE;
 
 
 typedef enum  //heating wire mode

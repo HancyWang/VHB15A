@@ -41,25 +41,25 @@ sfr SCON = 0x98;
 //串口初始化
 void EUSART_Initialize(void)
 { 
+	SCON  = 0x50;       //SCON: serail mode 3, 9-bit UART, enable ucvr
+	TMOD |= (u8)0x20;       //TMOD: timer 1, mode 2, 8-bit reload
+	PCON |= (u8)0x24;        //SMOD=1; 24
+	TH1  = 0xFD;       //fosc=11.0592MHz //9600:FD 22.1184 19200*2
+	IE   |= (u8)0x90;       //Enable Serial Interrupt
+	TR1   = (bit)1;          // timer 1 run
 
-    SCON  = 0x50;       //SCON: serail mode 3, 9-bit UART, enable ucvr
-    TMOD |= (u8)0x20;       //TMOD: timer 1, mode 2, 8-bit reload
-    PCON |= (u8)0x24;        //SMOD=1; 24
-    TH1  = 0xFD;       //fosc=11.0592MHz //9600:FD 22.1184 19200*2
-    IE   |= (u8)0x90;       //Enable Serial Interrupt
-    TR1   = 1;          // timer 1 run
-
-    eusartRxHead = 0;
-    eusartRxTail = 0;
-    eusartRxCount = 0;  
+	eusartRxHead = 0;
+	eusartRxTail = 0;
+	eusartRxCount = 0;  
 }
 
 //从串口接收缓冲区读一个字节
 uint8_t EUSART_Read(void)
 {
     uint8_t readValue  = 0; 
-		eusartRxTail++;
+
     readValue = eusartRxBuffer[eusartRxTail];//读出计数
+		++eusartRxTail;
     if(sizeof(eusartRxBuffer) <= eusartRxTail) //读出从头计数
     {
         eusartRxTail = 0;
@@ -95,15 +95,16 @@ void EUSART_Write_Str(const uint8_t *stra,uint8_t cnt)//发送字符串或数组到串口
 
 void EUSART_Transmit_ISR(void)
 {   
-		TI=0;	
+		TI=(bit)0;	
 		Send_uart_busy = 0;
 }
 
 //串口中断接收服务程序
 void EUSART_Receive_ISR(void)
 {      
-		eusartRxHead++;
+		
     eusartRxBuffer[eusartRxHead] = SBUF;
+		++eusartRxHead;
 
     if(sizeof(eusartRxBuffer) <= eusartRxHead)//从头计数
     {

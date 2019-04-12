@@ -5,12 +5,14 @@ sfr WDT_CONTR = 0xC1;
 
 void main(void)
 {
+	uint8_t TRUE=(uint8_t)1;
+	
 	Main_Tik_Tok_Initial_Fun();	//Main timescale initialization 
 	Init_port();//IO,LCD,FLASH initialization
 	Main_Init();//Initial variables
   HmiEnterToWorkStateFunc(Work_State);//Enter POST or service mode 
-
-	while(1>0)
+	
+	while(TRUE!=(uint8_t)0)
 	{
 		WDT_CONTR = 0x3F; //Clear WatchDog,4.55S	
 		ManageTask(); //0

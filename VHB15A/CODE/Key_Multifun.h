@@ -3,7 +3,7 @@
 
 #include "key_datas.h"
 
-extern uint8_t step_step_times;
+//extern uint8_t step_step_times;
 
 //******************************************************************************
 
@@ -17,7 +17,6 @@ struct Key_Multifun_Element //多功能按键
     void (*Key_Fun_Short_Low_High)(void);     //短按键由低到高弹起
     void (*Key_Fun_Long_High_Low)(void);      //长按键由高到低持续TimOfSe
     void (*Key_Fun_Long_Always_Low)(void);    //连续按下持续TimOfSeTimOfLg,连+连-
-   
 };
 
 struct Multifun_Key

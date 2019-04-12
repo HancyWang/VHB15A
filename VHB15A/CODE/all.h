@@ -80,7 +80,7 @@
 //#include "absacc.h"
 #include "StcRomCrc16.h"
 
-#define VHB15A_VER "2.0.5"//software version
+#define VHB15A_VER "2.0.6"//software version
 #define DATE_VER "190318"	//
 
 //#define  Clear_bit(Value,bit_num)    (Value) =(Value)& ( ~ ( 1 << (bit_num) ) )

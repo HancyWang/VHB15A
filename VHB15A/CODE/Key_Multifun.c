@@ -2,9 +2,10 @@
 //******************************************************************************
 //定义长短按键判断函数
 //******************************************************************************
-uint8_t  step_step_times=0;//加快速度
+//static uint8_t  step_step_times=0;//加快速度
 void Key_Multifun(const struct Key_Multifun_Element Element,struct Multifun_Key *Variate)
 {
+	static uint8_t  step_step_times=0;//加快速度
 	switch(Variate->ProcessStep)
 	{
 		//检测按键是否按下，如果按下进入第2步，如果没有，继续1步，等待按键第一次按下
@@ -60,7 +61,7 @@ void Key_Multifun(const struct Key_Multifun_Element Element,struct Multifun_Key 
 				if(*(Variate->KeyTik) >= (Element.TimOfLg-step_step_times))
 				{
 					//step_step_times = Element.TimOfLg - 1;
-					if(step_step_times<(Element.TimOfLg - 1)){step_step_times++;}
+					if(step_step_times<(Element.TimOfLg - (u8)1)){step_step_times++;}
 					*(Variate->KeyTik) = 0;
 	
 					//执行长按时间函数
@@ -74,6 +75,7 @@ void Key_Multifun(const struct Key_Multifun_Element Element,struct Multifun_Key 
 			}		
 			break;     
 		default:
+			//do nothing
 			break;
 	}	
 }

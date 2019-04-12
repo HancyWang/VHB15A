@@ -33,27 +33,27 @@ void Sound_Type_Drive(void)//放入定时中断
 {
 	if(AlarmInfoIndex!=(uint8_t)0)//当前是报警状态
 	{
-		if(SoundPauseCnt == 0)//声音暂停取消
+		if(SoundPauseCnt == (uint16_t)0)//声音暂停取消
 		{
-			Buzzer_Port=1;
+			Buzzer_Port=(bit)1;
 			AlarmSoundPauseStatus = 0;//声音暂停取消
 		}
 		else//声音暂停
 		{
 			SoundPauseCnt--;	
-			Buzzer_Port=0;			
+			Buzzer_Port=(bit)0;			
 		}
 	}
 	else//非报警状态
 	{
 		if(Sound_En_Cnt!=(uint8_t)0)
 		{
-			Buzzer_Port=1;
+			Buzzer_Port=(bit)1;
 			Sound_En_Cnt--;
 		}
 		else
 		{
-			Buzzer_Port=0;
+			Buzzer_Port=(bit)0;
 		}
 	}
 }

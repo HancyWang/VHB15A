@@ -1,12 +1,12 @@
-C51 COMPILER V9.52.0.0   MAIN                                                              04/08/2019 16:01:00 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              04/11/2019 16:15:51 PAGE 1   
 
 
-C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
 OBJECT MODULE PLACED IN ..\OBJ\main.obj
-COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\main.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER NOAREGS 
-                    -INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\sht31;..\
-                    -HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\main.lst) TABS(2) OBJECT(..\OBJ\main
-                    -.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\CODE\main.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER NOAREG
+                    -S INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\sht31;.
+                    -.\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\main.lst) TABS(2) OBJECT(..\OBJ\ma
+                    -in.obj)
 
 line level    source
 
@@ -17,53 +17,55 @@ line level    source
    5          
    6          void main(void)
    7          {
-   8   1        Main_Tik_Tok_Initial_Fun(); //Main timescale initialization 
-   9   1        Init_port();//IO,LCD,FLASH initialization
-  10   1        Main_Init();//Initial variables
-  11   1        HmiEnterToWorkStateFunc(Work_State);//Enter POST or service mode 
-  12   1      
-  13   1        while(1>0)
-  14   1        {
-  15   2          WDT_CONTR = 0x3F; //Clear WatchDog,4.55S  
-  16   2          ManageTask(); //0
-  17   2          KeyScanTask();//1 
-  18   2          HmiServiceModeTask();//2
-  19   2          HmiPostTask();//3
-  20   2          HmiFactoryDefaultSelTask();//4
-  21   2          HmiNon_InvasiveSelTask();//5
-  22   2          HmiRunningTask();//6
-  23   2          HmiSetTempPatientTask();//7
-  24   2          HmiSetTempChamberTask();//8
-  25   2          HmiSetInExpTask();//9
-  26   2          HmiSetTimeTask();//10
-  27   2          HmiScreenSaverModeTask();//11
-  28   2          GetTemp_HpChamberTask();//12
-  29   2          GetTempHumidity_PatientTask();//13  
-  30   2          RefreshTempHumidyTask();//14
-  31   2          RefreshRTCTimeTask();//15
-  32   2          RefreshRunTimeTask();//16       
-  33   2          HeaterWireControlTask();//17
-  34   2          LowPowerModeTask();//18
-  35   2          HeaterWireModeDetTask();//19
-  36   2          AlarmErrorTask();//20
-  37   2          LowTempDet1STask();//21
-  38   2          SaveDateToFlashTask();//22
-  39   2          UartRecTask();//23
-  40   2        }//end while=============================
-  41   1      }
-  42          
+   8   1        uint8_t TRUE=(uint8_t)1;
+   9   1        
+  10   1        Main_Tik_Tok_Initial_Fun(); //Main timescale initialization 
+  11   1        Init_port();//IO,LCD,FLASH initialization
+  12   1        Main_Init();//Initial variables
+  13   1        HmiEnterToWorkStateFunc(Work_State);//Enter POST or service mode 
+  14   1        
+  15   1        while(TRUE!=(uint8_t)0)
+  16   1        {
+  17   2          WDT_CONTR = 0x3F; //Clear WatchDog,4.55S  
+  18   2          ManageTask(); //0
+  19   2          KeyScanTask();//1 
+  20   2          HmiServiceModeTask();//2
+  21   2          HmiPostTask();//3
+  22   2          HmiFactoryDefaultSelTask();//4
+  23   2          HmiNon_InvasiveSelTask();//5
+  24   2          HmiRunningTask();//6
+  25   2          HmiSetTempPatientTask();//7
+  26   2          HmiSetTempChamberTask();//8
+  27   2          HmiSetInExpTask();//9
+  28   2          HmiSetTimeTask();//10
+  29   2          HmiScreenSaverModeTask();//11
+  30   2          GetTemp_HpChamberTask();//12
+  31   2          GetTempHumidity_PatientTask();//13  
+  32   2          RefreshTempHumidyTask();//14
+  33   2          RefreshRTCTimeTask();//15
+  34   2          RefreshRunTimeTask();//16       
+  35   2          HeaterWireControlTask();//17
+  36   2          LowPowerModeTask();//18
+  37   2          HeaterWireModeDetTask();//19
+  38   2          AlarmErrorTask();//20
+  39   2          LowTempDet1STask();//21
+  40   2          SaveDateToFlashTask();//22
+  41   2          UartRecTask();//23
+  42   2        }//end while=============================
+  43   1      }
+  44          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     95    ----
+   CODE SIZE        =    111    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =   ----       1
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
+C51 COMPILER V9.59.0.0   MAIN                                                              04/11/2019 16:15:51 PAGE 2   
+
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
-C51 COMPILER V9.52.0.0   MAIN                                                              04/08/2019 16:01:00 PAGE 2   
-
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----

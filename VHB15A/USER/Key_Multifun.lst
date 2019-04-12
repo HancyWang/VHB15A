@@ -1,12 +1,12 @@
-C51 COMPILER V9.52.0.0   KEY_MULTIFUN                                                      04/08/2019 16:01:01 PAGE 1   
+C51 COMPILER V9.59.0.0   KEY_MULTIFUN                                                      04/11/2019 16:15:52 PAGE 1   
 
 
-C51 COMPILER V9.52.0.0, COMPILATION OF MODULE KEY_MULTIFUN
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEY_MULTIFUN
 OBJECT MODULE PLACED IN ..\OBJ\Key_Multifun.obj
-COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\Key_Multifun.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER 
-                    -NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\s
-                    -ht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\Key_Multifun.lst) TABS(2) OB
-                    -JECT(..\OBJ\Key_Multifun.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\CODE\Key_Multifun.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDE
+                    -R NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE
+                    -\sht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\Key_Multifun.lst) TABS(2) 
+                    -OBJECT(..\OBJ\Key_Multifun.obj)
 
 line level    source
 
@@ -14,84 +14,86 @@ line level    source
    2          //******************************************************************************
    3          //定义长短按键判断函数
    4          //******************************************************************************
-   5          uint8_t  step_step_times=0;//加快速度
+   5          //static uint8_t  step_step_times=0;//加快速度
    6          void Key_Multifun(const struct Key_Multifun_Element Element,struct Multifun_Key *Variate)
    7          {
-   8   1        switch(Variate->ProcessStep)
-   9   1        {
-  10   2          //检测按键是否按下，如果按下进入第2步，如果没有，继续1步，等待按键第一次按下
-  11   2          case 1:
-  12   2            if(*(Variate->KeyValueNow) == Element.PressValue)//按下按键
-  13   2            {
-  14   3              Variate->ProcessStep = 2;//已按下键
-  15   3              *(Variate->KeyTik) = 0;//按键时标
-  16   3            }
-  17   2            else
-  18   2            {
-  19   3              Variate->ProcessStep = 1;//未按下键
-  20   3              *(Variate->KeyTik) = 0;
-  21   3            }
-  22   2            break;   
-  23   2          case 2: 
-  24   2            if(*(Variate->KeyValueNow) == Element.ReleaseValue)//弹起按键
-  25   2            {     
-  26   3              Variate->ProcessStep = 1;
-  27   3              *(Variate->KeyTik) = 0;
-  28   3              (*(Element.Key_Fun_Short_Low_High))();  //按下并弹起短按函数           
-  29   3            }
-  30   2            else if(*(Variate->KeyValueNow) == Element.PressValue)//持续按下
-  31   2            {            
-  32   3              if(*(Variate->KeyTik)>=Element.TimOfSe)
-  33   3              {
-  34   4                Variate->ProcessStep = 3;
-  35   4                *(Variate->KeyTik) = 0;
-  36   4                (*(Element.Key_Fun_Long_High_Low))();//达到设定时长的首次响应函数
-  37   4              }     
-  38   3              else
-  39   3              {
-  40   4                Variate->ProcessStep = 2;//等待
-  41   4              }
-  42   3            }        
-  43   2            else
-  44   2            {
-  45   3              Variate->ProcessStep = 1;//出错
-  46   3            }   
-  47   2            break;  
-  48   2          case 3:       
-  49   2            if(*(Variate->KeyValueNow) == Element.ReleaseValue) //如果按键松开，回到1步
-  50   2            {
-  51   3              Variate->ProcessStep = 1;
-  52   3              *(Variate->KeyTik) = 0;
-C51 COMPILER V9.52.0.0   KEY_MULTIFUN                                                      04/08/2019 16:01:01 PAGE 2   
+   8   1        static uint8_t  step_step_times=0;//加快速度
+   9   1        switch(Variate->ProcessStep)
+  10   1        {
+  11   2          //检测按键是否按下，如果按下进入第2步，如果没有，继续1步，等待按键第一次按下
+  12   2          case 1:
+  13   2            if(*(Variate->KeyValueNow) == Element.PressValue)//按下按键
+  14   2            {
+  15   3              Variate->ProcessStep = 2;//已按下键
+  16   3              *(Variate->KeyTik) = 0;//按键时标
+  17   3            }
+  18   2            else
+  19   2            {
+  20   3              Variate->ProcessStep = 1;//未按下键
+  21   3              *(Variate->KeyTik) = 0;
+  22   3            }
+  23   2            break;   
+  24   2          case 2: 
+  25   2            if(*(Variate->KeyValueNow) == Element.ReleaseValue)//弹起按键
+  26   2            {     
+  27   3              Variate->ProcessStep = 1;
+  28   3              *(Variate->KeyTik) = 0;
+  29   3              (*(Element.Key_Fun_Short_Low_High))();  //按下并弹起短按函数           
+  30   3            }
+  31   2            else if(*(Variate->KeyValueNow) == Element.PressValue)//持续按下
+  32   2            {            
+  33   3              if(*(Variate->KeyTik)>=Element.TimOfSe)
+  34   3              {
+  35   4                Variate->ProcessStep = 3;
+  36   4                *(Variate->KeyTik) = 0;
+  37   4                (*(Element.Key_Fun_Long_High_Low))();//达到设定时长的首次响应函数
+  38   4              }     
+  39   3              else
+  40   3              {
+  41   4                Variate->ProcessStep = 2;//等待
+  42   4              }
+  43   3            }        
+  44   2            else
+  45   2            {
+  46   3              Variate->ProcessStep = 1;//出错
+  47   3            }   
+  48   2            break;  
+  49   2          case 3:       
+  50   2            if(*(Variate->KeyValueNow) == Element.ReleaseValue) //如果按键松开，回到1步
+  51   2            {
+  52   3              Variate->ProcessStep = 1;
+C51 COMPILER V9.59.0.0   KEY_MULTIFUN                                                      04/11/2019 16:15:52 PAGE 2   
 
-  53   3              step_step_times = 0;
-  54   3            }        
-  55   2            else if(*(Variate->KeyValueNow) == Element.PressValue)//一直是按下，继续第3步，执行长按状态函数
-  56   2            {            
-  57   3              Variate->ProcessStep = 3;
-  58   3      
-  59   3              //如果按下时间标志大于连续按时间            
-  60   3              if(*(Variate->KeyTik) >= (Element.TimOfLg-step_step_times))
-  61   3              {
-  62   4                //step_step_times = Element.TimOfLg - 1;
-  63   4                if(step_step_times<(Element.TimOfLg - 1)){step_step_times++;}
-  64   4                *(Variate->KeyTik) = 0;
-  65   4        
-  66   4                //执行长按时间函数
-  67   4                (*(Element.Key_Fun_Long_Always_Low))();
-  68   4              }
-  69   3            }
-  70   2            //所有异常情况回到0步
-  71   2            else
-  72   2            {
-  73   3              Variate->ProcessStep = 1; 
-  74   3            }   
-  75   2            break;     
-  76   2          default:
-  77   2            break;
-  78   2        } 
-  79   1      }
-  80          
+  53   3              *(Variate->KeyTik) = 0;
+  54   3              step_step_times = 0;
+  55   3            }        
+  56   2            else if(*(Variate->KeyValueNow) == Element.PressValue)//一直是按下，继续第3步，执行长按状态函数
+  57   2            {            
+  58   3              Variate->ProcessStep = 3;
+  59   3      
+  60   3              //如果按下时间标志大于连续按时间            
+  61   3              if(*(Variate->KeyTik) >= (Element.TimOfLg-step_step_times))
+  62   3              {
+  63   4                //step_step_times = Element.TimOfLg - 1;
+  64   4                if(step_step_times<(Element.TimOfLg - (u8)1)){step_step_times++;}
+  65   4                *(Variate->KeyTik) = 0;
+  66   4        
+  67   4                //执行长按时间函数
+  68   4                (*(Element.Key_Fun_Long_Always_Low))();
+  69   4              }
+  70   3            }
+  71   2            //所有异常情况回到0步
+  72   2            else
+  73   2            {
+  74   3              Variate->ProcessStep = 1; 
+  75   3            }   
+  76   2            break;     
+  77   2          default:
+  78   2            //do nothing
+  79   2            break;
+  80   2        } 
+  81   1      }
+  82          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE

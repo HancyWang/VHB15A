@@ -1,12 +1,12 @@
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 1   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 1   
 
 
-C51 COMPILER V9.52.0.0, COMPILATION OF MODULE NORMAL_TASK
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE NORMAL_TASK
 OBJECT MODULE PLACED IN ..\OBJ\Normal_Task.obj
-COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\Normal_Task.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER N
-                    -OAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\sh
-                    -t31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\Normal_Task.lst) TABS(2) OBJE
-                    -CT(..\OBJ\Normal_Task.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\CODE\Normal_Task.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER
+                    - NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\
+                    -sht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\Normal_Task.lst) TABS(2) OB
+                    -JECT(..\OBJ\Normal_Task.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   50   6                      WS_SetTaskIfg(HmiFactoryDefaultSelTIFG);//开机选择功能
   51   6                    }
   52   5                    else if(Work_State == UI_STATE_NON_INVASIVE_MODE)
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 2   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 2   
 
   53   5                    {
   54   6                      WS_SetTaskIfg(HmiNon_InvasiveSelTIFG);//开机有创无创选择
@@ -126,7 +126,7 @@ line level    source
  112   5                      ||(Work_State == UI_STATE_SetTime_MODE))
  113   5                    {
  114   6                      if((Work_State != UI_STATE_SetTempPatient_MODE)
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 3   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 3   
 
  115   6                        &&(Work_State != UI_STATE_SetTempChamber_MODE))
  116   6                      {   
@@ -172,62 +172,62 @@ line level    source
  156          KEY_STATUS KeyToFuncVal = KEY_STATE_ReleaseValue; 
  157          void KeyScanTask(void) //1
  158          {
- 159   1          BitStatus bit_status;
- 160   1          WS_TaskState = KeyScanTIFG;
- 161   1          if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
- 162   1          {   
- 163   2              WS_DelTaskIfg(WS_TaskState);
- 164   2              {
- 165   3                bit_status = KEY_LEFT_UP_IN;//UP
- 166   3                if((INT)bit_status == (INT)RESET)
- 167   3                {
- 168   4                  KeyToFuncVal = KEY_STATE_PressValue;     
- 169   4                }
- 170   3                else
- 171   3                {
- 172   4                  KeyToFuncVal = KEY_STATE_ReleaseValue;
- 173   4                }
- 174   3                Key_Multifun(Key_UP_Element,&Key_UP);
- 175   3                
- 176   3                bit_status = KEY_LEFT_DOWN_IN;//DOWN
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 4   
+ 159   1        BitStatus bit_status;
+ 160   1        WS_TaskState = KeyScanTIFG;
+ 161   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
+ 162   1        {   
+ 163   2          WS_DelTaskIfg(WS_TaskState);
+ 164   2          {
+ 165   3            bit_status = KEY_LEFT_UP_IN;//UP
+ 166   3            if((INT)bit_status == (INT)RESET)
+ 167   3            {
+ 168   4              KeyToFuncVal = KEY_STATE_PressValue;     
+ 169   4            }
+ 170   3            else
+ 171   3            {
+ 172   4              KeyToFuncVal = KEY_STATE_ReleaseValue;
+ 173   4            }
+ 174   3            Key_Multifun(Key_UP_Element,&Key_UP);
+ 175   3            
+ 176   3            bit_status = KEY_LEFT_DOWN_IN;//DOWN
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 4   
 
- 177   3                if((INT)bit_status == (INT)RESET)
- 178   3                {
- 179   4                  KeyToFuncVal = KEY_STATE_PressValue;     
- 180   4                }
- 181   3                else
- 182   3                {
- 183   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 184   4                }
- 185   3                  
- 186   3                Key_Multifun(Key_Down_Element,&Key_Down);
- 187   3                
- 188   3                bit_status = KEY_RIGHT_UP_IN;//OK
- 189   3                if((INT)bit_status == (INT)RESET)
- 190   3                {
- 191   4                  KeyToFuncVal = KEY_STATE_PressValue;     
- 192   4                }
- 193   3                else
- 194   3                {
- 195   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 196   4                }
- 197   3                  
- 198   3                Key_Multifun(Key_OK_Element,&Key_OK);
- 199   3                
- 200   3                bit_status = KEY_RIGHT_DOWN_IN;//MUTE
- 201   3                if((INT)bit_status == (INT)RESET)
- 202   3                {
- 203   4                  KeyToFuncVal = KEY_STATE_PressValue;        
- 204   4                }
- 205   3                else
- 206   3                {
- 207   4                  KeyToFuncVal = KEY_STATE_ReleaseValue; 
- 208   4                }
- 209   3                  
- 210   3                Key_Multifun(Key_Mute_Element,&Key_Mute);         
- 211   3              }
- 212   2          }
+ 177   3            if((INT)bit_status == (INT)RESET)
+ 178   3            {
+ 179   4              KeyToFuncVal = KEY_STATE_PressValue;     
+ 180   4            }
+ 181   3            else
+ 182   3            {
+ 183   4              KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 184   4            }
+ 185   3              
+ 186   3            Key_Multifun(Key_Down_Element,&Key_Down);
+ 187   3            
+ 188   3            bit_status = KEY_RIGHT_UP_IN;//OK
+ 189   3            if((INT)bit_status == (INT)RESET)
+ 190   3            {
+ 191   4              KeyToFuncVal = KEY_STATE_PressValue;     
+ 192   4            }
+ 193   3            else
+ 194   3            {
+ 195   4              KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 196   4            }
+ 197   3              
+ 198   3            Key_Multifun(Key_OK_Element,&Key_OK);
+ 199   3            
+ 200   3            bit_status = KEY_RIGHT_DOWN_IN;//MUTE
+ 201   3            if((INT)bit_status == (INT)RESET)
+ 202   3            {
+ 203   4              KeyToFuncVal = KEY_STATE_PressValue;        
+ 204   4            }
+ 205   3            else
+ 206   3            {
+ 207   4              KeyToFuncVal = KEY_STATE_ReleaseValue; 
+ 208   4            }
+ 209   3              
+ 210   3            Key_Multifun(Key_Mute_Element,&Key_Mute);         
+ 211   3          }
+ 212   2        }
  213   1      }
  214          
  215          void HmiServiceModeTask(void)//2
@@ -254,7 +254,7 @@ line level    source
  236   2        }
  237   1      }
  238          
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 5   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 5   
 
  239          void HmiFactoryDefaultSelTask(void)//4
  240          {
@@ -318,7 +318,7 @@ line level    source
  298   1      } 
  299          
  300          void HmiSetInExpTask(void)//9
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 6   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 6   
 
  301          {
  302   1        WS_TaskState = HmiSetInExpTIFG;
@@ -382,7 +382,7 @@ line level    source
  360          void RefreshTempHumidyTask(void)//14
  361          {
  362   1        WS_TaskState = RefreshTempHumidyTIFG;
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 7   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 7   
 
  363   1        if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
  364   1        {   
@@ -446,7 +446,7 @@ line level    source
  422   2        }
  423   1      }
  424          
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 8   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 8   
 
  425          void HeaterWireModeDetTask(void)//19
  426          {
@@ -510,7 +510,7 @@ line level    source
  484          
  485          
  486          
-C51 COMPILER V9.52.0.0   NORMAL_TASK                                                       04/08/2019 16:40:38 PAGE 9   
+C51 COMPILER V9.59.0.0   NORMAL_TASK                                                       04/11/2019 16:15:50 PAGE 9   
 
  487          
  488          
@@ -526,7 +526,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1487    ----
+   CODE SIZE        =   1491    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      8    ----
    PDATA SIZE       =   ----    ----

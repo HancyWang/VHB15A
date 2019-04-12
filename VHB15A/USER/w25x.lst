@@ -1,12 +1,12 @@
-C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 1   
+C51 COMPILER V9.59.0.0   W25X                                                              04/11/2019 16:15:51 PAGE 1   
 
 
-C51 COMPILER V9.52.0.0, COMPILATION OF MODULE W25X
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE W25X
 OBJECT MODULE PLACED IN ..\OBJ\w25x.obj
-COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\HARDWARE\w25x\w25x.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER
-                    - NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\
-                    -sht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\w25x.lst) TABS(2) OBJECT(..
-                    -\OBJ\w25x.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\HARDWARE\w25x\w25x.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORD
+                    -ER NOAREGS INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWAR
+                    -E\sht31;..\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\w25x.lst) TABS(2) OBJECT(
+                    -..\OBJ\w25x.obj)
 
 line level    source
 
@@ -52,17 +52,17 @@ line level    source
   40          //unsigned char Read_Data; 
   41          
   42          void    SPI_Write_Enable() //写使能
-  43          {   W25X_CS = 0;                            //  enable device
+  43          {   W25X_CS = (bit)0;                            //  enable device
   44   1         SPI_Send_Byte(W25X_WriteEnable);        //  send W25X_Write_Enable command
-  45   1         W25X_CS = 1;                            //  disable device
+  45   1         W25X_CS = (bit)1;                            //  disable device
   46   1      }
   47          void    SPI_Write_Disable() //写禁止
   48          {
-  49   1         W25X_CS = 0;                            //  enable device
+  49   1         W25X_CS = (bit)0;                            //  enable device
   50   1         SPI_Send_Byte(W25X_WriteDisable);       //  send W25X_WriteW25X_DIsable command
-  51   1         W25X_CS = 1;                            //  disable device
+  51   1         W25X_CS = (bit)1;                            //  disable device
   52   1      }
-C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 2   
+C51 COMPILER V9.59.0.0   W25X                                                              04/11/2019 16:15:51 PAGE 2   
 
   53          
   54          //void nop(void)
@@ -78,18 +78,18 @@ line level    source
   64          {
   65   1        uchar i = 0;
   66   1        LCD_1DIR_H;
-  67   1        W25X_CS = 0;                                        //  enable device
+  67   1        W25X_CS = (bit)0;                                        //  enable device
   68   1        SPI_Send_Byte(W25X_ReadData);                       //  read command
-  69   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFFFF) >> 16));       //  send 3 address bytes
-  70   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFF) >> 8));
-  71   1        SPI_Send_Byte(Dst_Addr & (uint32)0xFF);
+  69   1        SPI_Send_Byte((u8)((Dst_Addr & (uint32)0xFFFFFF) >> 16));       //  send 3 address bytes
+  70   1        SPI_Send_Byte((u8)((Dst_Addr & (uint32)0xFFFF) >> 8));
+  71   1        SPI_Send_Byte((u8)(Dst_Addr & (uint32)0xFF));
   72   1        // SPI_Send_Byte(0xFF);                                //  dummy byte
   73   1        for (; i < nBytes_128; i++)                     //  read until no_bytes is reached
   74   1        {
   75   2          Read_Adr[i] = SPI_Get_Byte();                  //  receive byte and store at address 80H - FFH
   76   2        }
   77   1           
-  78   1        W25X_CS = 1;                                         //  disable device
+  78   1        W25X_CS = (bit)1;                                         //  disable device
   79   1        LCD_1DIR_L;
   80   1      }
   81          
@@ -100,54 +100,54 @@ line level    source
   86           void    SPI_Write_nBytes(uint32 Dst_Addr, uchar nBytes_128,const uchar * Data_Adr)
   87          {
   88   1        uchar i, byte;
-  89   1        W25X_CS = 0;                    /* enable device */
+  89   1        W25X_CS = (bit)0;                    /* enable device */
   90   1        SPI_Write_Enable();             /* set WEL */
-  91   1        W25X_CS = 0;
+  91   1        W25X_CS = (bit)0;
   92   1        SPI_Send_Byte(W25X_PageProgram);        /* send Byte Program command */
-  93   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFFFF) >> 16)); /* send 3 address bytes */
-  94   1        SPI_Send_Byte(((Dst_Addr & (uint32)0xFFFF) >> 8));
-  95   1        SPI_Send_Byte(Dst_Addr & (uint32)0xFF);
+  93   1        SPI_Send_Byte((u8)((Dst_Addr & (uint32)0xFFFFFF) >> 16)); /* send 3 address bytes */
+  94   1        SPI_Send_Byte((u8)((Dst_Addr & (uint32)0xFFFF) >> 8));
+  95   1        SPI_Send_Byte((u8)(Dst_Addr & (uint32)0xFF));
   96   1        for (i = 0; i < nBytes_128; i++)
   97   1        {
   98   2          //         byte = *(Data_Adr+i);
   99   2          byte = Data_Adr[i];
  100   2          SPI_Send_Byte(byte);        /* send byte to be programmed */
  101   2        }
- 102   1        W25X_CS = 1;                /* disable device */
+ 102   1        W25X_CS = (bit)1;                /* disable device */
  103   1      }
  104          
  105           //初始化
  106           void    SPI_init()
  107           {
- 108   1         W25X_CLK = 0;                         //  set clock to low initial state for SPI operation mode 0
- 109   1           W25X_CS = 1;
+ 108   1         W25X_CLK = (bit)0;                         //  set clock to low initial state for SPI operation mode 0
+ 109   1           W25X_CS = (bit)1;
  110   1           _nop_();_nop_(); _nop_();_nop_();
  111   1           SPI_Write_Disable();
  112   1       }
  113          
  114           //发送一个字节
-C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 3   
+C51 COMPILER V9.59.0.0   W25X                                                              04/11/2019 16:15:51 PAGE 3   
 
  115           void    SPI_Send_Byte(uchar out)
  116          {
  117   1        uchar i = 0;
  118   1        uchar OUT=out;
- 119   1        for (; i < 8; i++)
+ 119   1        for (; i < (u8)8; i++)
  120   1        {
- 121   2          if ((OUT & (uchar)0x80) == 0x80)           //  check if MSB is high
+ 121   2          if ((OUT & (uchar)0x80) == (uchar)0x80)           //  check if MSB is high
  122   2          {
- 123   3            W25X_DI = 1;
+ 123   3            W25X_DI = (bit)1;
  124   3          }
  125   2          else
  126   2          {
- 127   3            W25X_DI = 0;                    //  if not, set to low
+ 127   3            W25X_DI = (bit)0;                    //  if not, set to low
  128   3          }
  129   2            
  130   2      
- 131   2          W25X_CLK = 1;                       //  toggle clock high
+ 131   2          W25X_CLK = (bit)1;                       //  toggle clock high
  132   2          OUT = (uint8_t)(OUT << 1);                   //  shift 1 place for next bit
  133   2          _nop_();_nop_(); _nop_();_nop_();
- 134   2          W25X_CLK = 0;                       //  toggle clock low
+ 134   2          W25X_CLK = (bit)0;                       //  toggle clock low
  135   2        }
  136   1      }
  137          
@@ -155,14 +155,14 @@ line level    source
  139          uchar   SPI_Get_Byte(void)
  140          {
  141   1        uchar i = 0, in = 0;
- 142   1        bit temp;
- 143   1        for (; i < 8; i++)
+ 142   1        uchar temp;
+ 143   1        for (; i < (u8)8; i++)
  144   1        {
  145   2          in = (uint8_t)(in << 1);                      //  shift 1 place to the left or shift in 0
  146   2          temp = W25X_DO;                      //  save input
- 147   2          W25X_CLK = 1; 
+ 147   2          W25X_CLK = (bit)1; 
  148   2          _nop_();                              //  toggle clock high
- 149   2          if (temp==1)                        //  check to see if bit is high
+ 149   2          if (temp==(uchar)1)                        //  check to see if bit is high
  150   2          {
  151   3            in |= (uchar)0x01;                     //  if high, make bit high
  152   3          }
@@ -171,7 +171,7 @@ line level    source
  155   2          _nop_();
  156   2          _nop_(); 
  157   2          _nop_(); 
- 158   2          W25X_CLK = 0;                       //  toggle clock low
+ 158   2          W25X_CLK = (bit)0;                       //  toggle clock low
  159   2        }
  160   1        return in;
  161   1      }
@@ -179,18 +179,18 @@ line level    source
  163           //擦除指定的扇区
  164           void    SPI_Erase_Sector(uint32 Dst_Addr)
  165           {
- 166   1         W25X_CS = 0;                                        //  enable device
+ 166   1         W25X_CS = (bit)0;                                        //  enable device
  167   1           SPI_Write_Enable();                                 //  set WEL
- 168   1           W25X_CS = 0;
+ 168   1           W25X_CS = (bit)0;
  169   1           SPI_Send_Byte(W25X_SectorErase);                    //  send Sector Erase command
  170   1           SPI_Send_Byte((uchar)((Dst_Addr & (uint32)0xFFFFFF) >> 16));//    send 3 address bytes
  171   1           SPI_Send_Byte((uchar)((Dst_Addr & (uint32)0xFFFF) >> 8));
- 172   1           SPI_Send_Byte((uchar)Dst_Addr & (uint32)0xFF);
- 173   1           W25X_CS = 1;                                        //  disable device
+ 172   1           SPI_Send_Byte((uchar)(Dst_Addr & (uint32)0xFF));
+ 173   1           W25X_CS = (bit)1;                                        //  disable device
  174   1       }
  175          
  176          //读取SPI_FLASH的状态寄存器
-C51 COMPILER V9.52.0.0   W25X                                                              04/08/2019 16:01:01 PAGE 4   
+C51 COMPILER V9.59.0.0   W25X                                                              04/11/2019 16:15:51 PAGE 4   
 
  177          //BIT7  6   5   4   3   2   1   0
  178          //SPR   RV  TB BP2 BP1 BP0 WEL BUSY
@@ -233,13 +233,13 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    408    ----
+   CODE SIZE        =    410    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----      23
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----       1
+   BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----

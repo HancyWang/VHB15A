@@ -1,12 +1,12 @@
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 1   
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 1   
 
 
-C51 COMPILER V9.52.0.0, COMPILATION OF MODULE GUI
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE GUI
 OBJECT MODULE PLACED IN ..\OBJ\GUI.obj
-COMPILER INVOKED BY: D:\Keil4\C51\BIN\C51.EXE ..\CODE\GUI.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER NOAREGS I
-                    -NCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\sht31;..\H
-                    -ARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\GUI.lst) TABS(2) OBJECT(..\OBJ\GUI.ob
-                    -j)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\CODE\GUI.c LARGE OBJECTADVANCED OPTIMIZE(9,SIZE) BROWSE ORDER NOAREGS
+                    - INCDIR(..\HARDWARE\ds1302;..\HARDWARE\ds18b20;..\HARDWARE\lcd;..\HARDWARE\RX8010;..\HARDWARE\sht21;..\HARDWARE\sht31;..
+                    -\HARDWARE\w25x;..\SYSTEM\delay;..\SYSTEM\stc_eeprom;..\SYSTEM;..\CODE) DEBUG PRINT(.\GUI.lst) TABS(2) OBJECT(..\OBJ\GUI.
+                    -obj)
 
 line level    source
 
@@ -40,29 +40,29 @@ line level    source
   28          {
   29   1        if(Dp_en!=(uint8_t)0)
   30   1        {
-  31   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);    
+  31   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,(const u8*)"In/Exp:",0,BLACK18);   
   32   2      
-  33   2          show_str[0]='1';
-  34   2          show_str[1]=':';
-  35   2          show_str[2]='1';
+  33   2          show_str[0]=(u8)'1';
+  34   2          show_str[1]=(u8)':';
+  35   2          show_str[2]=(u8)'1';
   36   2          if(Dis <= (uint8_t)1)  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
   37   2          {
-  38   3            show_str[3]=' ';
-  39   3            show_str[4]=' ';
+  38   3            show_str[3]=(u8)' ';
+  39   3            show_str[4]=(u8)' ';
   40   3          }
   41   2          else
   42   2          {
-  43   3            show_str[3]='.';
-  44   3            show_str[4]='0' + Dis-1;
+  43   3            show_str[3]=(u8)'.';
+  44   3            show_str[4]=(u8)'0' + Dis-(u8)1;
   45   3          }
-  46   2          show_str[5] = '\0';
-  47   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,show_str,0,BLACK18); 
+  46   2          show_str[5] = (u8)'\0';
+  47   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,(const u8*)show_str,0,BLACK18); 
   48   2        }
   49   1        else
   50   1        {
-  51   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18); //²»ÏÔÊ¾
-  52   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,"      ",0,WHITE18); 
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 2   
+  51   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,(const u8*)"In/Exp:",0,WHITE18); //²»ÏÔÊ¾
+  52   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,(const u8*)"      ",0,WHITE18);  
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 2   
 
   53   2        }
   54   1        
@@ -77,14 +77,14 @@ line level    source
   63   1        color = BLACK18;
   64   1        if(TimeKind == (uint8_t)7)
   65   1        { //ÏÔÊ¾Ãë-------------------------------------------------    
-  66   2          i=(TempTime[0]&(uint8_t)0xF)%10;
+  66   2          i=(TempTime[0]&(uint8_t)0xF)%(u8)10;
   67   2          DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+68,i,BLACK18);   
   68   2          i=(TempTime[0]>>4)& (uint8_t)0x7;
   69   2          DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+56,i,color);
   70   2        }
   71   1        else if(TimeKind == (uint8_t)6)
   72   1        { //ÏÔÊ¾·Ö========------------------------------------------     
-  73   2          i=(TempTime[1]&(uint8_t)0xF)%10;
+  73   2          i=(TempTime[1]&(uint8_t)0xF)%(u8)10;
   74   2          DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+40,i,color);
   75   2          i=(TempTime[1]>>4) & (uint8_t)0x7;
   76   2          DISP_TIME_10X16(POS_SYSTIME_X,POS_SYSTIME_Y+28,i,color);
@@ -96,23 +96,23 @@ line level    source
   82   2        }
   83   1        else if(TimeKind == (uint8_t)4)  
   84   1        {//ÏÔÊ¾ÈÕ
-  85   2          i=(TempTime[3]&(uint8_t)0xF)%10;
+  85   2          i=(TempTime[3]&(uint8_t)0xF)%(u8)10;
   86   2          DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+92,i,color);
   87   2          i=(TempTime[3]>>4)& (uint8_t)0x03;
   88   2          DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+80,i,color);   
   89   2        }
   90   1        else if(TimeKind == (uint8_t)3)      
   91   1        {//ÏÔÊ¾ÔÂ
-  92   2          i=(TempTime[4]&(uint8_t)0xF)%10;
+  92   2          i=(TempTime[4]&(uint8_t)0xF)%(u8)10;
   93   2          DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+64,i,color);
   94   2          i=(TempTime[4]>>4)& (uint8_t)0x1;
   95   2          DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+52,i,color);
   96   2        }
   97   1        else if(TimeKind == (uint8_t)2)
   98   1        {//ÏÔÊ¾Äê  
-  99   2          i=(TempTime[6]&(uint8_t)0xF)%10;
+  99   2          i=(TempTime[6]&(uint8_t)0xF)%(u8)10;
  100   2          DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+36,i,color);
- 101   2          i=(TempTime[6]>>4)%10;
+ 101   2          i=(TempTime[6]>>4)%(u8)10;
  102   2          DISP_TIME_10X16(POS_SYSDATE_X,POS_SYSDATE_Y+24,i,color);
  103   2        } 
  104   1        else
@@ -126,11 +126,11 @@ line level    source
  112          {
  113   1        Back_Color=WHITE18;   //ÏÔÊ¾Éè¶¨Öµ
  114   1        //ÎÂ¶ÈÍ¼±ê¿ªÊ¼ÉÁË¸,½øÈëÎÂ¶ÈÉè¶¨
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 3   
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 3   
 
- 115   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(uint8_t)(Temp/100),BLACK18);  
- 116   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,Temp%100/10,BLACK18);   
- 117   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*2)+5,Temp%10,BLACK18);
+ 115   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(uint8_t)(Temp/(u16)100),BLACK18);  
+ 116   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,(u8)(Temp%(u16)100/(u16)10),BLACK18);   
+ 117   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*2)+5,(u8)(Temp%(u16)10),BLACK18);
  118   1        Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,BLACK18); //»­µã //
              -»­µã
  119   1      }
@@ -182,26 +182,28 @@ line level    source
  165   5                CHAR str_Patient39C[]="Patient:39 C  ";
  166   5                CHAR str_chamber36C[]="Chamber:36 C  ";
  167   5                
- 168   5                strcpy(show_str,str_previousSetting);       
- 169   5                LCD_ShowString(Load_User_Pre_Set_X,Load_User_Pre_Set_Y+14,24,280,show_str,0,BLUE18);  
- 170   5                strcpy(show_str,str_defaultSetting);        
- 171   5                LCD_ShowString(Load_Fac_Set_X,Load_Fac_Set_Y+14,24,280,show_str,0,BLUE18);  
- 172   5                strcpy(show_str,str_select);        
- 173   5                LCD_ShowString(20,125,16,280,show_str,0,BLUE18);
- 174   5                strcpy(show_str,str_enter);       
- 175   5                LCD_ShowString(20,245,16,280,show_str,0,BLUE18);
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 4   
+ 168   5                strcpy((CHAR*)show_str,str_previousSetting);        
+ 169   5                LCD_ShowString(Load_User_Pre_Set_X,Load_User_Pre_Set_Y+14,24,280,(const u8*)show_str,0,BLUE18); 
+ 170   5                strcpy((CHAR*)show_str,str_defaultSetting);       
+ 171   5                LCD_ShowString(Load_Fac_Set_X,Load_Fac_Set_Y+14,24,280,(const u8*)show_str,0,BLUE18); 
+ 172   5                strcpy((CHAR*)show_str,str_select);       
+ 173   5                LCD_ShowString(20,125,16,280,(const u8*)show_str,0,BLUE18);
+ 174   5                strcpy((CHAR*)show_str,str_enter);        
+ 175   5                LCD_ShowString(20,245,16,280,(const u8*)show_str,0,BLUE18);
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 4   
 
  176   5                  
  177   5                Back_Color=WHITE18;   
- 178   5                strcpy(show_str,str_Patient39C);          
- 179   5                LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
- 180   5                Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê    
- 181   5                strcpy(show_str,str_chamber36C);            
- 182   5                LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*15),16,280,show_str,0,BLUE18);
- 183   5                Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê       
-             -    
- 184   5                LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y,16,280,"In/Exp:1:1.3",0,BLUE18);//            
+ 178   5                strcpy((CHAR*)show_str,str_Patient39C);         
+ 179   5                LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,(const u8*)show_str,0,BLUE18);
+ 180   5                Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê    
+ 181   5                strcpy((CHAR*)show_str,str_chamber36C);           
+ 182   5                LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*15),16,280,(const u8*)show_str,0,BLUE1
+             -8);
+ 183   5                Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê   
+             -        
+ 184   5                LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y,16,280,(const u8*)"In/Exp:1:1.3",0,BLUE18
+             -);//            
  185   5                Draw_Rectangle(Load_Fac_Set_X+39,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X-15,Load_User_Pre_Set_Y+24
              -2,RED18,2);//»­²ÎÊý¿ò         
  186   5                Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-10,RED18);//»­Ñ¡Ôñ²ÎÊýºáÏß       
@@ -252,10 +254,10 @@ line level    source
  230   3          }
  231   2          
  232   2          case UI_STATE_SetTempChamber_MODE:
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 5   
+
  233   2          {
  234   3            Remeber_Temp_Value = Set_CQK_Temp;  
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 5   
-
  235   3            DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);    
  236   3            Display_SET_Temp(Remeber_Temp_Value);   
  237   3            break;
@@ -273,1502 +275,1524 @@ line level    source
  249   3            EnterSetInExp();//½øÈëInExpÉè¶¨
  250   3            break;
  251   3          }
- 252   2          default:
+ 252   2          case UI_STATE_POWER_OFF_MODE:
  253   2            break;
- 254   2        }
- 255   1      }
- 256          
- 257          //
- 258          void HmiServiceModeFunc(void)
- 259          {
- 260   1        static INT ServiceMode_Step = 0;
- 261   1        //ÏÔÊ¾ÆÁ´¿É«²âÊÔ  
- 262   1        if(ServiceMode_Step == 0)
- 263   1        {
- 264   2          ServiceMode_Step = 1;
- 265   2          Draw_Rectangle_Real(0,0,239,319,RED18);   //ºì
- 266   2          Back_Color=RED18;
- 267   2          LCD_ShowString(220,20,16,200,"LCD TEST_RED(Test 1/6)",0,WHITE18);
- 268   2          LCD_ShowString(200,20,16,200,"Press Left Up Key...",0,WHITE18); 
- 269   2          LCD_LIGHT_OPEN; 
- 270   2        }
- 271   1        else if(ServiceMode_Step == 1)
- 272   1        {
- 273   2          if(Key_State_Present == KEY_STATE_UP_Short)//ÏòÏÂ¼üµ½¹¤³§Éè¶¨
- 274   2          {
- 275   3            ServiceMode_Step = 2;     
- 276   3            Draw_Rectangle_Real(0,0,239,319,GREEN18);  //ÂÌ
- 277   3            Back_Color=GREEN18;
- 278   3            LCD_ShowString(220,20,16,200,"LCD TEST_GREEN(Test 2/6)",0,RED18);
- 279   3            LCD_ShowString(200,20,16,200,"Press Left Down Key...",0,RED18);
- 280   3          }   
- 281   2        }
- 282   1        else if(ServiceMode_Step == 2)
- 283   1        {
- 284   2          if(Key_State_Present == KEY_STATE_Down_Short)
- 285   2          {
- 286   3            ServiceMode_Step = 3;
- 287   3            Draw_Rectangle_Real(0,0,239,319,BLUE18);   //À¶
- 288   3            Back_Color=BLUE18;
- 289   3            LCD_ShowString(220,20,16,200,"LCD TEST_BLUE(Test 3/6)",0,RED18);
- 290   3            LCD_ShowString(200,20,16,200,"Press Right Down Key...",0,RED18);  
- 291   3          }
- 292   2        }
- 293   1        else if(ServiceMode_Step == 3)
- 294   1        { 
- 295   2          if(Key_State_Present == KEY_STATE_Mute_Short)
- 296   2          {
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 6   
+ 254   2          case UI_STATE_SCREENSAVER_MODE:
+ 255   2            break;
+ 256   2          case UI_STATE_DATAREADER_MODE:
+ 257   2            break;
+ 258   2          default:
+ 259   2            //do nothing
+ 260   2            break;
+ 261   2        }
+ 262   1      }
+ 263          
+ 264          //
+ 265          void HmiServiceModeFunc(void)
+ 266          {
+ 267   1        static INT ServiceMode_Step = 0;
+ 268   1        
+ 269   1        //ÏÔÊ¾ÆÁ´¿É«²âÊÔ  
+ 270   1        if(ServiceMode_Step == 0)
+ 271   1        {
+ 272   2          ServiceMode_Step = 1;
+ 273   2          Draw_Rectangle_Real(0,0,239,319,RED18);   //ºì
+ 274   2          Back_Color=RED18;
+ 275   2          LCD_ShowString(220,20,16,200,(const u8*)"LCD TEST_RED(Test 1/6)",0,WHITE18);
+ 276   2          LCD_ShowString(200,20,16,200,(const u8*)"Press Left Up Key...",0,WHITE18); 
+ 277   2          LCD_LIGHT_OPEN; 
+ 278   2        }
+ 279   1        else if(ServiceMode_Step == 1)
+ 280   1        {
+ 281   2          if(Key_State_Present == KEY_STATE_UP_Short)//ÏòÏÂ¼üµ½¹¤³§Éè¶¨
+ 282   2          {
+ 283   3            ServiceMode_Step = 2;     
+ 284   3            Draw_Rectangle_Real(0,0,239,319,GREEN18);  //ÂÌ
+ 285   3            Back_Color=GREEN18;
+ 286   3            LCD_ShowString(220,20,16,200,(const u8*)"LCD TEST_GREEN(Test 2/6)",0,RED18);
+ 287   3            LCD_ShowString(200,20,16,200,(const u8*)"Press Left Down Key...",0,RED18);
+ 288   3          }   
+ 289   2        }
+ 290   1        else if(ServiceMode_Step == 2)
+ 291   1        {
+ 292   2          if(Key_State_Present == KEY_STATE_Down_Short)
+ 293   2          {
+ 294   3            ServiceMode_Step = 3;
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 6   
 
- 297   3            ServiceMode_Step = 4;
- 298   3            Draw_Rectangle_Real(0,0,239,319,BLACK18);  //ºÚ
- 299   3            Back_Color=BLACK18;
- 300   3            LCD_ShowString(220,20,16,200,"LCD TEST_BLACK(Test 4/6)",0,RED18);
- 301   3            LCD_ShowString(200,20,16,200,"Press Right Up Key...",0,RED18);  
- 302   3          }
- 303   2        }
- 304   1        else if(ServiceMode_Step == 4)
- 305   1        { 
- 306   2          if(Key_State_Present == KEY_STATE_OK_Short)
- 307   2          {
- 308   3            //LCD²âÊÔ½áÊø 
- 309   3            ServiceMode_Step = 5;
- 310   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);  //W25X¶ÁÐ´²âÊÔ
- 311   3            Back_Color=WHITE18;
- 312   3            LCD_ShowString(220,20,16,280,"W25X Write&Read Test(Test 5/6)",0,GRAY18);
- 313   3            LCD_ShowString(200,20,16,200,"Press Left Up Key...",0,GRAY18);    
- 314   3      
- 315   3            //WX25 ²âÊÔ
- 316   3            SPI_Erase_Sector(0x100000);//1M×Ö½ÚÆðÆôÉÈÇø²Á³ý
- 317   3            WDT_CONTR = 0x3F; ; 
- 318   3            delay_ms(300);
- 319   3            SaveData[0] = 'O';
- 320   3            SaveData[1] = 'K'; 
- 321   3            SPI_Write_nBytes(0x100000,2,SaveData);
- 322   3            delay_ms(10);
- 323   3            SaveData[0] = 0xff;
- 324   3            SaveData[1] = 0xff;
- 325   3            SPI_Read_nBytes(0x100000,2,SaveData); 
- 326   3            //*/
- 327   3            
- 328   3            if((SaveData[0] == 'O')&&(SaveData[1] == 'K'))
- 329   3            {                
- 330   4              LCD_ShowString(160,70,16,200,"W25X TEST OK!",0,RED18);
- 331   4            }
- 332   3            else
- 333   3            {
- 334   4              LCD_ShowString(160,70,16,200,"W25X TEST Fail!",0,RED18);
- 335   4              while(1>0)
- 336   4              {
- 337   5                WDT_CONTR = 0x3F;
- 338   5              }
- 339   4            } 
- 340   3            //ÏÔÊ¾°æ±¾ºÅ
- 341   3            LCD_Show_Verion();
- 342   3          }
- 343   2        }
- 344   1        else if(ServiceMode_Step == 5)
- 345   1        {
- 346   2          if((KEY_LEFT_DOWN_IN == 0)&&(KEY_RIGHT_DOWN_IN == 0))  //ÏÔÊ¾°æ±¾ÈÕÆÚ
- 347   2          {
- 348   3            //ÏÔÊ¾ÈÕÆÚ  
- 349   3            LCD_ShowString(20,20,16,200,DATE_VER,0,GRAY18);   
- 350   3          }
- 351   2          else if(Key_State_Present == KEY_STATE_UP_Short)
- 352   2          {
- 353   3            ServiceMode_Step = 6;
- 354   3            
- 355   3            LCD_LIGHT_CLOSE;//±³¹â 
- 356   3            Back_Color=WHITE18;   
- 357   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);  //°×
- 358   3            LCD_ShowString(220,20,16,280,"Temperature & Humidity(Test 6/6)",0,RED18);
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 7   
+ 295   3            Draw_Rectangle_Real(0,0,239,319,BLUE18);   //À¶
+ 296   3            Back_Color=BLUE18;
+ 297   3            LCD_ShowString(220,20,16,200,(const u8*)"LCD TEST_BLUE(Test 3/6)",0,RED18);
+ 298   3            LCD_ShowString(200,20,16,200,(const u8*)"Press Right Down Key...",0,RED18); 
+ 299   3          }
+ 300   2        }
+ 301   1        else if(ServiceMode_Step == 3)
+ 302   1        { 
+ 303   2          if(Key_State_Present == KEY_STATE_Mute_Short)
+ 304   2          {
+ 305   3            ServiceMode_Step = 4;
+ 306   3            Draw_Rectangle_Real(0,0,239,319,BLACK18);  //ºÚ
+ 307   3            Back_Color=BLACK18;
+ 308   3            LCD_ShowString(220,20,16,200,(const u8*)"LCD TEST_BLACK(Test 4/6)",0,RED18);
+ 309   3            LCD_ShowString(200,20,16,200,(const u8*)"Press Right Up Key...",0,RED18); 
+ 310   3          }
+ 311   2        }
+ 312   1        else if(ServiceMode_Step == 4)
+ 313   1        { 
+ 314   2          if(Key_State_Present == KEY_STATE_OK_Short)
+ 315   2          {
+ 316   3            uint8_t TRUE=(uint8_t)1;
+ 317   3            //LCD²âÊÔ½áÊø 
+ 318   3            ServiceMode_Step = 5;
+ 319   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);  //W25X¶ÁÐ´²âÊÔ
+ 320   3            Back_Color=WHITE18;
+ 321   3            LCD_ShowString(220,20,16,280,(const u8*)"W25X Write&Read Test(Test 5/6)",0,GRAY18);
+ 322   3            LCD_ShowString(200,20,16,200,(const u8*)"Press Left Up Key...",0,GRAY18);   
+ 323   3      
+ 324   3            //WX25 ²âÊÔ
+ 325   3            SPI_Erase_Sector(0x100000);//1M×Ö½ÚÆðÆôÉÈÇø²Á³ý
+ 326   3            WDT_CONTR = 0x3F; ; 
+ 327   3            delay_ms(300);
+ 328   3            SaveData[0] = (u8)'O';
+ 329   3            SaveData[1] = (u8)'K'; 
+ 330   3            SPI_Write_nBytes(0x100000,2,SaveData);
+ 331   3            delay_ms(10);
+ 332   3            SaveData[0] = (u8)0xff;
+ 333   3            SaveData[1] = (u8)0xff;
+ 334   3            SPI_Read_nBytes(0x100000,2,SaveData); 
+ 335   3            //*/
+ 336   3            
+ 337   3            if((SaveData[0] == (u8)'O')&&(SaveData[1] == (u8)'K'))
+ 338   3            {                
+ 339   4              LCD_ShowString(160,70,16,200,(const u8*)"W25X TEST OK!",0,RED18);
+ 340   4            }
+ 341   3            else
+ 342   3            {
+ 343   4              LCD_ShowString(160,70,16,200,(const u8*)"W25X TEST Fail!",0,RED18);
+ 344   4              while(TRUE!=(uint8_t)0)
+ 345   4              {
+ 346   5                WDT_CONTR = 0x3F;
+ 347   5              }
+ 348   4            } 
+ 349   3            //ÏÔÊ¾°æ±¾ºÅ
+ 350   3            LCD_Show_Verion();
+ 351   3          }
+ 352   2        }
+ 353   1        else if(ServiceMode_Step == 5)
+ 354   1        {
+ 355   2          if((KEY_LEFT_DOWN_IN == (bit)0)&&(KEY_RIGHT_DOWN_IN == (bit)0))  //ÏÔÊ¾°æ±¾ÈÕÆÚ
+ 356   2          {
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 7   
 
- 359   3      
- 360   3            DISP_ICO_52X64(POS_ICO_TEMP_X-8,POS_ICO_TEMP_Y,0,BLACK18);//ÈËÌå¶ËÍ¼±ê
- 361   3            DISP_ICO_32X40(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
- 362   3            DISP_ICO_40X40(POS_ICO_SHIDU_X,POS_ICO_TEMP_Y,0,BLACK18); //Êª¶ÈÍ¼±ê
- 363   3            DISP_ICO_32X40(POS_RT_RH_X+2,POS_RT_RH_Y+(19*2),ICO_PER,BLACK18); //ÏÔÊ¾Êª¶Èµ¥Î»  
- 364   3            DISP_RH14X24(POS_RT_RH_X+5,POS_RT_RH_Y+70,0,BLACK18);
- 365   3            DISP_RH14X24(POS_RT_RH_X+5,POS_RT_RH_Y+84,1,BLACK18);
- 366   3            DISP_ICO_52X64(55,POS_ICO_TEMP_Y,1,BLACK18); //³öÆø¿ÚÎÂ¶ÈÍ¼±ê
- 367   3            DISP_ICO_32X40(55,POS_ICO_TEMP_Y+(35*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
- 368   3            DISP_HEAT_36X24(15,POS_ICO_TEMP_Y+5,BLACK18);//¼ÓÈÈÅÌÎÂ¶ÈÍ¼±ê 
- 369   3            DISP_ICO_32X40(5,POS_ICO_TEMP_Y+(35*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î» 
- 370   3            LCD_LIGHT_OPEN;//¿ª±³¹â     
- 371   3          }
- 372   2          else
- 373   2          {
- 374   3            //do nothing
- 375   3          }
- 376   2        }
- 377   1        else if(ServiceMode_Step == 6)
- 378   1        {
- 379   2          ServiceMode_TempHumidy_Disp(); //²âÊÔÄ£Ê½ÏÂÏÔÊ¾ÎÂÊª¶È
- 380   2          
- 381   2          if(KEY_RIGHT_UP_IN==0)
+ 357   3            //ÏÔÊ¾ÈÕÆÚ  
+ 358   3            LCD_ShowString((u16)20,(u16)20,(u16)16,(u16)200,(const u8*)DATE_VER,0,GRAY18);    
+ 359   3          }
+ 360   2          else if(Key_State_Present == KEY_STATE_UP_Short)
+ 361   2          {
+ 362   3            ServiceMode_Step = 6;
+ 363   3            
+ 364   3            LCD_LIGHT_CLOSE;//±³¹â 
+ 365   3            Back_Color=WHITE18;   
+ 366   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);  //°×
+ 367   3            LCD_ShowString(220,20,16,280,(const u8*)"Temperature & Humidity(Test 6/6)",0,RED18);
+ 368   3      
+ 369   3            DISP_ICO_52X64(POS_ICO_TEMP_X-8,POS_ICO_TEMP_Y,0,BLACK18);//ÈËÌå¶ËÍ¼±ê
+ 370   3            DISP_ICO_32X40(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
+ 371   3            DISP_ICO_40X40(POS_ICO_SHIDU_X,POS_ICO_TEMP_Y,0,BLACK18); //Êª¶ÈÍ¼±ê
+ 372   3            DISP_ICO_32X40(POS_RT_RH_X+2,POS_RT_RH_Y+(19*2),ICO_PER,BLACK18); //ÏÔÊ¾Êª¶Èµ¥Î»  
+ 373   3            DISP_RH14X24(POS_RT_RH_X+5,POS_RT_RH_Y+70,0,BLACK18);
+ 374   3            DISP_RH14X24(POS_RT_RH_X+5,POS_RT_RH_Y+84,1,BLACK18);
+ 375   3            DISP_ICO_52X64(55,POS_ICO_TEMP_Y,1,BLACK18); //³öÆø¿ÚÎÂ¶ÈÍ¼±ê
+ 376   3            DISP_ICO_32X40(55,POS_ICO_TEMP_Y+(35*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î»
+ 377   3            DISP_HEAT_36X24(15,POS_ICO_TEMP_Y+5,BLACK18);//¼ÓÈÈÅÌÎÂ¶ÈÍ¼±ê 
+ 378   3            DISP_ICO_32X40(5,POS_ICO_TEMP_Y+(35*3)+5,ICO_DU,BLACK18);//ÎÂ¶Èµ¥Î» 
+ 379   3            LCD_LIGHT_OPEN;//¿ª±³¹â     
+ 380   3          }
+ 381   2          else
  382   2          {
- 383   3            if(JEP_Temp<=800)
- 384   3            {
- 385   4              Micro_Temp_Val = 201;
- 386   4            }
- 387   3            else
- 388   3            {
- 389   4              Micro_Temp_Val = 0;
- 390   4            }
- 391   3            if(RT_Temp<=400)
- 392   3            {
- 393   4              Micro_Temp_In = 201;
- 394   4              Micro_Temp_Out = 201;
+ 383   3            //do nothing
+ 384   3          }
+ 385   2        }
+ 386   1        else if(ServiceMode_Step == 6)
+ 387   1        {
+ 388   2          ServiceMode_TempHumidy_Disp(); //²âÊÔÄ£Ê½ÏÂÏÔÊ¾ÎÂÊª¶È
+ 389   2          
+ 390   2          if(KEY_RIGHT_UP_IN==0)
+ 391   2          {
+ 392   3            if(JEP_Temp<=800)
+ 393   3            {
+ 394   4              Micro_Temp_Val = 201;
  395   4            }
  396   3            else
  397   3            {
- 398   4              Micro_Temp_In = 0;
- 399   4              Micro_Temp_Out = 0;
- 400   4            }
- 401   3          }
- 402   2          else
- 403   2          {
- 404   3            Micro_Temp_Val = 0;
- 405   3            Micro_Temp_In = 0;
- 406   3            Micro_Temp_Out = 0;
- 407   3          }
- 408   2          
- 409   2          if((KEY_LEFT_DOWN_IN == 0)&&(KEY_RIGHT_DOWN_IN==0))//Í¬Ê±°´ÏÂÁ½¼ü,½øÈëÕý³£¹¤×÷Ä£Ê½
- 410   2          {     
- 411   3            Test_Mode_Dis_Jrp_Ctl = 1; //ÊÇ´Ó²âÊÔÄ£Ê½½øÈëÕý³£Ä£Ê½,¼´ÏÔÊ¾¼ÓÈÈÅÌ¿ØÖÆµÄÊý¾Ý  
- 412   3            Work_State = UI_STATE_POST_MODE;
- 413   3            HmiEnterToWorkStateFunc(UI_STATE_POST_MODE);      
- 414   3          }   
- 415   2        }
- 416   1        else
- 417   1        {
- 418   2          //do nothing
- 419   2        }
- 420   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 8   
+ 398   4              Micro_Temp_Val = 0;
+ 399   4            }
+ 400   3            if(RT_Temp<=400)
+ 401   3            {
+ 402   4              Micro_Temp_In = 201;
+ 403   4              Micro_Temp_Out = 201;
+ 404   4            }
+ 405   3            else
+ 406   3            {
+ 407   4              Micro_Temp_In = 0;
+ 408   4              Micro_Temp_Out = 0;
+ 409   4            }
+ 410   3          }
+ 411   2          else
+ 412   2          {
+ 413   3            Micro_Temp_Val = 0;
+ 414   3            Micro_Temp_In = 0;
+ 415   3            Micro_Temp_Out = 0;
+ 416   3          }
+ 417   2          
+ 418   2          if((KEY_LEFT_DOWN_IN == 0)&&(KEY_RIGHT_DOWN_IN==0))//Í¬Ê±°´ÏÂÁ½¼ü,½øÈëÕý³£¹¤×÷Ä£Ê½
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 8   
 
- 421   1      }  
- 422          
- 423          //-----------POST½çÃæ
- 424          void HmiPostFunc_Tik_Cnt(void)
- 425          {
- 426   1        if(Tik_POST_Tick_100mS < 250)
- 427   1        {
- 428   2          Tik_POST_Tick_100mS++;
- 429   2        }
- 430   1      }
+ 419   2          {     
+ 420   3            Test_Mode_Dis_Jrp_Ctl = 1; //ÊÇ´Ó²âÊÔÄ£Ê½½øÈëÕý³£Ä£Ê½,¼´ÏÔÊ¾¼ÓÈÈÅÌ¿ØÖÆµÄÊý¾Ý  
+ 421   3            Work_State = UI_STATE_POST_MODE;
+ 422   3            HmiEnterToWorkStateFunc(UI_STATE_POST_MODE);      
+ 423   3          }   
+ 424   2        }
+ 425   1        else
+ 426   1        {
+ 427   2          //do nothing
+ 428   2        }
+ 429   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü
+ 430   1      }  
  431          
- 432          void  HmiPostFunc(void)//GUI --- 
- 433          { 
- 434   1        static uint8_t Post_Step=0;
- 435   1        uint8_t i;
- 436   1      
- 437   1        //LCD_LIGHT_OPEN;//¿ª±³¹â   
- 438   1        if(Post_Step == 0)//RTC×Ô¼ì1
- 439   1        {
- 440   2          //LCD_ShowString(220,20,16,200,"POST_STEP0!",0,RED18);
- 441   2          i = RX8010_Initialize();//RTC³õÊ¼»¯ 
- 442   2          if(i == RX8010_INIT_FAIL)//RTC³õÊ¼»¯Ê§Ð§
- 443   2          {
- 444   3            Post_Step = 255;//FAIL,ÐèÖØÐÂ¿ª»ú»òËÍÐÞ
- 445   3            LCD_LIGHT_CLOSE;//±³¹â
- 446   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);
- 447   3            LCD_ShowString(180,20,16,200,"RTC Initialize Fail!",0,RED18);
- 448   3            LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
- 449   3            LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);
- 450   3            WDT_CONTR = 0x3F; 
- 451   3            LCD_LIGHT_OPEN;//±³¹â
- 452   3          }
- 453   2          else if(i == RX8010_INIT_OK)//RTCÎ´³õÊ¼»¯£¬Ôò×Ô¶¯³õÊ¼»¯³É¹¦
- 454   2          {
- 455   3            Post_Step = 1;//
- 456   3            Tik_POST_Tick_100mS = 0;
- 457   3            LCD_LIGHT_CLOSE;//±³¹â
- 458   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);
- 459   3            LCD_ShowString(220,20,16,200,"RTC Initialize OK!",0,RED18);
- 460   3            LCD_LIGHT_OPEN;//¿ª±³¹â     
- 461   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);
- 462   3          }
- 463   2          else
- 464   2          {
- 465   3            Post_Step = 2;//
- 466   3          }
- 467   2        }
- 468   1        else if(Post_Step == 1)//RTC×Ô¼ì2-×Ô¶¯³õÊ¼»¯,µÈ´ý2S
- 469   1        {
- 470   2          //LCD_ShowString(190,20,16,200,"POST STEP1!",0,RED18);
- 471   2          if(Tik_POST_Tick_100mS > 20)
- 472   2          {
- 473   3            Post_Step = 2;
- 474   3          }   
- 475   2        }
- 476   1        else if(Post_Step == 2)//FLASH×Ô¼ì1
- 477   1        {
- 478   2          //LCD_ShowString(160,20,16,200,"POST STEP2!",0,RED18);    
- 479   2          SPI_Read_nBytes(0x100000,2,SaveData); 
- 480   2          if((SaveData[0] == 'O')&&(SaveData[1] == 'K'))//Ð£Ñé³É¹¦
+ 432          //-----------POST½çÃæ
+ 433          void HmiPostFunc_Tik_Cnt(void)
+ 434          {
+ 435   1        if(Tik_POST_Tick_100mS < (u8)250)
+ 436   1        {
+ 437   2          Tik_POST_Tick_100mS++;
+ 438   2        }
+ 439   1      }
+ 440          
+ 441          void  HmiPostFunc(void)//GUI --- 
+ 442          { 
+ 443   1        static uint8_t Post_Step=0;
+ 444   1        uint8_t i;
+ 445   1      
+ 446   1        //LCD_LIGHT_OPEN;//¿ª±³¹â   
+ 447   1        if(Post_Step == (u8)0)//RTC×Ô¼ì1
+ 448   1        {
+ 449   2          //LCD_ShowString(220,20,16,200,"POST_STEP0!",0,RED18);
+ 450   2          i = RX8010_Initialize();//RTC³õÊ¼»¯ 
+ 451   2          if(i == (u8)RX8010_INIT_FAIL)//RTC³õÊ¼»¯Ê§Ð§
+ 452   2          {
+ 453   3            Post_Step = 255;//FAIL,ÐèÖØÐÂ¿ª»ú»òËÍÐÞ
+ 454   3            LCD_LIGHT_CLOSE;//±³¹â
+ 455   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);
+ 456   3            LCD_ShowString(180,20,16,200,(const u8*)"RTC Initialize Fail!",0,RED18);
+ 457   3            LCD_ShowString(140,40,16,300,(const u8*)"Please restart,if the problem",0,RED18);
+ 458   3            LCD_ShowString(120,20,16,300,(const u8*)"reproduce,contact to the supplier!",0,RED18);
+ 459   3            WDT_CONTR = 0x3F; 
+ 460   3            LCD_LIGHT_OPEN;//±³¹â
+ 461   3          }
+ 462   2          else if(i == (u8)RX8010_INIT_OK)//RTCÎ´³õÊ¼»¯£¬Ôò×Ô¶¯³õÊ¼»¯³É¹¦
+ 463   2          {
+ 464   3            Post_Step = 1;//
+ 465   3            Tik_POST_Tick_100mS = 0;
+ 466   3            LCD_LIGHT_CLOSE;//±³¹â
+ 467   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);
+ 468   3            LCD_ShowString(220,20,16,200,(const u8*)"RTC Initialize OK!",0,RED18);
+ 469   3            LCD_LIGHT_OPEN;//¿ª±³¹â     
+ 470   3            Draw_Rectangle_Real(0,0,239,319,WHITE18);
+ 471   3          }
+ 472   2          else
+ 473   2          {
+ 474   3            Post_Step = 2;//
+ 475   3          }
+ 476   2        }
+ 477   1        else if(Post_Step == (u8)1)//RTC×Ô¼ì2-×Ô¶¯³õÊ¼»¯,µÈ´ý2S
+ 478   1        {
+ 479   2          //LCD_ShowString(190,20,16,200,"POST STEP1!",0,RED18);
+ 480   2          if(Tik_POST_Tick_100mS > (u8)20)
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 9   
+
  481   2          {
- 482   3            Post_Step = 4;
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 9   
+ 482   3            Post_Step = 2;
+ 483   3          }   
+ 484   2        }
+ 485   1        else if(Post_Step == (u8)2)//FLASH×Ô¼ì1
+ 486   1        {
+ 487   2          //LCD_ShowString(160,20,16,200,"POST STEP2!",0,RED18);    
+ 488   2          SPI_Read_nBytes(0x100000,2,SaveData); 
+ 489   2          if((SaveData[0] == (u8)'O')&&(SaveData[1] == (u8)'K'))//Ð£Ñé³É¹¦
+ 490   2          {
+ 491   3            Post_Step = 4;
+ 492   3          }
+ 493   2          else
+ 494   2          {
+ 495   3            Post_Step = 3;
+ 496   3            SPI_Erase_Sector(0x100000);//1M×Ö½ÚÆðÆôÉÈÇø²Á³ý
+ 497   3          }
+ 498   2        }
+ 499   1        else if(Post_Step == (u8)3)//FLASH×Ô¼ì2
+ 500   1        {
+ 501   2          //LCD_ShowString(130,20,16,200,"POST STEP3!",0,RED18);    
+ 502   2          SaveData[0] = (u8)'O';
+ 503   2          SaveData[1] = (u8)'K'; 
+ 504   2          SPI_Write_nBytes(0x100000,2,SaveData);
+ 505   2          delay_ms(10);
+ 506   2          SaveData[0] = 0xff;
+ 507   2          SaveData[1] = 0xff;
+ 508   2          SPI_Read_nBytes(0x100000,2,SaveData); 
+ 509   2            
+ 510   2          if((SaveData[0] == (u8)'O')&&(SaveData[1] == (u8)'K'))
+ 511   2          {                
+ 512   3            Post_Step = 4;//OK
+ 513   3          }
+ 514   2          else
+ 515   2          {
+ 516   3            Post_Step = 255;//FAIL,ÐèÖØÐÂ¿ª»ú»òËÍÐÞ       
+ 517   3            LCD_ShowString(180,20,16,200,(const u8*)"Memory Initialize Fail!",0,RED18);
+ 518   3            LCD_ShowString(140,40,16,300,(const u8*)"Please restart,if the problem",0,RED18);
+ 519   3            LCD_ShowString(120,20,16,300,(const u8*)"reproduce,contact to the supplier!",0,RED18);
+ 520   3          }     
+ 521   2        }
+ 522   1        else if(Post_Step == (u8)4)//HP SENSOR-2
+ 523   1        {
+ 524   2          //LCD_ShowString(100,20,16,200,"POST STEP4!",0,RED18);    
+ 525   2          Tik_POST_Tick_100mS = 0;
+ 526   2          Post_Step = 5;
+ 527   2        }
+ 528   1        else if(Post_Step == (u8)5)//HP SENSOR-2
+ 529   1        {
+ 530   2          //LCD_ShowString(70,20,16,200,"POST STEP5!",0,RED18); 
+ 531   2          //LCD_ShowxNum(130,70,16,3,No_HeatSensor_Times,0x80,BLACK18); //
+ 532   2          if(Tik_POST_Tick_100mS > (u8)10)//ÑÓÊ±1S
+ 533   2          {
+ 534   3            if(No_HeatSensor_Times>(u8)25)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â,1S¿ÉÒÔ¼ì²âµ½50´Î
+ 535   3            {
+ 536   4              Post_Step = 6;
+ 537   4              Tik_POST_Tick_100mS = 0;
+ 538   4            } 
+ 539   3            else
+ 540   3            {
+ 541   4              Post_Step = 7;//PASS    
+ 542   4            }
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 10  
 
- 483   3          }
- 484   2          else
- 485   2          {
- 486   3            Post_Step = 3;
- 487   3            SPI_Erase_Sector(0x100000);//1M×Ö½ÚÆðÆôÉÈÇø²Á³ý
- 488   3          }
- 489   2        }
- 490   1        else if(Post_Step == 3)//FLASH×Ô¼ì2
- 491   1        {
- 492   2          //LCD_ShowString(130,20,16,200,"POST STEP3!",0,RED18);    
- 493   2          SaveData[0] = 'O';
- 494   2          SaveData[1] = 'K'; 
- 495   2          SPI_Write_nBytes(0x100000,2,SaveData);
- 496   2          delay_ms(10);
- 497   2          SaveData[0] = 0xff;
- 498   2          SaveData[1] = 0xff;
- 499   2          SPI_Read_nBytes(0x100000,2,SaveData); 
- 500   2            
- 501   2          if((SaveData[0] == 'O')&&(SaveData[1] == 'K'))
- 502   2          {                
- 503   3            Post_Step = 4;//OK
- 504   3          }
- 505   2          else
- 506   2          {
- 507   3            Post_Step = 255;//FAIL,ÐèÖØÐÂ¿ª»ú»òËÍÐÞ       
- 508   3            LCD_ShowString(180,20,16,200,"Memory Initialize Fail!",0,RED18);
- 509   3            LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
- 510   3            LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);
- 511   3          }     
- 512   2        }
- 513   1        else if(Post_Step == 4)//HP SENSOR-2
- 514   1        {
- 515   2          //LCD_ShowString(100,20,16,200,"POST STEP4!",0,RED18);    
- 516   2          Tik_POST_Tick_100mS = 0;
- 517   2          Post_Step = 5;
- 518   2        }
- 519   1        else if(Post_Step == 5)//HP SENSOR-2
- 520   1        {
- 521   2          //LCD_ShowString(70,20,16,200,"POST STEP5!",0,RED18); 
- 522   2          //LCD_ShowxNum(130,70,16,3,No_HeatSensor_Times,0x80,BLACK18); //
- 523   2          if(Tik_POST_Tick_100mS > 10)//ÑÓÊ±1S
- 524   2          {
- 525   3            if(No_HeatSensor_Times>25)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â,1S¿ÉÒÔ¼ì²âµ½50´Î
- 526   3            {
- 527   4              Post_Step = 6;
- 528   4              Tik_POST_Tick_100mS = 0;
- 529   4            } 
- 530   3            else
- 531   3            {
- 532   4              Post_Step = 7;//PASS    
- 533   4            }
- 534   3          }
- 535   2        }
- 536   1        else if(Post_Step == 6)//HP SENSOR-3 ¼ì²âÁ½´Î
- 537   1        {
- 538   2          //LCD_ShowString(40,20,16,200,"POST STEP6!",0,RED18);
- 539   2          //LCD_ShowxNum(130,150,16,3,No_HeatSensor_Times,0x80,BLACK18); //·¢ÈÈÅÌ¼ÓÈÈµÄÄ£Ê½ÏÔÊ¾   
- 540   2          if(Tik_POST_Tick_100mS > 30)//ÑÓÊ±3S
- 541   2          {
- 542   3            if(No_HeatSensor_Times>100)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â 4S¼ì²âµ½200´Î
- 543   3            {
- 544   4              Post_Step = 255;
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 10  
+ 543   3          }
+ 544   2        }
+ 545   1        else if(Post_Step == (u8)6)//HP SENSOR-3 ¼ì²âÁ½´Î
+ 546   1        {
+ 547   2          //LCD_ShowString(40,20,16,200,"POST STEP6!",0,RED18);
+ 548   2          //LCD_ShowxNum(130,150,16,3,No_HeatSensor_Times,0x80,BLACK18); //·¢ÈÈÅÌ¼ÓÈÈµÄÄ£Ê½ÏÔÊ¾   
+ 549   2          if(Tik_POST_Tick_100mS > (u8)30)//ÑÓÊ±3S
+ 550   2          {
+ 551   3            if(No_HeatSensor_Times>(u8)100)//¼ÓÈÈÅÌ´«¸ÐÆ÷´íÎó¼ì²â 4S¼ì²âµ½200´Î
+ 552   3            {
+ 553   4              Post_Step = 255;
+ 554   4              LCD_ShowString(180,20,16,200,(const u8*)"Sensor Initialize Fail!",0,RED18);
+ 555   4              LCD_ShowString(140,40,16,300,(const u8*)"Please restart,if the problem",0,RED18);
+ 556   4              LCD_ShowString(120,20,16,300,(const u8*)"reproduce,contact to the supplier!",0,RED18);         
+ 557   4            }
+ 558   3            else
+ 559   3            {
+ 560   4              Post_Step = 7;//PASS    
+ 561   4            }
+ 562   3          }
+ 563   2        }
+ 564   1        else if(Post_Step == (u8)7)//
+ 565   1        {
+ 566   2          //LCD_ShowString(10,20,16,200,"POST_STEP7!",0,RED18);   
+ 567   2          Work_State = UI_STATE_FACTORY_DEFAULT_SEL_MODE;
+ 568   2          HmiEnterToWorkStateFunc(UI_STATE_FACTORY_DEFAULT_SEL_MODE);
+ 569   2        }
+ 570   1        else if(Post_Step == (u8)255)//FAIL
+ 571   1        {
+ 572   2          LCD_LIGHT_OPEN; 
+ 573   2        }
+ 574   1        else
+ 575   1        {
+ 576   2          //do nothing
+ 577   2        }
+ 578   1      }
+ 579          
+ 580          
+ 581          //-----------¿ª»úÑ¡Ôñ½çÃæ
+ 582          static uint8_t Tik_HmiFac_Tick_100mS_OK_flash = 0;//OKÉÁË¸¶ÁÊý
+ 583          void HmiFactoryDefault_Tik_Cnt(void)
+ 584          {
+ 585   1        if(Tik_HmiFac_Tick_100mS_10S < (u8)250)
+ 586   1        {
+ 587   2          Tik_HmiFac_Tick_100mS_10S++;
+ 588   2        }
+ 589   1        if(Tik_HmiFac_Tick_100mS_OK_flash <(u8)250 )
+ 590   1        {
+ 591   2          Tik_HmiFac_Tick_100mS_OK_flash++;
+ 592   2        }
+ 593   1      }
+ 594          
+ 595          void  HmiFactoryDefaultFunc(void)//GUI --- 
+ 596          {
+ 597   1        uint16_t Pre_Disp_Deg_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
+ 598   1        uint16_t Pre_Disp_Deg_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
+ 599   1        uint16_t Pre_Disp_Deg_CQK_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
+ 600   1        uint16_t Pre_Disp_Deg_CQK_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
+ 601   1      
+ 602   1        if(Tik_HmiFac_Tick_100mS_10S >= (u8)100)//10S
+ 603   1        {
+ 604   2          OK_not_Pressed_flag = 1;
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 11  
 
- 545   4              LCD_ShowString(180,20,16,200,"Sensor Initialize Fail!",0,RED18);
- 546   4              LCD_ShowString(140,40,16,300,"Please restart,if the problem",0,RED18);
- 547   4              LCD_ShowString(120,20,16,300,"reproduce,contact to the supplier!",0,RED18);        
- 548   4            }
- 549   3            else
- 550   3            {
- 551   4              Post_Step = 7;//PASS    
- 552   4            }
- 553   3          }
- 554   2        }
- 555   1        else if(Post_Step == 7)//
- 556   1        {
- 557   2          //LCD_ShowString(10,20,16,200,"POST_STEP7!",0,RED18);   
- 558   2          Work_State = UI_STATE_FACTORY_DEFAULT_SEL_MODE;
- 559   2          HmiEnterToWorkStateFunc(UI_STATE_FACTORY_DEFAULT_SEL_MODE);
- 560   2        }
- 561   1        else if(Post_Step == 255)//FAIL
- 562   1        {
- 563   2          LCD_LIGHT_OPEN; 
- 564   2        }
- 565   1        else
- 566   1        {
- 567   2          //do nothing
- 568   2        }
- 569   1      }
- 570          
- 571          
- 572          //-----------¿ª»úÑ¡Ôñ½çÃæ
- 573          static uint8_t Tik_HmiFac_Tick_100mS_OK_flash = 0;//OKÉÁË¸¶ÁÊý
- 574          void HmiFactoryDefault_Tik_Cnt(void)
- 575          {
- 576   1        if(Tik_HmiFac_Tick_100mS_10S < 250)
- 577   1        {
- 578   2          Tik_HmiFac_Tick_100mS_10S++;
- 579   2        }
- 580   1        if(Tik_HmiFac_Tick_100mS_OK_flash <250 )
- 581   1        {
- 582   2          Tik_HmiFac_Tick_100mS_OK_flash++;
- 583   2        }
- 584   1      }
- 585          
- 586          void  HmiFactoryDefaultFunc(void)//GUI --- 
- 587          {
- 588   1        uint16_t Pre_Disp_Deg_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
- 589   1        uint16_t Pre_Disp_Deg_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
- 590   1        uint16_t Pre_Disp_Deg_CQK_10;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶È¸öÎ» ÏÔÊ¾
- 591   1        uint16_t Pre_Disp_Deg_CQK_1;//ÉÏÒ»´ÎÉè¶¨ÎÂ¶ÈÐ¡Êý ÏÔÊ¾
- 592   1      
- 593   1        if(Tik_HmiFac_Tick_100mS_10S >= 100)//10S
- 594   1        {
- 595   2          OK_not_Pressed_flag = 1;
- 596   2        }   
- 597   1        
- 598   1        if(OK_not_Pressed_flag!=(uint8_t)0)
- 599   1        {     
- 600   2          if(Tik_HmiFac_Tick_100mS_OK_flash == 1)
- 601   2          {
- 602   3            
- 603   3          }     
- 604   2          else if(Tik_HmiFac_Tick_100mS_OK_flash == 5)
- 605   2          {
- 606   3      
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 11  
-
- 607   3          }     
- 608   2          else if(Tik_HmiFac_Tick_100mS_OK_flash == 10)
- 609   2          {
- 610   3            Back_Color=WHITE18;
- 611   3            DISP_ICO_40X40(15,200,2,BLUE18);//ÏÔÊ¾OKÍ¼±ê  
- 612   3            Back_Color=WHITE18;         
- 613   3          }
- 614   2          else if(Tik_HmiFac_Tick_100mS_OK_flash >= 20)//0.5HzµÄÉÁË¸ÆµÂÊ
- 615   2          {
- 616   3            Tik_HmiFac_Tick_100mS_OK_flash = 0;       
- 617   3            Back_Color=WHITE18; 
- 618   3            DISP_ICO_40X40(15,200,2,RED18);//ÏÔÊ¾OKÍ¼±ê 
+ 605   2        }   
+ 606   1        
+ 607   1        if(OK_not_Pressed_flag!=(uint8_t)0)
+ 608   1        {     
+ 609   2          if(Tik_HmiFac_Tick_100mS_OK_flash == (u8)1)
+ 610   2          {
+ 611   3            
+ 612   3          }     
+ 613   2          else if(Tik_HmiFac_Tick_100mS_OK_flash == (u8)5)
+ 614   2          {
+ 615   3      
+ 616   3          }     
+ 617   2          else if(Tik_HmiFac_Tick_100mS_OK_flash == (u8)10)
+ 618   2          {
  619   3            Back_Color=WHITE18;
- 620   3            Sound_Short();
- 621   3          }
- 622   2          else
- 623   2          {
- 624   3            //do nothing
- 625   3          }
- 626   2        }
- 627   1              
- 628   1      //ÒÔÏÂ¼ì²âKEY 
- 629   1        if((Key_State_Present == KEY_STATE_Down_Short)//ÏòÏÂ¼üµ½¹¤³§Éè¶¨
- 630   1          ||(Key_State_Present == KEY_STATE_Down_Long_First))
- 631   1      
- 632   1        {
- 633   2          if(defalut_mode == Load_User_Pre_MODE)
- 634   2          {
- 635   3            HmiFac_Mode_Changed = 1;         
- 636   3            defalut_mode = Load_Fac_MODE;  
- 637   3          }
- 638   2        } 
- 639   1        else if((Key_State_Present == KEY_STATE_UP_Short)
- 640   1          ||(Key_State_Present == KEY_STATE_UP_Long_First))
+ 620   3            DISP_ICO_40X40(15,200,2,BLUE18);//ÏÔÊ¾OKÍ¼±ê  
+ 621   3            Back_Color=WHITE18;         
+ 622   3          }
+ 623   2          else if(Tik_HmiFac_Tick_100mS_OK_flash >= (u8)20)//0.5HzµÄÉÁË¸ÆµÂÊ
+ 624   2          {
+ 625   3            Tik_HmiFac_Tick_100mS_OK_flash = 0;       
+ 626   3            Back_Color=WHITE18; 
+ 627   3            DISP_ICO_40X40(15,200,2,RED18);//ÏÔÊ¾OKÍ¼±ê 
+ 628   3            Back_Color=WHITE18;
+ 629   3            Sound_Short();
+ 630   3          }
+ 631   2          else
+ 632   2          {
+ 633   3            //do nothing
+ 634   3          }
+ 635   2        }
+ 636   1              
+ 637   1      //ÒÔÏÂ¼ì²âKEY 
+ 638   1        if((Key_State_Present == KEY_STATE_Down_Short)//ÏòÏÂ¼üµ½¹¤³§Éè¶¨
+ 639   1          ||(Key_State_Present == KEY_STATE_Down_Long_First))
+ 640   1      
  641   1        {
- 642   2          if(defalut_mode == Load_Fac_MODE)
+ 642   2          if(defalut_mode == (u8)Load_User_Pre_MODE)
  643   2          {
- 644   3            HmiFac_Mode_Changed = 1;  
- 645   3            defalut_mode = Load_User_Pre_MODE;
+ 644   3            HmiFac_Mode_Changed = 1;         
+ 645   3            defalut_mode = Load_Fac_MODE;  
  646   3          }
- 647   2        }
- 648   1        else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈë¿ª»úÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ»òÖ±½Ó½øÈ¥¿ª»úÔËÐÐ½çÃæ
- 649   1             ||(Key_State_Present ==KEY_STATE_OK_Long_First))
+ 647   2        } 
+ 648   1        else if((Key_State_Present == KEY_STATE_UP_Short)
+ 649   1          ||(Key_State_Present == KEY_STATE_UP_Long_First))
  650   1        {
- 651   2          Load_Settings_Before_Choice();//ÔÚÑ¡Ôñ·½¿ò³öÏÖÖ®Ç°£¬Òª´¦ÀíµÄÊý¾Ý£¬ÒÔÍ¬Ê±¼æÈÝÓÐÎÞÑ¡Ôñ¼ÇÒä½çÃæ³ÌÐò         
- 652   2          HmiFac_Mode_Changed = 0;  
- 653   2          LCD_LIGHT_CLOSE;      
- 654   2          if(defalut_mode == Load_Fac_MODE)//Ä¬ÐíÉè¶¨
- 655   2          {          
- 656   3            Work_State = UI_STATE_NON_INVASIVE_MODE;
- 657   3            HmiEnterToWorkStateFunc(UI_STATE_NON_INVASIVE_MODE);
- 658   3          }
- 659   2          else//ÉÏÒ»´ÎµÄÉè¶¨
- 660   2          {
- 661   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
- 662   3            HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);           
- 663   3          }        
- 664   2        }
- 665   1        else
- 666   1        {
- 667   2          //do nothing
- 668   2        }
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 12  
+ 651   2          if(defalut_mode == (u8)Load_Fac_MODE)
+ 652   2          {
+ 653   3            HmiFac_Mode_Changed = 1;  
+ 654   3            defalut_mode = Load_User_Pre_MODE;
+ 655   3          }
+ 656   2        }
+ 657   1        else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈë¿ª»úÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ»òÖ±½Ó½øÈ¥¿ª»úÔËÐÐ½çÃæ
+ 658   1             ||(Key_State_Present ==KEY_STATE_OK_Long_First))
+ 659   1        {
+ 660   2          Load_Settings_Before_Choice();//ÔÚÑ¡Ôñ·½¿ò³öÏÖÖ®Ç°£¬Òª´¦ÀíµÄÊý¾Ý£¬ÒÔÍ¬Ê±¼æÈÝÓÐÎÞÑ¡Ôñ¼ÇÒä½çÃæ³ÌÐò         
+ 661   2          HmiFac_Mode_Changed = 0;  
+ 662   2          LCD_LIGHT_CLOSE;      
+ 663   2          if(defalut_mode == (u8)Load_Fac_MODE)//Ä¬ÐíÉè¶¨
+ 664   2          {          
+ 665   3            Work_State = UI_STATE_NON_INVASIVE_MODE;
+ 666   3            HmiEnterToWorkStateFunc(UI_STATE_NON_INVASIVE_MODE);
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 12  
 
- 669   1      
- 670   1        if(HmiFac_Mode_Changed!=(uint8_t)0)
- 671   1        {
- 672   2          HmiFac_Mode_Changed = 0;          
- 673   2              
- 674   2          data_flash.Language = Lan_English;//·ÇFANEMÖ»ÓÐÓ¢Óï
- 675   2      
- 676   2          
- 677   2          if(data_flash.Work_Mode==Noninvasive_Mode)    //¼ÆËãÒªÏÔÊ¾µÄÊý¾Ý  
- 678   2          {           
- 679   3            Pre_Disp_Deg_10 = data_flash.Set_RT_WCTemp * 5 / 10;//ÕûÊýÎ»
- 680   3            Pre_Disp_Deg_1 = data_flash.Set_RT_WCTemp * 5 % 10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
- 681   3            
- 682   3            Pre_Disp_Deg_CQK_10 = data_flash.Set_CQK_WCTemp * 5 / 10;//ÕûÊýÎ»
- 683   3            Pre_Disp_Deg_CQK_1 = data_flash.Set_CQK_WCTemp * 5 % 10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
- 684   3          }
- 685   2          else
- 686   2          {
- 687   3            Pre_Disp_Deg_10 = data_flash.Set_RT_YCTemp * 5 / 10;//ÕûÊýÎ»
- 688   3            Pre_Disp_Deg_1 = data_flash.Set_RT_YCTemp * 5 % 10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
- 689   3            
- 690   3            Pre_Disp_Deg_CQK_10 = data_flash.Set_CQK_YCTemp * 5 / 10;//ÕûÊýÎ»
- 691   3            Pre_Disp_Deg_CQK_1 = data_flash.Set_CQK_YCTemp * 5 % 10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
- 692   3          } 
- 693   2                
- 694   2          if(defalut_mode == Load_User_Pre_MODE)  //ÓÃ»§ÉÏÒ»´ÎµÄÉè¶¨   
- 695   2          {     //»­ºìÉ«¿ò
- 696   3            Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,WHITE
-             -18,4);
- 697   3            Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y
-             -+242,RED18,4);//
+ 667   3          }
+ 668   2          else//ÉÏÒ»´ÎµÄÉè¶¨
+ 669   2          {
+ 670   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+ 671   3            HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);           
+ 672   3          }        
+ 673   2        }
+ 674   1        else
+ 675   1        {
+ 676   2          //do nothing
+ 677   2        }
+ 678   1      
+ 679   1        if(HmiFac_Mode_Changed!=(uint8_t)0)
+ 680   1        {
+ 681   2          HmiFac_Mode_Changed = 0;          
+ 682   2              
+ 683   2          data_flash.Language = Lan_English;//·ÇFANEMÖ»ÓÐÓ¢Óï
+ 684   2      
+ 685   2          
+ 686   2          if(data_flash.Work_Mode==(u8)Noninvasive_Mode)    //¼ÆËãÒªÏÔÊ¾µÄÊý¾Ý  
+ 687   2          {           
+ 688   3            Pre_Disp_Deg_10 = data_flash.Set_RT_WCTemp * (u16)5 / (u16)10;//ÕûÊýÎ»
+ 689   3            Pre_Disp_Deg_1 = data_flash.Set_RT_WCTemp * (u16)5 % (u16)10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
+ 690   3            
+ 691   3            Pre_Disp_Deg_CQK_10 = data_flash.Set_CQK_WCTemp * (u16)5 / (u16)10;//ÕûÊýÎ»
+ 692   3            Pre_Disp_Deg_CQK_1 = data_flash.Set_CQK_WCTemp * (u16)5 % (u16)10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
+ 693   3          }
+ 694   2          else
+ 695   2          {
+ 696   3            Pre_Disp_Deg_10 = data_flash.Set_RT_YCTemp * (u16)5 / (u16)10;//ÕûÊýÎ»
+ 697   3            Pre_Disp_Deg_1 = data_flash.Set_RT_YCTemp * (u16)5 % (u16)10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
  698   3            
- 699   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,WHITE18);//
- 700   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,WHITE18);// 
- 701   3           
- 702   3            Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,RED18);//
- 703   3            Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,RED18);//   
- 704   3            
- 705   3            if(data_flash.Work_Mode==Noninvasive_Mode)    //
- 706   3            {
- 707   4              CHAR str_modeNoinvasive[]="Mode:Noninvasive      ";
- 708   4              strcpy(show_str,str_modeNoinvasive);        
- 709   4              LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
- 710   4            }
- 711   3            else
- 712   3            {
- 713   4              CHAR str_modeInvasive[]="Mode:Invasive         ";
- 714   4              strcpy(show_str,str_modeInvasive);
- 715   4              LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
- 716   4            }
- 717   3            
- 718   3            LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8),16,2,Pre_Disp_Deg_10,0x00,BLUE18);//»¼Õ
+ 699   3            Pre_Disp_Deg_CQK_10 = data_flash.Set_CQK_YCTemp * (u16)5 / (u16)10;//ÕûÊýÎ»
+ 700   3            Pre_Disp_Deg_CQK_1 = data_flash.Set_CQK_YCTemp * (u16)5 % (u16)10;//ÈôÊÇ0ÔòÎÞÐ¡Êý,ÊÇ5ÔòÏÔÊ¾5
+ 701   3          } 
+ 702   2                
+ 703   2          if(defalut_mode == (u8)Load_User_Pre_MODE)  //ÓÃ»§ÉÏÒ»´ÎµÄÉè¶¨   
+ 704   2          {     //»­ºìÉ«¿ò
+ 705   3            Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,WHITE
+             -18,4);
+ 706   3            Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y
+             -+242,RED18,4);//
+ 707   3            
+ 708   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,WHITE18);//
+ 709   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,WHITE18);// 
+ 710   3           
+ 711   3            Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,RED18);//
+ 712   3            Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,RED18);//   
+ 713   3            
+ 714   3            if(data_flash.Work_Mode==(u8)Noninvasive_Mode)    //
+ 715   3            {
+ 716   4              CHAR str_modeNoinvasive[]="Mode:Noninvasive      ";
+ 717   4              strcpy((CHAR*)show_str,str_modeNoinvasive);       
+ 718   4              LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,(const u8*)show_str,0,BLUE18);
+ 719   4            }
+ 720   3            else
+ 721   3            {
+ 722   4              CHAR str_modeInvasive[]="Mode:Invasive         ";
+ 723   4              strcpy((CHAR*)show_str,str_modeInvasive);
+ 724   4              LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,(const u8*)show_str,0,BLUE18);
+ 725   4            }
+ 726   3            
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 13  
+
+ 727   3            LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8),16,2,Pre_Disp_Deg_10,0x00,BLUE18);//»¼Õ
              -ß¶ËÎÂ¶È
- 719   3            if(Pre_Disp_Deg_1 == 0)//ÎÞÐ¡Êý
- 720   3            {
- 721   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*11),16,280,"C  ",0,BLUE18);//
- 722   4              Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
- 723   4            }
- 724   3            else//ÓÐÐ¡Êý
- 725   3            {
- 726   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*10),16,280,".5",0,BLUE18);//.5
- 727   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*13),16,280,"C ",0,BLUE18);//
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 13  
-
- 728   4              Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*12),2,BLUE18);//ÎÂ¶ÈÍ¼±ê                
- 729   4            } 
- 730   3      
- 731   3            LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8)+(8*15),16,2,Pre_Disp_Deg_CQK_10,0x00,BL
+ 728   3            if(Pre_Disp_Deg_1 == (u16)0)//ÎÞÐ¡Êý
+ 729   3            {
+ 730   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*11),16,280,(const u8*)"C  ",0,BLUE18);/
+             -/
+ 731   4              Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
+ 732   4            }
+ 733   3            else//ÓÐÐ¡Êý
+ 734   3            {
+ 735   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*10),16,280,(const u8*)".5",0,BLUE18);//
+             -.5
+ 736   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*13),16,280,(const u8*)"C ",0,BLUE18);//
+ 737   4              Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*12),2,BLUE18);//ÎÂ¶ÈÍ¼±ê                
+ 738   4            } 
+ 739   3      
+ 740   3            LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8)+(8*15),16,2,Pre_Disp_Deg_CQK_10,0x00,BL
              -UE18);//³öÆø¿Ú¶ËÎÂ¶È
- 732   3            if(Pre_Disp_Deg_CQK_1 == 0)//ÎÞÐ¡Êý
- 733   3            {
- 734   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*11)+(8*15),16,280,"C  ",0,BLUE18);//
- 735   4              Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
- 736   4            }
- 737   3            else//ÓÐÐ¡Êý
- 738   3            {
- 739   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*10)+(8*15),16,280,".5",0,BLUE18);//.5
- 740   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*13)+(8*15),16,280,"C ",0,BLUE18);//
- 741   4              Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*12)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê         
-             -      
- 742   4            }               
- 743   3            
- 744   3            if(data_flash.In_Exp_Ratio == 1)//1:1
- 745   3            {
- 746   4              LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,"  ",0,BLUE18);//1:1
- 747   4            }
- 748   3            else
- 749   3            {
- 750   4              LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,".",0,BLUE18); 
- 751   4              LCD_ShowxNum(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*11),16,1,data_flash.In_Exp_Ratio-1,0x0,BL
+ 741   3            if(Pre_Disp_Deg_CQK_1 == (u16)0)//ÎÞÐ¡Êý
+ 742   3            {
+ 743   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*11)+(8*15),16,280,(const u8*)"C  ",0,BL
              -UE18);//
- 752   4            }                       
- 753   3          }
- 754   2          else  //¹¤³§Éè¶¨
- 755   2          {
- 756   3            CHAR str_invasive[]="Invasive         ";
- 757   3            CHAR str_patient39C[]="Patient:39 C  ";
- 758   3            CHAR str_chamber36C[]="Chamber:36 C  ";
- 759   3            
- 760   3            
- 761   3            Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,RED18
+ 744   4              Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
+ 745   4            }
+ 746   3            else//ÓÐÐ¡Êý
+ 747   3            {
+ 748   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*10)+(8*15),16,280,(const u8*)".5",0,BLU
+             -E18);//.5
+ 749   4              LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*13)+(8*15),16,280,(const u8*)"C ",0,BLU
+             -E18);//
+ 750   4              Draw_Circle((Load_User_Pre_Set_X - 56) +12,(Load_User_Pre_Set_Y+4+(8*12))+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê 
+             -              
+ 751   4            }               
+ 752   3            
+ 753   3            if(data_flash.In_Exp_Ratio == (u8)1)//1:1
+ 754   3            {
+ 755   4              LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,(const u8*)"  ",0,BLUE18);//
+             -1:1
+ 756   4            }
+ 757   3            else
+ 758   3            {
+ 759   4              LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,(const u8*)".",0,BLUE18); 
+ 760   4              LCD_ShowxNum(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*11),16,1,(u32)data_flash.In_Exp_Ratio-(u3
+             -2)1,(u8)0x0,BLUE18);//
+ 761   4            }                       
+ 762   3          }
+ 763   2          else  //¹¤³§Éè¶¨
+ 764   2          {
+ 765   3            CHAR str_invasive[]="Invasive         ";
+ 766   3            CHAR str_patient39C[]="Patient:39 C  ";
+ 767   3            CHAR str_chamber36C[]="Chamber:36 C  ";
+ 768   3            
+ 769   3            
+ 770   3            Draw_Rectangle(Load_Fac_Set_X-10,Load_User_Pre_Set_Y-10,Load_Fac_Set_X+34,Load_User_Pre_Set_Y+242,RED18
              -,4);
- 762   3            Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y
+ 771   3            Draw_Rectangle(Load_User_Pre_Set_X-10,Load_User_Pre_Set_Y-10,Load_User_Pre_Set_X+34,Load_User_Pre_Set_Y
              -+242,WHITE18,4);//
- 763   3           
- 764   3            Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,WHITE18);//            
- 765   3            Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,WHITE18);//
- 766   3           
- 767   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,RED18);//
- 768   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,RED18);//  
- 769   3            strcpy(show_str,str_invasive);
- 770   3            LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y+(8*5),16,280,show_str,0,BLUE18);//ÓÐ´´          
- 771   3            strcpy(show_str,str_patient39C);        
- 772   3            LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,show_str,0,BLUE18);
- 773   3            Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê  
- 774   3            strcpy(show_str,str_chamber36C);            
- 775   3            LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*15),16,280,show_str,0,BLUE18);
- 776   3            Draw_Circle(Load_User_Pre_Set_X - 56 +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
- 777   3            LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,".3",0,BLUE18);//1:1.3 
- 778   3          }
- 779   2          LCD_LIGHT_OPEN; 
- 780   2        } 
- 781   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü
- 782   1      }
- 783          
- 784          //-----------¿ª»úÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 14  
+ 772   3           
+ 773   3            Draw_Rectangle_Real(203,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-10,WHITE18);//            
+ 774   3            Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,WHITE18);//
+ 775   3           
+ 776   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,RED18);//
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 14  
 
- 785          
- 786          void HmiNon_InvasiveSel_Tik_Cnt(void)
- 787          {
- 788   1        if(Tik_HmiNon_InvasiveSel_Tick_100mS < 250)
- 789   1        {
- 790   2          Tik_HmiNon_InvasiveSel_Tick_100mS++;
- 791   2        }
- 792   1      }
- 793          
- 794          void  HmiNon_InvasiveSelFunc(void)//ÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ
- 795          {
- 796   1        WDT_CONTR = 0x3F; //¿ªÆôWDT,ÔÚ22.1184Ê±Ê±¼äÎª4.55S  
- 797   1        {
- 798   2          if((Key_State_Present == KEY_STATE_UP_Short)//
- 799   2               ||(Key_State_Present ==KEY_STATE_UP_Long_First))
- 800   2          {
- 801   3      
- 802   3            if(Work_Mode==0)
- 803   3            {
- 804   4              Work_Mode=1;
- 805   4            }
- 806   3            else
- 807   3            {
- 808   4              Work_Mode=0;  
- 809   4            }
+ 777   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,RED18);//  
+ 778   3            strcpy((CHAR*)show_str,str_invasive);
+ 779   3            LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y+(8*5),16,280,(const u8*)show_str,0,BLUE18);
+             -//ÓÐ´´          
+ 780   3            strcpy((CHAR*)show_str,str_patient39C);       
+ 781   3            LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y,16,280,(const u8*)show_str,0,BLUE18);
+ 782   3            Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*10),2,BLUE18);//ÎÂ¶ÈÍ¼±ê  
+ 783   3            strcpy((CHAR*)show_str,str_chamber36C);           
+ 784   3            LCD_ShowString(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*15),16,280,show_str,0,BLUE18);
+ 785   3            Draw_Circle((Load_User_Pre_Set_X - 56) +12,Load_User_Pre_Set_Y+4+(8*10)+(8*15),2,BLUE18);//ÎÂ¶ÈÍ¼±ê
+ 786   3            LCD_ShowString(Load_User_Pre_Set_X - 76,Load_User_Pre_Set_Y+(8*10),16,280,(const u8*)".3",0,BLUE18);//1
+             -:1.3 
+ 787   3          }
+ 788   2          LCD_LIGHT_OPEN; 
+ 789   2        } 
+ 790   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü
+ 791   1      }
+ 792          
+ 793          //-----------¿ª»úÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ
+ 794          
+ 795          void HmiNon_InvasiveSel_Tik_Cnt(void)
+ 796          {
+ 797   1        if(Tik_HmiNon_InvasiveSel_Tick_100mS < (u8)250)
+ 798   1        {
+ 799   2          Tik_HmiNon_InvasiveSel_Tick_100mS++;
+ 800   2        }
+ 801   1      }
+ 802          
+ 803          void  HmiNon_InvasiveSelFunc(void)//ÓÐ´´ÎÞ´´Ñ¡Ôñ½çÃæ
+ 804          {
+ 805   1        WDT_CONTR = 0x3F; //¿ªÆôWDT,ÔÚ22.1184Ê±Ê±¼äÎª4.55S  
+ 806   1        {
+ 807   2          if((Key_State_Present == KEY_STATE_UP_Short)//
+ 808   2               ||(Key_State_Present ==KEY_STATE_UP_Long_First))
+ 809   2          {
  810   3      
- 811   3            if(Work_Mode==0)  //ÎÞ´´Ä£Ê½
- 812   3            { 
- 813   4              Draw_Rectangle(75,182,162,262,RED18,4);//
- 814   4              Draw_Rectangle(75,58,162,136,WHITE18,4);
- 815   4            }else  //ÎÞ´´Ä£Ê½
- 816   3            { 
- 817   4              Draw_Rectangle(75,182,162,262,WHITE18,4);
- 818   4              Draw_Rectangle(75,58,162,136,RED18,4);
- 819   4            }
- 820   3      
- 821   3          }
- 822   2          else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈëÔËÐÐ×´Ì¬
- 823   2               ||(Key_State_Present ==KEY_STATE_OK_Long_First)
- 824   2               ||(Tik_HmiNon_InvasiveSel_Tick_100mS > 30))
- 825   2      
- 826   2          {
- 827   3           LCD_LIGHT_CLOSE;    
- 828   3           Work_State = UI_STATE_RUNNING_NORMAL_MODE;
- 829   3           HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);
+ 811   3            if(Work_Mode==(u8)0)
+ 812   3            {
+ 813   4              Work_Mode=1;
+ 814   4            }
+ 815   3            else
+ 816   3            {
+ 817   4              Work_Mode=0;  
+ 818   4            }
+ 819   3      
+ 820   3            if(Work_Mode==(u8)0)  //ÎÞ´´Ä£Ê½
+ 821   3            { 
+ 822   4              Draw_Rectangle(75,182,162,262,RED18,4);//
+ 823   4              Draw_Rectangle(75,58,162,136,WHITE18,4);
+ 824   4            }else  //ÎÞ´´Ä£Ê½
+ 825   3            { 
+ 826   4              Draw_Rectangle(75,182,162,262,WHITE18,4);
+ 827   4              Draw_Rectangle(75,58,162,136,RED18,4);
+ 828   4            }
+ 829   3      
  830   3          }
- 831   2          else
- 832   2          {
- 833   3            //do nothing
- 834   3          }
- 835   2        } 
- 836   1        data_flash.Work_Mode = Work_Mode;//Ñ¡¶¨µÄÄ£Ê½
- 837   1      
- 838   1        Setting_write_to_flash();//Ð´Èëµ½FLASH    
- 839   1      
- 840   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
- 841   1      }
- 842          
- 843          
- 844          //-----------ÔËÐÐ½çÃæ
- 845          DISPLAY_Temp_Kind Display_Temp_Kind = DISPLAY_Temperature_Patient;     //ÏÔÊ¾ÎÂ¶ÈÀàÐÍ 0-»¼Õß¶ËÎÂ¶È 1-³öÆø¿
+ 831   2          else if((Key_State_Present == KEY_STATE_OK_Short)//½øÈëÔËÐÐ×´Ì¬
+ 832   2               ||(Key_State_Present ==KEY_STATE_OK_Long_First)
+ 833   2               ||(Tik_HmiNon_InvasiveSel_Tick_100mS > (u8)30))
+ 834   2      
+ 835   2          {
+ 836   3           LCD_LIGHT_CLOSE;    
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 15  
+
+ 837   3           Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+ 838   3           HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);
+ 839   3          }
+ 840   2          else
+ 841   2          {
+ 842   3            //do nothing
+ 843   3          }
+ 844   2        } 
+ 845   1        data_flash.Work_Mode = Work_Mode;//Ñ¡¶¨µÄÄ£Ê½
+ 846   1      
+ 847   1        Setting_write_to_flash();//Ð´Èëµ½FLASH    
+ 848   1      
+ 849   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
+ 850   1      }
+ 851          
+ 852          
+ 853          //-----------ÔËÐÐ½çÃæ
+ 854          DISPLAY_Temp_Kind Display_Temp_Kind = DISPLAY_Temperature_Patient;     //ÏÔÊ¾ÎÂ¶ÈÀàÐÍ 0-»¼Õß¶ËÎÂ¶È 1-³öÆø¿
              -ÚÎÂ¶È
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 15  
+ 855          
+ 856          void  HmiRunningFunc(void)//
+ 857          {
+ 858   1        static uint8_t Display_Return_Cnt = 0;
+ 859   1        if((Key_State_Present == KEY_STATE_UP_Short)//ÇÐ»»ÏÔÊ¾
+ 860   1          ||(Key_State_Present == KEY_STATE_UP_Long_First))
+ 861   1        {
+ 862   2          Display_Return_Cnt = 0;
+ 863   2          if(Display_Temp_Kind == DISPLAY_Temperature_Patient)
+ 864   2          {
+ 865   3            Display_Temp_Kind = DISPLAY_Temperature_Chamber;
+ 866   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,1,BLACK18);
+ 867   3            Display_In_Exp_Ratio(In_Exp_Ratio,1);     
+ 868   3          } 
+ 869   2          else  
+ 870   2          {
+ 871   3            Display_Temp_Kind = DISPLAY_Temperature_Patient;
+ 872   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
+ 873   3            Display_In_Exp_Ratio(In_Exp_Ratio,0);
+ 874   3          } 
+ 875   2          RefreshTempHumidyFunc(1);   
+ 876   2        }
+ 877   1        else if(Key_State_Present == KEY_STATE_Down_Long_First)//¸Ä±äÄ£Ê½
+ 878   1        {
+ 879   2          Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
+ 880   2          Sound_Short();    
+ 881   2          Set_RT_WCTemp = 340;// ÇÐ»»Ä£Ê½¼´ÎÂ¶ÈÉè¶¨»Ø¸´³ö³§Éè¶¨
+ 882   2          Set_RT_YCTemp = 390;//
+ 883   2          Set_CQK_WCTemp = 310;//
+ 884   2          Set_CQK_YCTemp = 360;//
+ 885   2      
+ 886   2          RT_Temp_Reach_Set_Cnt = 0;//ÈËÌå¶Ë´ïµ½ÎÂ¶È¼ÆÊýÇåÁã
+ 887   2          CQK_Temp_Reach_Set_Cnt = 0;
+ 888   2      
+ 889   2          if(Work_Mode==(u8)Invasive_Mode)  
+ 890   2          { 
+ 891   3            Work_Mode=Noninvasive_Mode; 
+ 892   3            Set_RT_Temp=(INT)Set_RT_WCTemp; 
+ 893   3            Set_CQK_Temp=Set_CQK_WCTemp;    
+ 894   3          }
+ 895   2          else
+ 896   2          {
+ 897   3            Work_Mode=Invasive_Mode;  
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 16  
 
- 846          
- 847          void  HmiRunningFunc(void)//
- 848          {
- 849   1        static uint8_t Display_Return_Cnt = 0;
- 850   1        if((Key_State_Present == KEY_STATE_UP_Short)//ÇÐ»»ÏÔÊ¾
- 851   1          ||(Key_State_Present == KEY_STATE_UP_Long_First))
- 852   1        {
- 853   2          Display_Return_Cnt = 0;
- 854   2          if(Display_Temp_Kind == DISPLAY_Temperature_Patient)
- 855   2          {
- 856   3            Display_Temp_Kind = DISPLAY_Temperature_Chamber;
- 857   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,1,BLACK18);
- 858   3            Display_In_Exp_Ratio(In_Exp_Ratio,1);     
- 859   3          } 
- 860   2          else  
- 861   2          {
- 862   3            Display_Temp_Kind = DISPLAY_Temperature_Patient;
- 863   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
- 864   3            Display_In_Exp_Ratio(In_Exp_Ratio,0);
- 865   3          } 
- 866   2          RefreshTempHumidyFunc(1);   
- 867   2        }
- 868   1        else if(Key_State_Present == KEY_STATE_Down_Long_First)//¸Ä±äÄ£Ê½
- 869   1        {
- 870   2          Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
- 871   2          Sound_Short();    
- 872   2          Set_RT_WCTemp = 340;// ÇÐ»»Ä£Ê½¼´ÎÂ¶ÈÉè¶¨»Ø¸´³ö³§Éè¶¨
- 873   2          Set_RT_YCTemp = 390;//
- 874   2          Set_CQK_WCTemp = 310;//
- 875   2          Set_CQK_YCTemp = 360;//
- 876   2      
- 877   2          RT_Temp_Reach_Set_Cnt = 0;//ÈËÌå¶Ë´ïµ½ÎÂ¶È¼ÆÊýÇåÁã
- 878   2          CQK_Temp_Reach_Set_Cnt = 0;
- 879   2      
- 880   2          if(Work_Mode==Invasive_Mode)  
- 881   2          { 
- 882   3            Work_Mode=Noninvasive_Mode; 
- 883   3            Set_RT_Temp=(INT)Set_RT_WCTemp; 
- 884   3            Set_CQK_Temp=Set_CQK_WCTemp;    
- 885   3          }
- 886   2          else
- 887   2          {
- 888   3            Work_Mode=Invasive_Mode;  
- 889   3            Set_RT_Temp=(INT)Set_RT_YCTemp;   
- 890   3            Set_CQK_Temp=Set_CQK_YCTemp;        
- 891   3          }
- 892   2          data_flash.Set_RT_WCTemp = (uint8_t)(Set_RT_WCTemp/5);//
- 893   2          data_flash.Set_RT_YCTemp = (uint8_t)(Set_RT_YCTemp/5);//
- 894   2          data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/5);//
- 895   2          data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/5);//
- 896   2          data_flash.Work_Mode = Work_Mode;// 
- 897   2          Setting_write_to_flash(); 
- 898   2          Refresh_Work_Mode();//ÇÐ»»Í¼±ê        
- 899   2        }
- 900   1        else if(Key_State_Present == KEY_STATE_OK_Long_First)//³¤°´OK½øÈëÉè¶¨×´Ì¬
- 901   1        {
- 902   2          Sound_Short();
- 903   2          if(Display_Temp_Kind == DISPLAY_Temperature_Patient)
- 904   2          {
- 905   3            Work_State = UI_STATE_SetTempPatient_MODE;//Éè¶¨»¼Õß¶ËÎÂ¶È
- 906   3            HmiEnterToWorkStateFunc(UI_STATE_SetTempPatient_MODE);  
- 907   3            Remeber_Temp_Value= (uint16_t)Set_RT_Temp;
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 16  
-
- 908   3          }
- 909   2          else
- 910   2          {
- 911   3            Work_State = UI_STATE_SetTempChamber_MODE;//Éè¶¨³öÆø¿ÚÎÂ¶È
- 912   3            HmiEnterToWorkStateFunc(UI_STATE_SetTempChamber_MODE);
- 913   3            Remeber_Temp_Value = Set_CQK_Temp;      
- 914   3          }
- 915   2        } 
- 916   1        else if(Key_State_Present == KEY_STATE_Mute_Long_First)//³¤°´MUTE½øÈëÊ±¼äÉè¶¨×´Ì¬
- 917   1        {
- 918   2          Sound_Short();
- 919   2          if(Display_Temp_Kind == DISPLAY_Temperature_Patient)
- 920   2          {
- 921   3            Work_State = UI_STATE_SetTime_MODE;//Éè¶¨ÈÕÆÚºÍÊ±¼ä
- 922   3            HmiEnterToWorkStateFunc(UI_STATE_SetTime_MODE); 
- 923   3      
- 924   3          }
- 925   2        }
- 926   1        else if(Key_State_Present == KEY_STATE_OK_Short)//¶Ì°´OK¼üÇåÉ«¿é±ê¼Ç
- 927   1        { 
- 928   2          Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+45,WHITE18);
- 929   2          WireInOut_State_Confirm();//Õý³£ÔËÐÐ½çÃæ,°´ÏÂÈ·ÈÏ¼üÈ·¶¨»ØÂ·µÄÄ£Ê½   
- 930   2        }
- 931   1        else
- 932   1        {
- 933   2          //do nothing
+ 898   3            Set_RT_Temp=(INT)Set_RT_YCTemp;   
+ 899   3            Set_CQK_Temp=Set_CQK_YCTemp;        
+ 900   3          }
+ 901   2          data_flash.Set_RT_WCTemp = (uint8_t)(Set_RT_WCTemp/(u16)5);//
+ 902   2          data_flash.Set_RT_YCTemp = (uint8_t)(Set_RT_YCTemp/(u16)5);//
+ 903   2          data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/(u16)5);//
+ 904   2          data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/(u16)5);//
+ 905   2          data_flash.Work_Mode = Work_Mode;// 
+ 906   2          Setting_write_to_flash(); 
+ 907   2          Refresh_Work_Mode();//ÇÐ»»Í¼±ê        
+ 908   2        }
+ 909   1        else if(Key_State_Present == KEY_STATE_OK_Long_First)//³¤°´OK½øÈëÉè¶¨×´Ì¬
+ 910   1        {
+ 911   2          Sound_Short();
+ 912   2          if(Display_Temp_Kind == DISPLAY_Temperature_Patient)
+ 913   2          {
+ 914   3            Work_State = UI_STATE_SetTempPatient_MODE;//Éè¶¨»¼Õß¶ËÎÂ¶È
+ 915   3            HmiEnterToWorkStateFunc(UI_STATE_SetTempPatient_MODE);  
+ 916   3            Remeber_Temp_Value= (uint16_t)Set_RT_Temp;
+ 917   3          }
+ 918   2          else
+ 919   2          {
+ 920   3            Work_State = UI_STATE_SetTempChamber_MODE;//Éè¶¨³öÆø¿ÚÎÂ¶È
+ 921   3            HmiEnterToWorkStateFunc(UI_STATE_SetTempChamber_MODE);
+ 922   3            Remeber_Temp_Value = Set_CQK_Temp;      
+ 923   3          }
+ 924   2        } 
+ 925   1        else if(Key_State_Present == KEY_STATE_Mute_Long_First)//³¤°´MUTE½øÈëÊ±¼äÉè¶¨×´Ì¬
+ 926   1        {
+ 927   2          Sound_Short();
+ 928   2          if(Display_Temp_Kind == DISPLAY_Temperature_Patient)
+ 929   2          {
+ 930   3            Work_State = UI_STATE_SetTime_MODE;//Éè¶¨ÈÕÆÚºÍÊ±¼ä
+ 931   3            HmiEnterToWorkStateFunc(UI_STATE_SetTime_MODE); 
+ 932   3      
+ 933   3          }
  934   2        }
- 935   1      
- 936   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
- 937   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
- 938   1        {
- 939   2          Display_Return_Cnt = 0;
- 940   2        }
- 941   1        if(Display_Return_Cnt < 90)
- 942   1        {
- 943   2          Display_Return_Cnt++;
- 944   2        }
- 945   1        else
- 946   1        {
- 947   2          if(Display_Temp_Kind == DISPLAY_Temperature_Chamber)
- 948   2          {
- 949   3            Back_Color=WHITE18;
- 950   3            Display_Temp_Kind = DISPLAY_Temperature_Patient;  
- 951   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
- 952   3            Display_In_Exp_Ratio(In_Exp_Ratio,0);
- 953   3          }     
- 954   2        }
- 955   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
- 956   1      }
- 957          
- 958          
- 959          //-----------»¼Õß¶ËÎÂ¶ÈÉèÖÃ½çÃæ
- 960          void  HmiSetTempPatientFunc(void)//GUI --- 
- 961          {
- 962   1        static uint8_t Set_Temp_Cnt=0; 
- 963   1        static uint8_t Display_Return_Cnt = 0;
- 964   1        Set_Temp_Cnt++;
- 965   1        if(Set_Temp_Cnt > 10)
- 966   1        {
- 967   2          Set_Temp_Cnt = 0;
- 968   2        }
- 969   1        Back_Color=WHITE18;
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 17  
+ 935   1        else if(Key_State_Present == KEY_STATE_OK_Short)//¶Ì°´OK¼üÇåÉ«¿é±ê¼Ç
+ 936   1        { 
+ 937   2          Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+45,WHITE18);
+ 938   2          WireInOut_State_Confirm();//Õý³£ÔËÐÐ½çÃæ,°´ÏÂÈ·ÈÏ¼üÈ·¶¨»ØÂ·µÄÄ£Ê½   
+ 939   2        }
+ 940   1        else
+ 941   1        {
+ 942   2          //do nothing
+ 943   2        }
+ 944   1      
+ 945   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
+ 946   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
+ 947   1        {
+ 948   2          Display_Return_Cnt = 0;
+ 949   2        }
+ 950   1        if(Display_Return_Cnt < (u8)90)
+ 951   1        {
+ 952   2          Display_Return_Cnt++;
+ 953   2        }
+ 954   1        else
+ 955   1        {
+ 956   2          if(Display_Temp_Kind == DISPLAY_Temperature_Chamber)
+ 957   2          {
+ 958   3            Back_Color=WHITE18;
+ 959   3            Display_Temp_Kind = DISPLAY_Temperature_Patient;  
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 17  
 
- 970   1        if(Set_Temp_Cnt == 0)
- 971   1        {
- 972   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
- 973   2        }
- 974   1        else if(Set_Temp_Cnt == 5)
+ 960   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
+ 961   3            Display_In_Exp_Ratio(In_Exp_Ratio,0);
+ 962   3          }     
+ 963   2        }
+ 964   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
+ 965   1      }
+ 966          
+ 967          
+ 968          //-----------»¼Õß¶ËÎÂ¶ÈÉèÖÃ½çÃæ
+ 969          void  HmiSetTempPatientFunc(void)//GUI --- 
+ 970          {
+ 971   1        static uint8_t Set_Temp_Cnt=0; 
+ 972   1        static uint8_t Display_Return_Cnt = 0;
+ 973   1        Set_Temp_Cnt++;
+ 974   1        if(Set_Temp_Cnt > (u8)10)
  975   1        {
- 976   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,WHITE18);
+ 976   2          Set_Temp_Cnt = 0;
  977   2        }
- 978   1        else
- 979   1        {
- 980   2          //do nothing
- 981   2        }
- 982   1          
- 983   1        
- 984   1        if((Key_State_Present == KEY_STATE_UP_Short)//Ôö¼Ó
- 985   1            ||(Key_State_Present == KEY_STATE_UP_Long_First)
- 986   1            ||(Key_State_Present == KEY_STATE_UP_Long_Repeat))
- 987   1        { 
- 988   2          if(Work_Mode==Noninvasive_Mode)
- 989   2          {
- 990   3            if(Remeber_Temp_Value<Const_NoninvasPatientTemp_Max)
- 991   3            {
- 992   4              Remeber_Temp_Value=Remeber_Temp_Value+5;
- 993   4            } 
- 994   3          }
- 995   2          else
- 996   2          {
- 997   3            if(Remeber_Temp_Value<Const_InvasPatientTemp_Max)
- 998   3            {
- 999   4              Remeber_Temp_Value=Remeber_Temp_Value+5;
-1000   4            }  
-1001   3          } 
-1002   2          Display_SET_Temp(Remeber_Temp_Value);       
-1003   2        }
-1004   1        else if((Key_State_Present == KEY_STATE_Down_Short)//¼õÐ¡
-1005   1               ||(Key_State_Present == KEY_STATE_Down_Long_First)
-1006   1               ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
-1007   1        { 
-1008   2          if(Work_Mode==Noninvasive_Mode)  //ÎÞ´´
-1009   2          {
-1010   3            if(Remeber_Temp_Value>Const_NoninvasPatientTemp_Min)
-1011   3            {
-1012   4              Remeber_Temp_Value=Remeber_Temp_Value-5;
-1013   4            } 
-1014   3          } 
-1015   2          else
-1016   2          {
-1017   3            if(Remeber_Temp_Value>Const_InvasPatientTemp_Min)
-1018   3            {
-1019   4              Remeber_Temp_Value=Remeber_Temp_Value-5;
-1020   4            }
-1021   3          }
-1022   2          Display_SET_Temp(Remeber_Temp_Value);   
-1023   2        }
-1024   1        else if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
-1025   1        {   
-1026   2          Work_State = UI_STATE_SetInExp_MODE;
-1027   2          HmiEnterToWorkStateFunc(UI_STATE_SetInExp_MODE);
-1028   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
-1029   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾ 
-1030   2          Display_Return_Cnt = 0;   
-1031   2        }
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 18  
+ 978   1        Back_Color=WHITE18;
+ 979   1        if(Set_Temp_Cnt == (u8)0)
+ 980   1        {
+ 981   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+ 982   2        }
+ 983   1        else if(Set_Temp_Cnt == (u8)5)
+ 984   1        {
+ 985   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,WHITE18);
+ 986   2        }
+ 987   1        else
+ 988   1        {
+ 989   2          //do nothing
+ 990   2        }
+ 991   1          
+ 992   1        
+ 993   1        if((Key_State_Present == KEY_STATE_UP_Short)//Ôö¼Ó
+ 994   1            ||(Key_State_Present == KEY_STATE_UP_Long_First)
+ 995   1            ||(Key_State_Present == KEY_STATE_UP_Long_Repeat))
+ 996   1        { 
+ 997   2          if(Work_Mode==(u8)Noninvasive_Mode)
+ 998   2          {
+ 999   3            if(Remeber_Temp_Value<(u16)Const_NoninvasPatientTemp_Max)
+1000   3            {
+1001   4              Remeber_Temp_Value=Remeber_Temp_Value+(u16)5;
+1002   4            } 
+1003   3          }
+1004   2          else
+1005   2          {
+1006   3            if(Remeber_Temp_Value<(u16)Const_InvasPatientTemp_Max)
+1007   3            {
+1008   4              Remeber_Temp_Value=Remeber_Temp_Value+(u16)5;
+1009   4            }  
+1010   3          } 
+1011   2          Display_SET_Temp(Remeber_Temp_Value);       
+1012   2        }
+1013   1        else if((Key_State_Present == KEY_STATE_Down_Short)//¼õÐ¡
+1014   1               ||(Key_State_Present == KEY_STATE_Down_Long_First)
+1015   1               ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
+1016   1        { 
+1017   2          if(Work_Mode==(u8)Noninvasive_Mode)  //ÎÞ´´
+1018   2          {
+1019   3            if(Remeber_Temp_Value>(u16)Const_NoninvasPatientTemp_Min)
+1020   3            {
+1021   4              Remeber_Temp_Value=Remeber_Temp_Value-(u16)5;
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 18  
 
-1032   1        else if(Key_State_Present == KEY_STATE_OK_Short)//È·ÈÏ
-1033   1        {
-1034   2          Sound_Short();
-1035   2          if(Set_RT_Temp != (INT)Remeber_Temp_Value)//ÈôÎ´¸Ä±äÈËÌå¶ËÎÂ¶ÈÉè¶¨Ôò²»½øÐÐ²Ù×÷
-1036   2          {
-1037   3            Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
-1038   3            Set_RT_Temp=(INT)Remeber_Temp_Value;
-1039   3            if(Work_Mode == Noninvasive_Mode)
-1040   3            {
-1041   4              Set_RT_WCTemp=(uint16_t)Set_RT_Temp;
-1042   4              data_flash.Set_RT_WCTemp = (uint8_t)(Set_RT_WCTemp/5);//ÎÞ´´Éè¶¨ÎÂ¶È 
-1043   4              
-1044   4              if(Set_RT_WCTemp >= 320) 
-1045   4              {
-1046   5                Set_CQK_WCTemp = 310;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31
-1047   5              }
-1048   4              else
-1049   4              {
-1050   5                Set_CQK_WCTemp = 300;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31 
-1051   5              }         
-1052   4              data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/5);                            
-1053   4              Set_CQK_Temp = (uint8_t)Set_CQK_WCTemp; 
-1054   4            }
-1055   3            else
-1056   3            {
-1057   4              Set_RT_YCTemp=(uint16_t)Set_RT_Temp; 
-1058   4              data_flash.Set_RT_YCTemp = (uint8_t)(Set_RT_YCTemp/5);//ÓÐ´´Éè¶¨ÎÂ¶È 
-1059   4              
-1060   4              if(Set_RT_YCTemp >= 370) 
-1061   4              {
-1062   5                Set_CQK_YCTemp = Set_RT_YCTemp - 30;//ÈËÌå¶Ë>=37Ê±³öÆø¿ÚÎÂ¶ÈÎªRT-3
-1063   5              }
-1064   4              else
-1065   4              {
-1066   5                Set_CQK_YCTemp = 340; //ÓÐ´´³öÆø¿ÚÉè¶¨ÎÂ¶È 
-1067   5              }
-1068   4              data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/5);
-1069   4              Set_CQK_Temp = Set_CQK_YCTemp;                          
-1070   4            }
-1071   3          }   
-1072   2          
-1073   2          Setting_write_to_flash(); 
-1074   2          Display_Return_Cnt = 0;
-1075   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1076   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
-1077   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
-1078   2        }
-1079   1        else
-1080   1        {
-1081   2          //do nothing
-1082   2        }
-1083   1        
-1084   1        
-1085   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
-1086   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
-1087   1        {
-1088   2          Display_Return_Cnt = 0;
-1089   2        }
-1090   1        if(Display_Return_Cnt < 90)
-1091   1        {
-1092   2          Display_Return_Cnt++;
-1093   2        }
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 19  
+1022   4            } 
+1023   3          } 
+1024   2          else
+1025   2          {
+1026   3            if(Remeber_Temp_Value>(u16)Const_InvasPatientTemp_Min)
+1027   3            {
+1028   4              Remeber_Temp_Value=Remeber_Temp_Value-(u16)5;
+1029   4            }
+1030   3          }
+1031   2          Display_SET_Temp(Remeber_Temp_Value);   
+1032   2        }
+1033   1        else if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
+1034   1        {   
+1035   2          Work_State = UI_STATE_SetInExp_MODE;
+1036   2          HmiEnterToWorkStateFunc(UI_STATE_SetInExp_MODE);
+1037   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+1038   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾ 
+1039   2          Display_Return_Cnt = 0;   
+1040   2        }
+1041   1        else if(Key_State_Present == KEY_STATE_OK_Short)//È·ÈÏ
+1042   1        {
+1043   2          Sound_Short();
+1044   2          if(Set_RT_Temp != (INT)Remeber_Temp_Value)//ÈôÎ´¸Ä±äÈËÌå¶ËÎÂ¶ÈÉè¶¨Ôò²»½øÐÐ²Ù×÷
+1045   2          {
+1046   3            Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
+1047   3            Set_RT_Temp=(INT)Remeber_Temp_Value;
+1048   3            if(Work_Mode == (u8)Noninvasive_Mode)
+1049   3            {
+1050   4              Set_RT_WCTemp=(uint16_t)Set_RT_Temp;
+1051   4              data_flash.Set_RT_WCTemp = (uint8_t)(Set_RT_WCTemp/(u16)5);//ÎÞ´´Éè¶¨ÎÂ¶È 
+1052   4              
+1053   4              if(Set_RT_WCTemp >= (u16)320) 
+1054   4              {
+1055   5                Set_CQK_WCTemp = 310;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31
+1056   5              }
+1057   4              else
+1058   4              {
+1059   5                Set_CQK_WCTemp = 300;//ÈËÌå¶Ë>=32Ê±³öÆø¿ÚÎÂ¶ÈÎª31 
+1060   5              }         
+1061   4              data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/(u16)5);                           
+1062   4              Set_CQK_Temp = (uint8_t)Set_CQK_WCTemp; 
+1063   4            }
+1064   3            else
+1065   3            {
+1066   4              Set_RT_YCTemp=(uint16_t)Set_RT_Temp; 
+1067   4              data_flash.Set_RT_YCTemp = (uint8_t)(Set_RT_YCTemp/(u16)5);//ÓÐ´´Éè¶¨ÎÂ¶È 
+1068   4              
+1069   4              if(Set_RT_YCTemp >= (u16)370) 
+1070   4              {
+1071   5                Set_CQK_YCTemp = Set_RT_YCTemp - (u16)30;//ÈËÌå¶Ë>=37Ê±³öÆø¿ÚÎÂ¶ÈÎªRT-3
+1072   5              }
+1073   4              else
+1074   4              {
+1075   5                Set_CQK_YCTemp = 340; //ÓÐ´´³öÆø¿ÚÉè¶¨ÎÂ¶È 
+1076   5              }
+1077   4              data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/(u16)5);
+1078   4              Set_CQK_Temp = Set_CQK_YCTemp;                          
+1079   4            }
+1080   3          }   
+1081   2          
+1082   2          Setting_write_to_flash(); 
+1083   2          Display_Return_Cnt = 0;
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 19  
 
-1094   1        else
-1095   1        {
-1096   2          Display_Return_Cnt = 0;
-1097   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1098   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
-1099   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
-1100   2        }
-1101   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
-1102   1      }
-1103          
-1104          //-----------³öÆø¿ÚÎÂ¶ÈÉèÖÃ½çÃæ
-1105          void  HmiSetTempChamberFunc(void)//GUI
-1106          {
-1107   1        static uint8_t Set_Temp_Cnt=0; 
-1108   1        static uint8_t Display_Return_Cnt = 0;
-1109   1        Set_Temp_Cnt++;
-1110   1        if(Set_Temp_Cnt > 10)
-1111   1        {
-1112   2          Set_Temp_Cnt = 0;
-1113   2        }
-1114   1        Back_Color=WHITE18;
-1115   1        if(Set_Temp_Cnt == 0)
-1116   1        {
-1117   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
-1118   2        } 
-1119   1        else if(Set_Temp_Cnt == 5)
+1084   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1085   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+1086   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
+1087   2        }
+1088   1        else
+1089   1        {
+1090   2          //do nothing
+1091   2        }
+1092   1        
+1093   1        
+1094   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
+1095   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
+1096   1        {
+1097   2          Display_Return_Cnt = 0;
+1098   2        }
+1099   1        if(Display_Return_Cnt < (u8)90)
+1100   1        {
+1101   2          Display_Return_Cnt++;
+1102   2        }
+1103   1        else
+1104   1        {
+1105   2          Display_Return_Cnt = 0;
+1106   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1107   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+1108   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
+1109   2        }
+1110   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
+1111   1      }
+1112          
+1113          //-----------³öÆø¿ÚÎÂ¶ÈÉèÖÃ½çÃæ
+1114          void  HmiSetTempChamberFunc(void)//GUI
+1115          {
+1116   1        static uint8_t Set_Temp_Cnt=0; 
+1117   1        static uint8_t Display_Return_Cnt = 0;
+1118   1        Set_Temp_Cnt++;
+1119   1        if(Set_Temp_Cnt > (u8)10)
 1120   1        {
-1121   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,WHITE18);
+1121   2          Set_Temp_Cnt = 0;
 1122   2        }
-1123   1        else
-1124   1        {
-1125   2          //do nothing
-1126   2        }
-1127   1          
-1128   1        
-1129   1        if((Key_State_Present == KEY_STATE_UP_Short)//Ôö¼Ó
-1130   1            ||(Key_State_Present == KEY_STATE_UP_Long_First)
-1131   1            ||(Key_State_Present == KEY_STATE_UP_Long_Repeat))
-1132   1        { 
-1133   2          if(Work_Mode==Noninvasive_Mode)//ÎÞ´´
-1134   2          {//³öÆø¿ÚÎÂ¶È×î´ó32¶È
-1135   3            if(Remeber_Temp_Value<(uint16_t)Const_NoninvasChamberTemp_Max)
-1136   3            {
-1137   4              Remeber_Temp_Value=Remeber_Temp_Value+5;
-1138   4            } 
-1139   3          }
-1140   2          else if(Work_Mode==(uint8_t)Invasive_Mode)
-1141   2          {//³öÆø¿ÚºÍ»¼Õß¶ËÎÂ¶È²îÎª-4/+3
-1142   3            if((Remeber_Temp_Value<Const_InvasChamberTemp_Max)&&(Remeber_Temp_Value<((uint16_t)Set_RT_Temp+30)))
-1143   3            {
-1144   4              Remeber_Temp_Value=Remeber_Temp_Value+5;
-1145   4            }
-1146   3          } 
-1147   2          else
-1148   2          {
-1149   3            //do nothing
-1150   3          }
-1151   2          Display_SET_Temp(Remeber_Temp_Value);       
-1152   2        }
-1153   1        else if((Key_State_Present == KEY_STATE_Down_Short)//¼õÐ¡
-1154   1               ||(Key_State_Present == KEY_STATE_Down_Long_First)
-1155   1               ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 20  
+1123   1        Back_Color=WHITE18;
+1124   1        if(Set_Temp_Cnt == (u8)0)
+1125   1        {
+1126   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+1127   2        } 
+1128   1        else if(Set_Temp_Cnt == (u8)5)
+1129   1        {
+1130   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,WHITE18);
+1131   2        }
+1132   1        else
+1133   1        {
+1134   2          //do nothing
+1135   2        }
+1136   1          
+1137   1        
+1138   1        if((Key_State_Present == KEY_STATE_UP_Short)//Ôö¼Ó
+1139   1            ||(Key_State_Present == KEY_STATE_UP_Long_First)
+1140   1            ||(Key_State_Present == KEY_STATE_UP_Long_Repeat))
+1141   1        { 
+1142   2          if(Work_Mode==(u8)Noninvasive_Mode)//ÎÞ´´
+1143   2          {//³öÆø¿ÚÎÂ¶È×î´ó32¶È
+1144   3            if(Remeber_Temp_Value<(uint16_t)Const_NoninvasChamberTemp_Max)
+1145   3            {
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 20  
 
-1156   1        { 
-1157   2          if(Work_Mode==Noninvasive_Mode)  //ÎÞ´´
-1158   2          {//×îÐ¡30¶È
-1159   3            if(Remeber_Temp_Value>Const_NoninvasChamberTemp_Min)
-1160   3            {
-1161   4              Remeber_Temp_Value=Remeber_Temp_Value-5;
-1162   4            } 
-1163   3          } 
-1164   2          else if(Work_Mode==Invasive_Mode) //ÓÐ´´ ³öÆø¿ÚºÍ»¼Õß¶ËÎÂ¶È²îÎª-4/+3 //×îÐ¡34¶È
-1165   2          {
-1166   3            if((Remeber_Temp_Value>Const_InvasChamberTemp_Min)&&(Remeber_Temp_Value>((uint16_t)Set_RT_Temp-40)))
-1167   3            {
-1168   4              Remeber_Temp_Value=Remeber_Temp_Value-5;
-1169   4            }
-1170   3          } 
-1171   2          else
-1172   2          {
-1173   3            //do nothing
-1174   3          }
-1175   2          Display_SET_Temp(Remeber_Temp_Value);   
-1176   2        }
-1177   1        else if(Key_State_Present == KEY_STATE_OK_Short)//È·ÈÏ
-1178   1        {
-1179   2          Sound_Short();
-1180   2          if(Set_CQK_Temp != Remeber_Temp_Value)//ÈôÎ´¸Ä±äÈËÌå¶ËÎÂ¶ÈÉè¶¨Ôò²»½øÐÐ²Ù×÷
+1146   4              Remeber_Temp_Value=Remeber_Temp_Value+(u16)5;
+1147   4            } 
+1148   3          }
+1149   2          else if(Work_Mode==(uint8_t)Invasive_Mode)
+1150   2          {//³öÆø¿ÚºÍ»¼Õß¶ËÎÂ¶È²îÎª-4/+3
+1151   3            if((Remeber_Temp_Value<(u16)Const_InvasChamberTemp_Max)&&(Remeber_Temp_Value<((uint16_t)Set_RT_Temp+(u1
+             -6)30)))
+1152   3            {
+1153   4              Remeber_Temp_Value=Remeber_Temp_Value+(u16)5;
+1154   4            }
+1155   3          } 
+1156   2          else
+1157   2          {
+1158   3            //do nothing
+1159   3          }
+1160   2          Display_SET_Temp(Remeber_Temp_Value);       
+1161   2        }
+1162   1        else if((Key_State_Present == KEY_STATE_Down_Short)//¼õÐ¡
+1163   1               ||(Key_State_Present == KEY_STATE_Down_Long_First)
+1164   1               ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
+1165   1        { 
+1166   2          if(Work_Mode==(u8)Noninvasive_Mode)  //ÎÞ´´
+1167   2          {//×îÐ¡30¶È
+1168   3            if(Remeber_Temp_Value>(u16)Const_NoninvasChamberTemp_Min)
+1169   3            {
+1170   4              Remeber_Temp_Value=Remeber_Temp_Value-(u16)5;
+1171   4            } 
+1172   3          } 
+1173   2          else if(Work_Mode==(u8)Invasive_Mode) //ÓÐ´´ ³öÆø¿ÚºÍ»¼Õß¶ËÎÂ¶È²îÎª-4/+3 //×îÐ¡34¶È
+1174   2          {
+1175   3            if((Remeber_Temp_Value>(u16)Const_InvasChamberTemp_Min)&&(Remeber_Temp_Value>((uint16_t)Set_RT_Temp-(u1
+             -6)40)))
+1176   3            {
+1177   4              Remeber_Temp_Value=Remeber_Temp_Value-(u16)5;
+1178   4            }
+1179   3          } 
+1180   2          else
 1181   2          {
-1182   3            Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
-1183   3            Set_CQK_Temp=Remeber_Temp_Value;
-1184   3            if(Work_Mode==Noninvasive_Mode)
-1185   3            {
-1186   4              Set_CQK_WCTemp=Set_CQK_Temp;
-1187   4              data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/5);//ÎÞ´´Éè¶¨ÎÂ¶È                                    
-1188   4            }
-1189   3            else
-1190   3            {
-1191   4              Set_CQK_YCTemp=Set_CQK_Temp; 
-1192   4              data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/5);//ÓÐ´´Éè¶¨ÎÂ¶È                                          
-1193   4            } 
-1194   3            
-1195   3            Display_Return_Cnt = 0;
-1196   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1197   3            DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
-1198   3            RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾ 
-1199   3          }   
-1200   2        }
-1201   1        else
-1202   1        {
-1203   2          //do nothing
-1204   2        }
-1205   1        
-1206   1        Setting_write_to_flash(); 
-1207   1          
-1208   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
-1209   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
-1210   1        {
-1211   2          Display_Return_Cnt = 0;
-1212   2        }
-1213   1        if(Display_Return_Cnt < 90)
-1214   1        {
-1215   2          Display_Return_Cnt++;
-1216   2        }
-1217   1        else
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 21  
+1182   3            //do nothing
+1183   3          }
+1184   2          Display_SET_Temp(Remeber_Temp_Value);   
+1185   2        }
+1186   1        else if(Key_State_Present == KEY_STATE_OK_Short)//È·ÈÏ
+1187   1        {
+1188   2          Sound_Short();
+1189   2          if(Set_CQK_Temp != Remeber_Temp_Value)//ÈôÎ´¸Ä±äÈËÌå¶ËÎÂ¶ÈÉè¶¨Ôò²»½øÐÐ²Ù×÷
+1190   2          {
+1191   3            Working_Normal = 0;//¹¤×÷Ê±¼äÇåÁã
+1192   3            Set_CQK_Temp=Remeber_Temp_Value;
+1193   3            if(Work_Mode==(u8)Noninvasive_Mode)
+1194   3            {
+1195   4              Set_CQK_WCTemp=Set_CQK_Temp;
+1196   4              data_flash.Set_CQK_WCTemp = (uint8_t)(Set_CQK_WCTemp/(u16)5);//ÎÞ´´Éè¶¨ÎÂ¶È                                     
+1197   4            }
+1198   3            else
+1199   3            {
+1200   4              Set_CQK_YCTemp=Set_CQK_Temp; 
+1201   4              data_flash.Set_CQK_YCTemp = (uint8_t)(Set_CQK_YCTemp/(u16)5);//ÓÐ´´Éè¶¨ÎÂ¶È                                           
+1202   4            } 
+1203   3            
+1204   3            Display_Return_Cnt = 0;
+1205   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 21  
 
-1218   1        {
-1219   2          Display_Return_Cnt = 0;
-1220   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1221   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
-1222   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
-1223   2        }
-1224   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
-1225   1      }
-1226          
-1227          
-1228          static uint8_t SetTimeKind = 2;//2-7//Äê/ÔÂ/ÈÕ/Ê±/·Ö/Ãë
-1229          static uint8_t TempTime[7];
-1230          
-1231          static void EnterSetTime(void)//½øÈëÊ±¼äÉè¶¨
-1232          {
-1233   1        SetTimeKind = 2;
-1234   1        RX8010_GetTime(TempTime); 
-1235   1      //  Set_Hour_Value
-1236   1      }
-1237          
-1238          static void  Date_Is_Correct(void)
-1239          {
-1240   1        uint16_t temp1;
-1241   1        bit  Temp_Bit1;
-1242   1        //½«BCDÂë×ª»¯Îª10½øÖÆ,Éè¶¨Ê±¼ä´Ó2000Äêµ½2099Äê======================================
-1243   1        Temp_Bit1=0;
-1244   1        temp1=((TempTime[6]& (uint8_t)0x0F)%10)+ (((TempTime[6]>>4)%10)*10);
-1245   1        //ÄÜ±»4Õû³ý£¬µ«ÊÇ²»ÄÜ±»100Õû³ýÎªÈòÄê£¬»òÕßÄÜ±»400Õû³ý=====
-1246   1        if((temp1%4)==0 )
-1247   1        {
-1248   2          Temp_Bit1=1;
-1249   2        } 
-1250   1        if((TempTime[4]==0x04) || (TempTime[4]==0x06) || (TempTime[4]==0x09) || (TempTime[4]==0x11))
-1251   1        {
-1252   2          if(TempTime[3]>0x30) 
-1253   2          {
-1254   3            TempTime[3]=0x30;
-1255   3          }
-1256   2        }
-1257   1        if(Temp_Bit1) //ÈòÄê29Ìì£¬Æ½Äê28Ìì
-1258   1        {
-1259   2          if(TempTime[4]==2)
-1260   2          {
-1261   3            if(TempTime[3]>0x29)
-1262   3            {
-1263   4              TempTime[3]=0x29;
-1264   4            }       
-1265   3          }
-1266   2        }else
+1206   3            DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+1207   3            RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾ 
+1208   3          }   
+1209   2        }
+1210   1        else
+1211   1        {
+1212   2          //do nothing
+1213   2        }
+1214   1        
+1215   1        Setting_write_to_flash(); 
+1216   1          
+1217   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
+1218   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
+1219   1        {
+1220   2          Display_Return_Cnt = 0;
+1221   2        }
+1222   1        if(Display_Return_Cnt < (u8)90)
+1223   1        {
+1224   2          Display_Return_Cnt++;
+1225   2        }
+1226   1        else
+1227   1        {
+1228   2          Display_Return_Cnt = 0;
+1229   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1230   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
+1231   2          RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
+1232   2        }
+1233   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
+1234   1      }
+1235          
+1236          
+1237          static uint8_t SetTimeKind = 2;//2-7//Äê/ÔÂ/ÈÕ/Ê±/·Ö/Ãë
+1238          static uint8_t TempTime[7];
+1239          
+1240          static void EnterSetTime(void)//½øÈëÊ±¼äÉè¶¨
+1241          {
+1242   1        SetTimeKind = 2;
+1243   1        RX8010_GetTime(TempTime); 
+1244   1      //  Set_Hour_Value
+1245   1      }
+1246          
+1247          static void  Date_Is_Correct(void)
+1248          {
+1249   1        uint16_t temp1;
+1250   1        u8  Temp_Bit1;
+1251   1        //½«BCDÂë×ª»¯Îª10½øÖÆ,Éè¶¨Ê±¼ä´Ó2000Äêµ½2099Äê======================================
+1252   1        Temp_Bit1=(u8)0;
+1253   1        temp1=(((u16)TempTime[6]& (u16)0x0F)%(u16)10)+ ((((u16)TempTime[6]>>(u16)4)%(u16)10)*(u16)10);
+1254   1        //ÄÜ±»4Õû³ý£¬µ«ÊÇ²»ÄÜ±»100Õû³ýÎªÈòÄê£¬»òÕßÄÜ±»400Õû³ý=====
+1255   1        if((temp1%(u8)4)==(u8)0 )
+1256   1        {
+1257   2          Temp_Bit1=1;
+1258   2        } 
+1259   1        if((TempTime[4]==(u8)0x04) || (TempTime[4]==(u8)0x06) || (TempTime[4]==(u8)0x09) || (TempTime[4]==(u8)0x1
+             -1))
+1260   1        {
+1261   2          if(TempTime[3]>(u8)0x30) 
+1262   2          {
+1263   3            TempTime[3]=0x30;
+1264   3          }
+1265   2        }
+1266   1        if(Temp_Bit1!=(u8)0) //ÈòÄê29Ìì£¬Æ½Äê28Ìì
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 22  
+
 1267   1        {
-1268   2          if(TempTime[4]==2)
+1268   2          if(TempTime[4]==(u8)2)
 1269   2          {
-1270   3            if(TempTime[3]>0x28)
+1270   3            if(TempTime[3]>(u8)0x29)
 1271   3            {
-1272   4              TempTime[3]=0x28;
+1272   4              TempTime[3]=0x29;
 1273   4            }       
 1274   3          }
-1275   2        } 
-1276   1      }
-1277          
-1278          //-----------ÈÕÆÚÊ±¼äÉèÖÃ½çÃæ
-1279          void  HmiSetTimeFunc(void)
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 22  
-
-1280          {
-1281   1        static uint8_t Display_Return_Cnt = 0;
-1282   1        static uint8_t Set_Time_Cnt=0; 
-1283   1      //  uint8_t i;
-1284   1      //  uint8_t color;
-1285   1        
-1286   1        Set_Time_Cnt++;
-1287   1        if(Set_Time_Cnt > 6)
-1288   1        {
-1289   2          Set_Time_Cnt = 0;
-1290   2        }
-1291   1        
-1292   1        if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
-1293   1        {
-1294   2          SetTimeKind++;
-1295   2          
-1296   2          Back_Color=WHITE18; 
-1297   2      //    color=BLACK18;    
-1298   2          DisPlayTime(TempTime,2); //ÏÔÊ¾Ê±¼ä
-1299   2          DisPlayTime(TempTime,3); //ÏÔÊ¾Ê±¼ä
-1300   2          DisPlayTime(TempTime,4); //ÏÔÊ¾Ê±¼ä
-1301   2          DisPlayTime(TempTime,5); //ÏÔÊ¾Ê±¼ä
-1302   2          DisPlayTime(TempTime,6); //ÏÔÊ¾Ê±¼ä
-1303   2          DisPlayTime(TempTime,7); //ÏÔÊ¾Ê±¼ä
+1275   2        }else
+1276   1        {
+1277   2          if(TempTime[4]==(u8)2)
+1278   2          {
+1279   3            if(TempTime[3]>(u8)0x28)
+1280   3            {
+1281   4              TempTime[3]=0x28;
+1282   4            }       
+1283   3          }
+1284   2        } 
+1285   1      }
+1286          
+1287          //-----------ÈÕÆÚÊ±¼äÉèÖÃ½çÃæ
+1288          void  HmiSetTimeFunc(void)
+1289          {
+1290   1        static uint8_t Display_Return_Cnt = 0;
+1291   1        static uint8_t Set_Time_Cnt=0; 
+1292   1      //  uint8_t i;
+1293   1      //  uint8_t color;
+1294   1        
+1295   1        Set_Time_Cnt++;
+1296   1        if(Set_Time_Cnt > (u8)6)
+1297   1        {
+1298   2          Set_Time_Cnt = 0;
+1299   2        }
+1300   1        
+1301   1        if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
+1302   1        {
+1303   2          SetTimeKind++;
 1304   2          
-1305   2          if(SetTimeKind > 7)
-1306   2          {
-1307   3            SetTimeKind = 2;
-1308   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1309   3          }   
-1310   2        } 
-1311   1        else if((Key_State_Present == KEY_STATE_UP_Short)//UP
-1312   1                ||(Key_State_Present == KEY_STATE_UP_Long_First)
-1313   1                ||(Key_State_Present == KEY_STATE_UP_Long_Repeat))  
-1314   1        {
-1315   2          Set_Time_Cnt = 0;//Ç¿ÖÆË¢ÐÂ
-1316   2          if(SetTimeKind==2) //Éè¶¨Äê·Ý
-1317   2          {
-1318   3            TempTime[6]++;
-1319   3            if((TempTime[6]&(uint8_t)0x0F)>=10)
-1320   3            {
-1321   4                 TempTime[6]=(TempTime[6]& (uint8_t)0xF0)+0x10;;
-1322   4            }
-1323   3            if(TempTime[6]>0x99)
-1324   3            {
-1325   4                  TempTime[6]=0x99;
-1326   4            }
-1327   3            Date_Is_Correct();            
-1328   3      
-1329   3          }else if(SetTimeKind==3) //Éè¶¨ÔÂ·Ý
-1330   2          {
-1331   3            TempTime[4]++;
-1332   3            if((TempTime[4]&(uint8_t)0x0F)>=10)
+1305   2          Back_Color=WHITE18; 
+1306   2      //    color=BLACK18;    
+1307   2          DisPlayTime(TempTime,2); //ÏÔÊ¾Ê±¼ä
+1308   2          DisPlayTime(TempTime,3); //ÏÔÊ¾Ê±¼ä
+1309   2          DisPlayTime(TempTime,4); //ÏÔÊ¾Ê±¼ä
+1310   2          DisPlayTime(TempTime,5); //ÏÔÊ¾Ê±¼ä
+1311   2          DisPlayTime(TempTime,6); //ÏÔÊ¾Ê±¼ä
+1312   2          DisPlayTime(TempTime,7); //ÏÔÊ¾Ê±¼ä
+1313   2          
+1314   2          if(SetTimeKind > (u8)7)
+1315   2          {
+1316   3            SetTimeKind = 2;
+1317   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1318   3          }   
+1319   2        } 
+1320   1        else if((Key_State_Present == KEY_STATE_UP_Short)//UP
+1321   1                ||(Key_State_Present == KEY_STATE_UP_Long_First)
+1322   1                ||(Key_State_Present == KEY_STATE_UP_Long_Repeat))  
+1323   1        {
+1324   2          Set_Time_Cnt = 0;//Ç¿ÖÆË¢ÐÂ
+1325   2          if(SetTimeKind==(u8)2) //Éè¶¨Äê·Ý
+1326   2          {
+1327   3            TempTime[6]++;
+1328   3            if((TempTime[6]&(uint8_t)0x0F)>=(u8)10)
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 23  
+
+1329   3            {
+1330   4                 TempTime[6]=(TempTime[6]& (uint8_t)0xF0)+(u8)0x10;;
+1331   4            }
+1332   3            if(TempTime[6]>(u8)0x99)
 1333   3            {
-1334   4                 TempTime[4]=(TempTime[4]& (uint8_t)0xF0)+0x10;
+1334   4                  TempTime[6]=0x99;
 1335   4            }
-1336   3            if(TempTime[4]>0x12)
-1337   3            {
-1338   4                  TempTime[4]=0x12;
-1339   4            }
-1340   3            Date_Is_Correct();
-1341   3          }else if(SetTimeKind==4) //Éè¶¨ÈÕ
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 23  
+1336   3            Date_Is_Correct();            
+1337   3      
+1338   3          }else if(SetTimeKind==(u8)3) //Éè¶¨ÔÂ·Ý
+1339   2          {
+1340   3            TempTime[4]++;
+1341   3            if((TempTime[4]&(uint8_t)0x0F)>=(u8)10)
+1342   3            {
+1343   4                 TempTime[4]=(TempTime[4]& (uint8_t)0xF0)+(u8)0x10;
+1344   4            }
+1345   3            if(TempTime[4]>(u8)0x12)
+1346   3            {
+1347   4                  TempTime[4]=0x12;
+1348   4            }
+1349   3            Date_Is_Correct();
+1350   3          }else if(SetTimeKind==(u8)4) //Éè¶¨ÈÕ
+1351   2          {
+1352   3            TempTime[3]++;
+1353   3            if((TempTime[3]&(uint8_t)0x0F)>=(u8)10)
+1354   3            {
+1355   4                 TempTime[3]=(TempTime[3]& (uint8_t)0xF0)+(u8)0x10;
+1356   4            }
+1357   3            if(TempTime[3]>(u8)0x31)
+1358   3            {
+1359   4                  TempTime[3]=0x31;
+1360   4            }
+1361   3            Date_Is_Correct();  
+1362   3          }else if(SetTimeKind==(u8)5) //Éè¶¨Ê±
+1363   2          {
+1364   3            {
+1365   4              TempTime[2]++;                
+1366   4              if((TempTime[2]&(uint8_t)0x0F)>=(u8)10)
+1367   4              {
+1368   5                   TempTime[2]=(TempTime[2] & (uint8_t)0xF0)+(u8)0x10;
+1369   5              }
+1370   4              if(TempTime[2]>(u8)0x23)
+1371   4              {
+1372   5                    TempTime[2]=0x23; 
+1373   5              }
+1374   4            }             
+1375   3          }else if(SetTimeKind==(u8)6) //Éè¶¨·Ö
+1376   2          {
+1377   3            TempTime[1]++;
+1378   3            if((TempTime[1]&(uint8_t)0x0F)>=(u8)10)
+1379   3            {
+1380   4                 TempTime[1]=(TempTime[1]& (uint8_t)0xF0)+(u8)0x10;
+1381   4            }
+1382   3            if(TempTime[1]>(u8)0x59)
+1383   3            {
+1384   4                  TempTime[1]=0x59;
+1385   4            }
+1386   3          }else if(SetTimeKind==(u8)7) //Éè¶¨Ãë
+1387   2          {
+1388   3            TempTime[0]++;
+1389   3            if((TempTime[0]&(uint8_t)0x0F)>=(u8)10)
+1390   3            {
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 24  
 
-1342   2          {
-1343   3            TempTime[3]++;
-1344   3            if((TempTime[3]&(uint8_t)0x0F)>=10)
-1345   3            {
-1346   4                 TempTime[3]=(TempTime[3]& (uint8_t)0xF0)+0x10;
-1347   4            }
-1348   3            if(TempTime[3]>0x31)
-1349   3            {
-1350   4                  TempTime[3]=0x31;
-1351   4            }
-1352   3            Date_Is_Correct();  
-1353   3          }else if(SetTimeKind==5) //Éè¶¨Ê±
-1354   2          {
-1355   3            {
-1356   4              TempTime[2]++;                
-1357   4              if((TempTime[2]&(uint8_t)0x0F)>=10)
-1358   4              {
-1359   5                   TempTime[2]=(TempTime[2] & (uint8_t)0xF0)+0x10;
-1360   5              }
-1361   4              if(TempTime[2]>0x23)
-1362   4              {
-1363   5                    TempTime[2]=0x23; 
-1364   5              }
-1365   4            }             
-1366   3          }else if(SetTimeKind==6) //Éè¶¨·Ö
-1367   2          {
-1368   3            TempTime[1]++;
-1369   3            if((TempTime[1]&(uint8_t)0x0F)>=10)
-1370   3            {
-1371   4                 TempTime[1]=(TempTime[1]& (uint8_t)0xF0)+0x10;
-1372   4            }
-1373   3            if(TempTime[1]>0x59)
-1374   3            {
-1375   4                  TempTime[1]=0x59;
-1376   4            }
-1377   3          }else if(SetTimeKind==7) //Éè¶¨Ãë
-1378   2          {
-1379   3            TempTime[0]++;
-1380   3            if((TempTime[0]&(uint8_t)0x0F)>=10)
-1381   3            {
-1382   4                 TempTime[0]=(TempTime[0]& (uint8_t)0xF0)+0x10;
-1383   4            }
-1384   3            if(TempTime[0]>0x59)
-1385   3            {
-1386   4                  TempTime[0]=0x59;
-1387   4            }
-1388   3          }
-1389   2          else
-1390   2          {
-1391   3            //do nothing
-1392   3          }
-1393   2        }
-1394   1        else if((Key_State_Present == KEY_STATE_Down_Short)//
-1395   1               ||(Key_State_Present == KEY_STATE_Down_Long_First)
-1396   1               ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
-1397   1        {
-1398   2          Set_Time_Cnt = 0;//Ç¿ÖÆË¢ÐÂ
-1399   2          if((SetTimeKind==2) && (TempTime[6]>0x10)) //Éè¶¨Äê·Ý
-1400   2          {
-1401   3            TempTime[6]--;
-1402   3            if((TempTime[6]&(uint8_t)0x0F)>9)
-1403   3            {
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 24  
+1391   4                 TempTime[0]=(TempTime[0]& (uint8_t)0xF0)+(u8)0x10;
+1392   4            }
+1393   3            if(TempTime[0]>(u8)0x59)
+1394   3            {
+1395   4                  TempTime[0]=0x59;
+1396   4            }
+1397   3          }
+1398   2          else
+1399   2          {
+1400   3            //do nothing
+1401   3          }
+1402   2        }
+1403   1        else if((Key_State_Present == KEY_STATE_Down_Short)//
+1404   1               ||(Key_State_Present == KEY_STATE_Down_Long_First)
+1405   1               ||(Key_State_Present == KEY_STATE_Down_Long_Repeat))
+1406   1        {
+1407   2          Set_Time_Cnt = 0;//Ç¿ÖÆË¢ÐÂ
+1408   2          if((SetTimeKind==(u8)2) && (TempTime[6]>(u8)0x10)) //Éè¶¨Äê·Ý
+1409   2          {
+1410   3            TempTime[6]--;
+1411   3            if((TempTime[6]&(uint8_t)0x0F)>(u8)9)
+1412   3            {
+1413   4              TempTime[6]&=(uint8_t)0xF9;
+1414   4            }       
+1415   3            Date_Is_Correct();  
+1416   3          }else if((SetTimeKind==(u8)3) && (TempTime[4]>(u8)1)) //Éè¶¨ÔÂ·Ý
+1417   2          {
+1418   3            TempTime[4]--;
+1419   3            if((TempTime[4]&(uint8_t)0x0F)>(u8)9)
+1420   3            {
+1421   4              TempTime[4]&=(uint8_t)0xF9;
+1422   4            }       
+1423   3            Date_Is_Correct();  
+1424   3          }else if((SetTimeKind==(u8)4) && (TempTime[3]>(u8)1)) //Éè¶¨ÈÕ
+1425   2          {
+1426   3            TempTime[3]--;
+1427   3            if((TempTime[3]&(uint8_t)0x0F)>(u8)9)
+1428   3            {
+1429   4              TempTime[3]&=(uint8_t)0xF9;
+1430   4            }       
+1431   3          }else if((SetTimeKind==(u8)5) && (TempTime[2]>(u8)0))  //Éè¶¨Ê±
+1432   2          { 
+1433   3            {
+1434   4              TempTime[2]--;
+1435   4              if((TempTime[2]&(uint8_t)0x0F)>(u8)9)
+1436   4              {
+1437   5                TempTime[2]&=(uint8_t)0xF9;
+1438   5              }           
+1439   4            }
+1440   3          }else if((SetTimeKind==(u8)6)  && (TempTime[1]>(u8)0)) //Éè¶¨·Ö
+1441   2          {
+1442   3            TempTime[1]--;
+1443   3            if((TempTime[1]&(uint8_t)0x0F)>(u8)9)
+1444   3            {
+1445   4              TempTime[1]&=(uint8_t)0xF9;
+1446   4            }       
+1447   3          }else if((SetTimeKind==(u8)7) && (TempTime[0]>(u8)0)) //Éè¶¨Ãë
+1448   2          {
+1449   3            TempTime[0]--;
+1450   3            if((TempTime[0]&(uint8_t)0x0F)>(u8)9)
+1451   3            {
+1452   4              TempTime[0]&=(uint8_t)0xF9;
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 25  
 
-1404   4              TempTime[6]&=(uint8_t)0xF9;
-1405   4            }       
-1406   3            Date_Is_Correct();  
-1407   3          }else if((SetTimeKind==3) && (TempTime[4]>1)) //Éè¶¨ÔÂ·Ý
-1408   2          {
-1409   3            TempTime[4]--;
-1410   3            if((TempTime[4]&(uint8_t)0x0F)>9)
-1411   3            {
-1412   4              TempTime[4]&=(uint8_t)0xF9;
-1413   4            }       
-1414   3            Date_Is_Correct();  
-1415   3          }else if((SetTimeKind==4) && (TempTime[3]>1)) //Éè¶¨ÈÕ
-1416   2          {
-1417   3            TempTime[3]--;
-1418   3            if((TempTime[3]&(uint8_t)0x0F)>9)
-1419   3            {
-1420   4              TempTime[3]&=(uint8_t)0xF9;
-1421   4            }       
-1422   3          }else if((SetTimeKind==5) && (TempTime[2]>0))  //Éè¶¨Ê±
-1423   2          { 
-1424   3            {
-1425   4              TempTime[2]--;
-1426   4              if((TempTime[2]&(uint8_t)0x0F)>9)
-1427   4              {
-1428   5                TempTime[2]&=(uint8_t)0xF9;
-1429   5              }           
-1430   4            }
-1431   3          }else if((SetTimeKind==6)  && (TempTime[1]>0)) //Éè¶¨·Ö
-1432   2          {
-1433   3            TempTime[1]--;
-1434   3            if((TempTime[1]&(uint8_t)0x0F)>9)
-1435   3            {
-1436   4              TempTime[1]&=(uint8_t)0xF9;
-1437   4            }       
-1438   3          }else if((SetTimeKind==7) && (TempTime[0]>0)) //Éè¶¨Ãë
-1439   2          {
-1440   3            TempTime[0]--;
-1441   3            if((TempTime[0]&(uint8_t)0x0F)>9)
-1442   3            {
-1443   4              TempTime[0]&=(uint8_t)0xF9;
-1444   4            }       
-1445   3          }
-1446   2          else
-1447   2          {
-1448   3            //do nothing
-1449   3          }
-1450   2        } 
-1451   1        else if(Key_State_Present == KEY_STATE_OK_Short)//
-1452   1        {
-1453   2          Sound_Short();
-1454   2          RX8010_SetTime(TempTime);   
-1455   2          Display_Return_Cnt = 0;
-1456   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;    
-1457   2        } 
-1458   1        else
-1459   1        {
-1460   2          //do nothing
-1461   2        }
-1462   1        
-1463   1      //  color = BLACK18;
-1464   1        if(Set_Time_Cnt == 0)
-1465   1        {
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 25  
-
-1466   2          Back_Color=GREEN18;
-1467   2        }
-1468   1        else if(Set_Time_Cnt == 3)
-1469   1        {
-1470   2          Back_Color=WHITE18; 
-1471   2        }
-1472   1        else
-1473   1        {
-1474   2          //do nothing
-1475   2        }
-1476   1            
-1477   1        
-1478   1        if((Set_Time_Cnt == 0) ||(Set_Time_Cnt == 3))
-1479   1        {
-1480   2          DisPlayTime(TempTime,SetTimeKind); //ÏÔÊ¾Ê±¼ä
-1481   2         }
-1482   1          
-1483   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
-1484   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
-1485   1        {
-1486   2          Display_Return_Cnt = 0;
-1487   2        }
-1488   1        if(Display_Return_Cnt < 90)
-1489   1        {
-1490   2          Display_Return_Cnt++;
-1491   2        }
-1492   1        else
-1493   1        {
-1494   2          Display_Return_Cnt = 0;
-1495   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1496   2      //    DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
-1497   2      //    RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
-1498   2        }
-1499   1        
-1500   1          
-1501   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü    
-1502   1      }
-1503          
-1504          
-1505          //uint8_t  In_Exp_Ratio=4;   //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀý  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
-1506          static uint8_t  In_Exp_Ratio_temp=3;   //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀýÁÙÊ±±äÁ¿
-1507          static void EnterSetInExp(void)//½øÈëInExpÉè¶¨
-1508          { 
-1509   1        In_Exp_Ratio_temp = In_Exp_Ratio; 
-1510   1        Display_In_Exp_Ratio(In_Exp_Ratio_temp,1);  
+1453   4            }       
+1454   3          }
+1455   2          else
+1456   2          {
+1457   3            //do nothing
+1458   3          }
+1459   2        } 
+1460   1        else if(Key_State_Present == KEY_STATE_OK_Short)//
+1461   1        {
+1462   2          Sound_Short();
+1463   2          RX8010_SetTime(TempTime);   
+1464   2          Display_Return_Cnt = 0;
+1465   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;    
+1466   2        } 
+1467   1        else
+1468   1        {
+1469   2          //do nothing
+1470   2        }
+1471   1        
+1472   1      //  color = BLACK18;
+1473   1        if(Set_Time_Cnt == (u8)0)
+1474   1        {
+1475   2          Back_Color=GREEN18;
+1476   2        }
+1477   1        else if(Set_Time_Cnt == (u8)3)
+1478   1        {
+1479   2          Back_Color=WHITE18; 
+1480   2        }
+1481   1        else
+1482   1        {
+1483   2          //do nothing
+1484   2        }
+1485   1            
+1486   1        
+1487   1        if((Set_Time_Cnt == (u8)0) ||(Set_Time_Cnt == (u8)3))
+1488   1        {
+1489   2          DisPlayTime(TempTime,SetTimeKind); //ÏÔÊ¾Ê±¼ä
+1490   2         }
+1491   1          
+1492   1        //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
+1493   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
+1494   1        {
+1495   2          Display_Return_Cnt = 0;
+1496   2        }
+1497   1        if(Display_Return_Cnt < (u8)90)
+1498   1        {
+1499   2          Display_Return_Cnt++;
+1500   2        }
+1501   1        else
+1502   1        {
+1503   2          Display_Return_Cnt = 0;
+1504   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1505   2      //    DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+34*3+5,ICO_DU,BLACK18);
+1506   2      //    RefreshTempHumidyFunc(1);//Ç¿ÖÆË¢ÐÂÎÂÎÂ¶ÈÏÔÊ¾   
+1507   2        }
+1508   1        
+1509   1          
+1510   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü    
 1511   1      }
 1512          
-1513          void  HmiSetInExpFunc(void)//InExpÉèÖÃ½çÃæ
-1514          {
-1515   1        static uint8_t Display_Return_Cnt = 0;
-1516   1        static uint8_t Set_InExp_Cnt=0; 
-1517   1        
-1518   1        Set_InExp_Cnt++;
-1519   1        if(Set_InExp_Cnt > 6)
-1520   1        {
-1521   2          Set_InExp_Cnt = 0;
-1522   2        }
-1523   1        Back_Color=WHITE18;
-1524   1        if(Set_InExp_Cnt == 0)
-1525   1        {
-1526   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,BLACK18);
-1527   2        } 
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 26  
+1513          
+1514          //uint8_t  In_Exp_Ratio=4;   //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀý  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 26  
 
-1528   1        else if(Set_InExp_Cnt == 3)
+1515          static uint8_t  In_Exp_Ratio_temp=3;   //InºÍExp¼ÓÈÈ·½Ê½µÄ±ÈÀýÁÙÊ±±äÁ¿
+1516          static void EnterSetInExp(void)//½øÈëInExpÉè¶¨
+1517          { 
+1518   1        In_Exp_Ratio_temp = In_Exp_Ratio; 
+1519   1        Display_In_Exp_Ratio(In_Exp_Ratio_temp,1);  
+1520   1      }
+1521          
+1522          void  HmiSetInExpFunc(void)//InExpÉèÖÃ½çÃæ
+1523          {
+1524   1        static uint8_t Display_Return_Cnt = 0;
+1525   1        static uint8_t Set_InExp_Cnt=0; 
+1526   1        
+1527   1        Set_InExp_Cnt++;
+1528   1        if(Set_InExp_Cnt > (u8)6)
 1529   1        {
-1530   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,"In/Exp:",0,WHITE18);  
+1530   2          Set_InExp_Cnt = 0;
 1531   2        }
-1532   1        else
-1533   1        {
-1534   2          //do nothing
-1535   2        }
-1536   1            
-1537   1        
-1538   1        if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
-1539   1        {
-1540   2          Work_State = UI_STATE_SetTempPatient_MODE;
-1541   2          HmiEnterToWorkStateFunc(UI_STATE_SetTempPatient_MODE);
-1542   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,0);    
-1543   2        }
-1544   1        else if(Key_State_Present == KEY_STATE_UP_Short)//UP
-1545   1        {
-1546   2          if(In_Exp_Ratio_temp < 6)
-1547   2          {
-1548   3            In_Exp_Ratio_temp++;          
-1549   3          }
-1550   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,1);
-1551   2        } 
-1552   1        else if(Key_State_Present == KEY_STATE_Down_Short)//DOWN
-1553   1        {
-1554   2          if(In_Exp_Ratio_temp > 1)
-1555   2          {
-1556   3            In_Exp_Ratio_temp--;
-1557   3          }
-1558   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,1);
-1559   2        }
-1560   1        else if(Key_State_Present == KEY_STATE_OK_Short)//OK
-1561   1        {
-1562   2          Sound_Short();
-1563   2          In_Exp_Ratio = In_Exp_Ratio_temp;
-1564   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1565   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,0);  
-1566   2          data_flash.In_Exp_Ratio = In_Exp_Ratio;// 
-1567   2          Setting_write_to_flash();     
-1568   2        } 
-1569   1        else
+1532   1        Back_Color=WHITE18;
+1533   1        if(Set_InExp_Cnt == (u8)0)
+1534   1        {
+1535   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,(const u8*)"In/Exp:",0,BLACK18);
+1536   2        } 
+1537   1        else if(Set_InExp_Cnt == (u8)3)
+1538   1        {
+1539   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,(const u8*)"In/Exp:",0,WHITE18); 
+1540   2        }
+1541   1        else
+1542   1        {
+1543   2          //do nothing
+1544   2        }
+1545   1            
+1546   1        
+1547   1        if(Key_State_Present == KEY_STATE_Mute_Short)//MUTE
+1548   1        {
+1549   2          Work_State = UI_STATE_SetTempPatient_MODE;
+1550   2          HmiEnterToWorkStateFunc(UI_STATE_SetTempPatient_MODE);
+1551   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,0);    
+1552   2        }
+1553   1        else if(Key_State_Present == KEY_STATE_UP_Short)//UP
+1554   1        {
+1555   2          if(In_Exp_Ratio_temp < (u8)6)
+1556   2          {
+1557   3            In_Exp_Ratio_temp++;          
+1558   3          }
+1559   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,1);
+1560   2        } 
+1561   1        else if(Key_State_Present == KEY_STATE_Down_Short)//DOWN
+1562   1        {
+1563   2          if(In_Exp_Ratio_temp > (u8)1)
+1564   2          {
+1565   3            In_Exp_Ratio_temp--;
+1566   3          }
+1567   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,1);
+1568   2        }
+1569   1        else if(Key_State_Present == KEY_STATE_OK_Short)//OK
 1570   1        {
-1571   2          //do nothing
-1572   2        }
-1573   1        
-1574   1        //  Setting_write_to_flash(); 
-1575   1          //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
-1576   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
-1577   1        {
-1578   2          Display_Return_Cnt = 0;
-1579   2        }
-1580   1        if(Display_Return_Cnt < 90)
-1581   1        {
-1582   2          Display_Return_Cnt++;
-1583   2        }
-1584   1        else
-1585   1        {
-1586   2          Display_Return_Cnt = 0;
-1587   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1588   2          Display_In_Exp_Ratio(In_Exp_Ratio,0);   
-1589   2        } 
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 27  
+1571   2          Sound_Short();
+1572   2          In_Exp_Ratio = In_Exp_Ratio_temp;
+1573   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1574   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,0);  
+1575   2          data_flash.In_Exp_Ratio = In_Exp_Ratio;// 
+1576   2          Setting_write_to_flash();     
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 27  
 
-1590   1        
-1591   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü    
-1592   1      }
-1593          
-1594          
-1595          //--------ÆÁ±£Ä£Ê½
-1596          //¼ÆÊ±º¯Êý,·ÅÈëÖÐ¶Ï
-1597          void HmiScreenSaverMode_Tik_Cnt(void)
-1598          {
-1599   1        if(Tik_ScreenSaver_Tick_100mS < 30000)
-1600   1        {
-1601   2          Tik_ScreenSaver_Tick_100mS++;
-1602   2        }
-1603   1      }
-1604          
-1605          void  HmiScreenSaverModeFunc(void)
-1606          {
-1607   1        uint16_t i=0;
-1608   1        uint8_t DispEnable = 0;
-1609   1        static uint8_t ReCnt=0;
-1610   1        
-1611   1      //  DispEnable = 0;
-1612   1        ReCnt++;
-1613   1        if(ReCnt > 10)//1S
-1614   1        {
-1615   2          ReCnt = 0;  
-1616   2          if(Work_State == UI_STATE_SCREENSAVER_MODE)
-1617   2          {
-1618   3            DispEnable = 1; 
-1619   3          }
-1620   2        }   
-1621   1        
-1622   1        if(Work_State != UI_STATE_SCREENSAVER_MODE)//²»ÔÚÆÁ±£Ä£Ê½
+1577   2        } 
+1578   1        else
+1579   1        {
+1580   2          //do nothing
+1581   2        }
+1582   1        
+1583   1        //  Setting_write_to_flash(); 
+1584   1          //ÒÔÏÂÎª10Sºó×Ô¶¯·µ»Ø 
+1585   1        if((uint16_t)Key_State_Present!=(uint16_t)0)
+1586   1        {
+1587   2          Display_Return_Cnt = 0;
+1588   2        }
+1589   1        if(Display_Return_Cnt < (u8)90)
+1590   1        {
+1591   2          Display_Return_Cnt++;
+1592   2        }
+1593   1        else
+1594   1        {
+1595   2          Display_Return_Cnt = 0;
+1596   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1597   2          Display_In_Exp_Ratio(In_Exp_Ratio,0);   
+1598   2        } 
+1599   1        
+1600   1        Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü    
+1601   1      }
+1602          
+1603          
+1604          //--------ÆÁ±£Ä£Ê½
+1605          //¼ÆÊ±º¯Êý,·ÅÈëÖÐ¶Ï
+1606          void HmiScreenSaverMode_Tik_Cnt(void)
+1607          {
+1608   1        if(Tik_ScreenSaver_Tick_100mS < (u16)30000)
+1609   1        {
+1610   2          Tik_ScreenSaver_Tick_100mS++;
+1611   2        }
+1612   1      }
+1613          
+1614          void  HmiScreenSaverModeFunc(void)
+1615          {
+1616   1        uint16_t i=0;
+1617   1        uint8_t DispEnable = 0;
+1618   1        static uint8_t ReCnt=0;
+1619   1        
+1620   1      //  DispEnable = 0;
+1621   1        ReCnt++;
+1622   1        if(ReCnt > (u8)10)//1S
 1623   1        {
-1624   2          if(Tik_ScreenSaver_Tick_100mS > 3000)//5·ÖÖÓºó½øÈëÆÁ±£Ä£Ê½
-1625   2          {
-1626   3            Work_State = UI_STATE_SCREENSAVER_MODE;
-1627   3            LCD_LIGHT_CLOSE;
-1628   3            Draw_Rectangle_Real(0,0,239,319,BLACK18);           
-1629   3            DispEnable = 1; 
-1630   3          }
-1631   2        }
-1632   1        else//ÔÚÆÁ±£Ä£Ê½
-1633   1        {   
-1634   2          //do nothing
-1635   2        } 
-1636   1        
-1637   1        if(((uint16_t)Key_State_Present!=(uint16_t)0)//°´ÏÂ°´¼ü
-1638   1        //»ò³öÏÖ´íÎó
-1639   1              ||((ERR_Kind)!=0) //ÎÞË®,´«¸ÐÆ÷´íÎó,¸ßÎÂµÈ´íÎó
-1640   1              ||(Wire_Mode_Mismatch == (uint8_t)1)  //·¢ÈÈË¿Î´Ñ¡¶¨
-1641   1              ||(HeaterPlate_State==0))//Ë®¹ÞÎ´×°ºÃ»ò·¢ÈÈÅÌ¿ªÂ·
-1642   1        {
-1643   2          Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
-1644   2          Tik_ScreenSaver_Tick_100mS = 0;
-1645   2          DispEnable = 0;
-1646   2          
-1647   2          if(Work_State == UI_STATE_SCREENSAVER_MODE)//ÔÚÆÁ±£Ä£Ê½
-1648   2          {
-1649   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-1650   3            HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);  
-1651   3            Err_Base_HeaterWire_DISP_Enable();//ÆÁ±£Ê±ÖÃÏà¹Ø±êÖ¾,ÒÔ±ãÁÁÆÁÊ±ÏÔÊ¾Ö÷»úºÍÏßµÄÍ¼ÐÎ
-C51 COMPILER V9.52.0.0   GUI                                                               04/08/2019 16:55:48 PAGE 28  
+1624   2          ReCnt = 0;  
+1625   2          if(Work_State == UI_STATE_SCREENSAVER_MODE)
+1626   2          {
+1627   3            DispEnable = 1; 
+1628   3          }
+1629   2        }   
+1630   1        
+1631   1        if(Work_State != UI_STATE_SCREENSAVER_MODE)//²»ÔÚÆÁ±£Ä£Ê½
+1632   1        {
+1633   2          if(Tik_ScreenSaver_Tick_100mS > (u16)3000)//5·ÖÖÓºó½øÈëÆÁ±£Ä£Ê½
+1634   2          {
+1635   3            Work_State = UI_STATE_SCREENSAVER_MODE;
+1636   3            LCD_LIGHT_CLOSE;
+1637   3            Draw_Rectangle_Real(0,0,239,319,BLACK18);           
+1638   3            DispEnable = 1; 
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 28  
 
-1652   3          }
-1653   2        }   
-1654   1          
-1655   1        if(DispEnable!=(uint8_t)0)
-1656   1        {
-1657   2      //    DispEnable = 0;   
-1658   2          Back_Color=BLACK18;
-1659   2          i=Diplay_RTtemp;
-1660   2          if(i>=1000)//ÏÔÊ¾ÎÂ¶È
-1661   2          {
-1662   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X,(i/1000)%10,GREEN18);  
-1663   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X+42,(i/1000)%10,GREEN18); 
-1664   3            Draw_Rectangle_Real(POS_SCREEN_Y,POS_SCREEN_X+82,POS_SCREEN_Y+8,POS_SCREEN_X +88,BLACK18);       
-1665   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X +90,(i/1000)%10,GREEN18);    
-1666   3            DISP_ICO_32X40(POS_SCREEN_Y,POS_SCREEN_X +133,ICO_DU,GREEN18);  
-1667   3          }
-1668   2          else
-1669   2          {
-1670   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X,(i/100)%10,GREEN18);  
-1671   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X+42,(i%100)/10,GREEN18); 
-1672   3            Draw_Rectangle_Real(POS_SCREEN_Y,POS_SCREEN_X+82,POS_SCREEN_Y+8,POS_SCREEN_X +88,GREEN18);       
-1673   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X +90,i%10,GREEN18);    
-1674   3            DISP_ICO_32X40(POS_SCREEN_Y,POS_SCREEN_X +133,ICO_DU,GREEN18);             
-1675   3          } 
-1676   2          LCD_LIGHT_OPEN;  
-1677   2        }
-1678   1      }
-1679          
-1680          
-1681          
-1682          
+1639   3          }
+1640   2        }
+1641   1        else//ÔÚÆÁ±£Ä£Ê½
+1642   1        {   
+1643   2          //do nothing
+1644   2        } 
+1645   1        
+1646   1        if(((uint16_t)Key_State_Present!=(uint16_t)0)//°´ÏÂ°´¼ü
+1647   1        //»ò³öÏÖ´íÎó
+1648   1              ||((ERR_Kind)!=(u8)0) //ÎÞË®,´«¸ÐÆ÷´íÎó,¸ßÎÂµÈ´íÎó
+1649   1              ||(Wire_Mode_Mismatch == (uint8_t)1)  //·¢ÈÈË¿Î´Ñ¡¶¨
+1650   1              ||(HeaterPlate_State==(u8)0))//Ë®¹ÞÎ´×°ºÃ»ò·¢ÈÈÅÌ¿ªÂ·
+1651   1        {
+1652   2          Key_State_Present = KEY_STATE_NONE; //Çå³ý°´¼ü  
+1653   2          Tik_ScreenSaver_Tick_100mS = 0;
+1654   2          DispEnable = 0;
+1655   2          
+1656   2          if(Work_State == UI_STATE_SCREENSAVER_MODE)//ÔÚÆÁ±£Ä£Ê½
+1657   2          {
+1658   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
+1659   3            HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);  
+1660   3            Err_Base_HeaterWire_DISP_Enable();//ÆÁ±£Ê±ÖÃÏà¹Ø±êÖ¾,ÒÔ±ãÁÁÆÁÊ±ÏÔÊ¾Ö÷»úºÍÏßµÄÍ¼ÐÎ
+1661   3          }
+1662   2        }   
+1663   1          
+1664   1        if(DispEnable!=(uint8_t)0)
+1665   1        {
+1666   2      //    DispEnable = 0;   
+1667   2          Back_Color=BLACK18;
+1668   2          i=Diplay_RTtemp;
+1669   2          if(i>=(u16)1000)//ÏÔÊ¾ÎÂ¶È
+1670   2          {
+1671   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X,(u8)((i/(u16)1000)%(u16)10),GREEN18);  
+1672   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X+42,(u8)((i/(u16)1000)%(u16)10),GREEN18); 
+1673   3            Draw_Rectangle_Real(POS_SCREEN_Y,POS_SCREEN_X+82,POS_SCREEN_Y+8,POS_SCREEN_X +88,BLACK18);       
+1674   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X +90,(u8)((i/(u16)1000)%(u16)10),GREEN18);    
+1675   3            DISP_ICO_32X40(POS_SCREEN_Y,POS_SCREEN_X +133,ICO_DU,GREEN18);  
+1676   3          }
+1677   2          else
+1678   2          {
+1679   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X,(u8)((i/(u16)100)%(u16)10),GREEN18);  
+1680   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X+42,(u8)((i%(u16)100)/(u16)10),GREEN18); 
+1681   3            Draw_Rectangle_Real(POS_SCREEN_Y,POS_SCREEN_X+82,POS_SCREEN_Y+8,POS_SCREEN_X +88,GREEN18);       
+1682   3            DISP_TEMP_38X64(POS_SCREEN_Y,POS_SCREEN_X +90,(u8)(i%(u16)10),GREEN18);    
+1683   3            DISP_ICO_32X40(POS_SCREEN_Y,POS_SCREEN_X +133,ICO_DU,GREEN18);             
+1684   3          } 
+1685   2          LCD_LIGHT_OPEN;  
+1686   2        }
+1687   1      }
+1688          
+1689          
+1690          
+1691          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   9812    ----
+   CODE SIZE        =   9869    ----
    CONSTANT SIZE    =    659    ----
-   XDATA SIZE       =     33     147
+   XDATA SIZE       =     33     149
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----       1
+C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 29  
+
+   BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----

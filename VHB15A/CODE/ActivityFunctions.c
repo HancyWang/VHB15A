@@ -85,10 +85,10 @@ uint8_t CQK_Temp_Reach_Set_Cnt = 0;//出气口温度达到30
 
 uint8_t show_str[23]; 
 
-static uint8_t   Work_Day=0;
-static uint8_t   Work_Hour=0;
-static uint8_t   Work_Min=0;
-static uint8_t   Work_Sec=0;
+//static uint8_t   Work_Day=0;
+//static uint8_t   Work_Hour=0;
+//static uint8_t   Work_Min=0;
+//static uint8_t   Work_Sec=0;
 
 //存储相关
 struct stc_data_flash data_flash;//
@@ -97,10 +97,10 @@ uint8_t    SaveData[16];
 																		
 //串口相关变量																		
 //static bit Buff_Full_flag;		
-static uint8_t   Rec_Count=0;
+//static uint8_t   Rec_Count=0;
 //static BYTE    Rec_Buff[21];          //接收到的指令READ0001[CR]-READ0200[CR];
                                     //一条指令可接收256条数据																		
-static uint16_t   Tick_20ms=0;
+//static uint16_t   Tick_20ms=0;
 uint8_t defalut_mode = Load_User_Pre_MODE;	//预设模式选择
 
 //实时参数
@@ -133,7 +133,7 @@ uint16_t 					Micro_Temp_In=0;    //进气支
 uint16_t 					Micro_Temp_Out=0;   //出气支
 
 //控制参数
-static uint16_t   Aim_SHIDU=900;  //目标湿度 
+//static uint16_t   Aim_SHIDU=900;  //目标湿度 
 static INT    JEP_Temp_Aim=400;           //加热盘目标温度
 static uint16_t Wire_Warm_Up_Sec;    //当<=300时限制发热丝最大加热功率
 static uint16_t Plate_Warm_Up_Sec;   //当<=600时限制发热盘最大加热功率
@@ -143,6 +143,8 @@ static uint16_t Low_Power_Mode_Flag = 0;//低功率模式使能标志
 uint8_t     Test_Mode_Dis_Jrp_Ctl=0; //从测试模式进入正常模式即显示所有工作数据	
 static uint8_t     Micro_Adj_Mode_Test;  //加热的模式测试
 uint16_t      Working_Normal=0;//正常工作读数，每秒加1，故障重置，改变设置也重置
+
+static uint8_t     Enable_Save_Data=0;  //保存数据计数
 
 static struct 
 {
@@ -182,17 +184,17 @@ static void HeatPlate_Controler_Calc(void);//加热盘的Controler算法---
 static void  Clear_bit(uint8_t* Value,INT bit_num) 
 {
 	uint8_t* pV=Value;
-	(*pV) =(*pV)& ( ~ ( (uint16_t)1 << (uint16_t)(bit_num) ) );
+	(*pV) =(*pV)& (u8)( ~ ( (uint16_t)1 << (uint16_t)(bit_num) ) );
 }
 static void  Set_bit(uint8_t* Value,INT bit_num)
 {
 	uint8_t* pV=Value;
-	(*pV) =(*pV)| ( (uint16_t)1 << (uint16_t)(bit_num) );
+	(*pV) =(*pV)| (uint8_t)( (uint16_t)1 << (uint16_t)(bit_num) );
 }
 
 uint8_t  Bit_is_one(uint8_t Value,INT bit_num)
 {
-	return ( (Value) & ((uint16_t)1<< (uint16_t)(bit_num) ) );
+	return (u8)( (Value) & ((uint16_t)1<< (uint16_t)(bit_num) ) );
 }
 
 
@@ -204,8 +206,9 @@ static void  Interrupt_EXT1(void)  interrupt 2  //外部中断EXT1
 
 static void  Interrupt_Time0(void)  interrupt 1  using  2  //10ms中断一次 //22.1184M
 {	  
+//	static uint16_t   Tick_20ms;
 	Timer_T0_INT_Main();
-	Tick_20ms++;
+//	++Tick_20ms;
 }
 
 static void  Serial (void) interrupt 4 using 1		//串口中断
@@ -214,19 +217,19 @@ static void  Serial (void) interrupt 4 using 1		//串口中断
 	{
 		EUSART_Receive_ISR();
 
-		RI = 0;
+		RI = (bit)0;
 	}
 
 	if(TI)
 	{			
 		EUSART_Transmit_ISR();
-		TI = 0;
+		TI = (bit)0;
 	}
 }
 
 
 
-static UART_RECSTATE UART_RecState=UART_REC_STATE_READY;
+//static UART_RECSTATE UART_RecState=UART_REC_STATE_READY;
 
 //static enum
 //{
@@ -253,6 +256,15 @@ static void UART_RecBuf_Clear_Fun(void)  //清空缓冲区
 //static uint8_t   DataToPc[8];
 void UART_RecData_Func(void)
 {
+	typedef enum
+	{
+		UART_REC_STATE_READY = 0, //准备接收,初始化计数,  1
+		UART_REC_STATE_HEADER_DET,//检测命令头 "NEUNIT=1," 共9个字符 
+		UART_REC_STATE_DATA_TAIL_DET,//接收命令(最多9个字符)，检测命令尾"\CR"共3个字符 
+		UART_REC_STATE_DONE //接收正确完成
+	}UART_RECSTATE;
+	UART_RECSTATE UART_RecState=UART_REC_STATE_READY;
+	
 	static uint8_t   UART_Rec_Cnt = 0;//接收数据数量 
 	//	  static uint8_t UART_Len = 0;//接收的数据长度
 	uint8_t   i;
@@ -277,8 +289,8 @@ void UART_RecData_Func(void)
 			}
 			else if(UART_RecState == UART_REC_STATE_HEADER_DET)//检测接收头
 			{//注意:最终8个字节存放的顺序是先收到的在最低位，例:收到的是AXXLOGET，存放的是TEGOLXXA
-				UART_Rec_Buf[UART_Rec_Cnt-1] = uart_data;//从低字节往高字节存放
-				if(UART_Rec_Cnt>=(uint8_t)3)//接收到3个数据 RD 13
+				UART_Rec_Buf[UART_Rec_Cnt-(u8)1] = uart_data;//从低字节往高字节存放
+				if(UART_Rec_Cnt>=(uint8_t)2)//接收到3个数据 RD 13
 				{
 					if((UART_Rec_Buf[0] == (uint8_t)'R')//头标志判断
 						&&(UART_Rec_Buf[1] == (uint8_t)'D'))
@@ -293,16 +305,16 @@ void UART_RecData_Func(void)
 						UART_Rec_Cnt--;//往低位移
 						for(i=0;i<=(uint8_t)18;i++) //数据往低位移一位
 						{
-							 UART_Rec_Buf[i] = UART_Rec_Buf[i+1];        
+							 UART_Rec_Buf[i] = UART_Rec_Buf[i+(u8)1];        
 						}//注意:最终8个字节存放的顺序是先收到的在最低位，例:收到的是AXXLOGET，存放的是TEGOLXXA               
 					}
 				} 
 			}
 			else if(UART_RecState == UART_REC_STATE_DATA_TAIL_DET)//检测数据和结尾
 			{
-				UART_Rec_Buf[UART_Rec_Cnt-1] = uart_data;//从低字节往高字节存放
+				UART_Rec_Buf[UART_Rec_Cnt-(u8)1] = uart_data;//从低字节往高字节存放
 
-				if(UART_Rec_Cnt>=(uint8_t)2)//最多存放15个数据
+				if(UART_Rec_Cnt>=(uint8_t)3)//最多存放15个数据
 				{	
 					UART_RecState = UART_REC_STATE_DONE;//接收完成 				
 				}
@@ -317,8 +329,8 @@ void UART_RecData_Func(void)
 				UART_RecState = UART_REC_STATE_READY; //准备下一次检测
 				
 				Adress=UART_Rec_Buf[0];
-				Adress=(Adress<<8)+UART_Rec_Buf[1]-1;
-				Adress=(Adress<<4)+0x2000;
+				Adress=(Adress<<8)+UART_Rec_Buf[1]-(u8)1;
+				Adress=(Adress<<4)+(UINT32)0x2000;
 				SPI_Read_nBytes(Adress,16,&SaveData[0]);
 				EUSART_Write_Str(&SaveData[0],16);//发送16个字节给PC
 			}						
@@ -373,6 +385,7 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 	static uint8_t     Alarm_WenDu_Cnt = 0; 
 
 	uint16_t Disp=0,color=0;
+
 	uint16_t Temp_Dis_En = 0;//温度显示标志
 	uint8_t Disp_Err;
 
@@ -410,7 +423,7 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 			}
 	}
 	else if(((Bit_is_one(ERR_Kind,Alarm_Const_LoTemp)!=(uint8_t)0)&&((u8)Display_Temp_Kind==(u8)0))  //患者端低温红色
-				 ||((LoTemp_CQK_Count>120)&&(Display_Temp_Kind==(DISPLAY_Temp_Kind)1)))  //出气口低温红色
+				 ||((LoTemp_CQK_Count>(u8)120)&&((uint8_t)Display_Temp_Kind==(uint8_t)1)))  //出气口低温红色
 	{
 		Temp_Dis_En = (uint16_t)1;//温度显示标志
 		color=RED18;
@@ -454,16 +467,16 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 		}
 		else  if(Disp>=(uint16_t)1000)//显示温度
 		{
-			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(Disp/1000)%10,(uint8_t)color);  
-			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,(uint8_t)((Disp%1000)/100),(uint8_t)color);   
-			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+73,(Disp%100)/10,(uint8_t)color);    
+			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(u8)((Disp/(u16)1000)%(u16)10),(uint8_t)color);  
+			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,(uint8_t)((Disp%(u16)1000)/(u16)100),(uint8_t)color);   
+			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+73,(u8)((Disp%(u16)100)/(u16)10),(uint8_t)color);    
 			Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,(uint8_t)WHITE18); //去掉小数点
 		}
 		else
 		{
-			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(Disp/100)%10,(uint8_t)color);  
-			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,Disp%100/10,(uint8_t)color);   
-			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*2)+5,Disp%10,(uint8_t)color);    
+			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(u8)((Disp/(u16)100)%(u16)10),(uint8_t)color);  
+			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,(u8)(Disp%(u16)100/(u16)10),(uint8_t)color);   
+			DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*2)+5,(u8)(Disp%(u16)10),(uint8_t)color);    
 			Draw_Rectangle_Real(POS_RT_TEMP_X+1,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8,POS_RT_TEMP_Y+71,(uint8_t)color); //画点
 		}
 	 }		 
@@ -497,8 +510,8 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 		}
 		else
 		{	
-			DISP_RH_17X40(POS_RT_RH_X,POS_RT_RH_Y,(uint8_t)(RT_SHIDU%1000/100),(uint8_t)color);
-			DISP_RH_17X40(POS_RT_RH_X,POS_RT_RH_Y+19,RT_SHIDU%100/10,(uint8_t)color);
+			DISP_RH_17X40(POS_RT_RH_X,POS_RT_RH_Y,(uint8_t)(RT_SHIDU%(u16)1000/(u16)100),(uint8_t)color);
+			DISP_RH_17X40(POS_RT_RH_X,POS_RT_RH_Y+19,(u8)(RT_SHIDU%(u16)100/(u16)10),(uint8_t)color);
 		}
 	}	
 }
@@ -510,35 +523,43 @@ void RefreshRunTimeFunc(uint8_t Refresh_En)
 	uint8_t t=0;
 //	uint8_t refreshEn=Refresh_En;
 	static uint8_t Last_Sec = 60;		
+	static uint8_t   Work_Min=0;
+	static uint8_t   Work_Sec=0;
+	static uint8_t   Work_Day=0;
+	static uint8_t   Work_Hour=0;
 	
 	RX8010_GetTime(NowTime);	
-	t = ((uint8_t)NowTime[0]&(uint8_t)0xF)%10;
+	t = ((uint8_t)NowTime[0]&(uint8_t)0xF)%(u8)10;
 	
 	if(t != Last_Sec)//时间秒有变化
 	{
 		Last_Sec = t;
-		if(Work_Sec<59)
+		if(Work_Sec<(uint8_t)59)
 		{
 			Work_Sec++;
 		}
 		else
 		{
 			Work_Sec = 0;
-			t = 0xff;//刷新标志		
-			if(Work_Min<59)
+			t = 0xff;//刷新标志	
+			
+			Enable_Save_Data=1;//保存标志位
+			Run_Count++;//保存数据条数
+
+			if(Work_Min<(uint8_t)59)
 			{
 				Work_Min++;
 			}
 			else
 			{
 				Work_Min=0;
-				if(Work_Hour<23)
+				if(Work_Hour<(uint8_t)23)
 				{
 					Work_Hour++;
 				}else
 				{
 					Work_Hour=0;
-					if(Work_Day<99)
+					if(Work_Day<(uint8_t)99)
 					{
 						Work_Day++;
 					}						
@@ -547,18 +568,18 @@ void RefreshRunTimeFunc(uint8_t Refresh_En)
 		}
 	}
 	
-	if((Refresh_En!=(uint8_t)0)||(t == 0xff))
+	if((Refresh_En!=(uint8_t)0)||(t == (uint8_t)0xff))
 	{
 //		Refresh_En = 0;		
 		if(Work_State != UI_STATE_SCREENSAVER_MODE)
 		{
 			Back_Color=WHITE18;
-			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y-5,Work_Day/10,BLACK18);
-			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+6,Work_Day%10,BLACK18);
-			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+22,Work_Hour/10,BLACK18);
-			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+33,Work_Hour%10,BLACK18);
-			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+47,Work_Min/10,BLACK18);
-			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+58,Work_Min%10,BLACK18);  
+			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y-5,Work_Day/(u8)10,(uint8_t)BLACK18);
+			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+6,Work_Day%(u8)10,(uint8_t)BLACK18);
+			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+22,Work_Hour/(u8)10,(uint8_t)BLACK18);
+			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+33,Work_Hour%(u8)10,(uint8_t)BLACK18);
+			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+47,Work_Min/(u8)10,(uint8_t)BLACK18);
+			DISP_TIME_10X16(POS_ICO_TIME_X-2,POS_DMH_Y+58,Work_Min%(u8)10,(uint8_t)BLACK18);  
 		}
 	}
 }
@@ -574,7 +595,7 @@ void RefreshRTCTimeFunc(void)
 	
 //时间转换=================================================
 	RX8010_GetTime(NowTime);	
-	t = (NowTime[0]&(BYTE)0xF)%10;
+	t = (NowTime[0]&(BYTE)0xF)%(u8)10;
 	if(t != Last_Sec)//时间秒有变化
 	{
 		Last_Sec = t;
@@ -599,7 +620,7 @@ void GetTempHumidity_PatientFunc(void)
 	static BYTE       Read_Order=0;	
 	uint8_t Read_SHT21_Err=0;
 
-	bit Read_SCL_CONF;
+	uint8_t Read_SCL_CONF;
 	UINT32 TempLong;
 	uint16_t  Temp2;
 
@@ -609,13 +630,13 @@ void GetTempHumidity_PatientFunc(void)
 	static uint8_t ReCnt=0;
 	
 	ReCnt++;
-	if(ReCnt > 50)//1S
+	if(ReCnt > (u8)50)//1S
 	{
 		ReCnt = 0;	
 		RT_Temp_Mem_L3 = RT_Temp_Mem_L2;
 		RT_Temp_Mem_L2 = RT_Temp_Mem_L1;
 		RT_Temp_Mem_L1 = (uint16_t)RT_Temp;	
-		Diplay_RTtemp = (RT_Temp_Mem_L3+RT_Temp_Mem_L2+RT_Temp_Mem_L1) / 3;	
+		Diplay_RTtemp = (RT_Temp_Mem_L3+RT_Temp_Mem_L2+RT_Temp_Mem_L1) / (u16)3;	
 	}
 	
 	//static int Ix=0;
@@ -629,13 +650,13 @@ void GetTempHumidity_PatientFunc(void)
 //	LCD_ShowxNum(223,130,16,3,ERR_RT_Temp_Times,0x80,BLUE18);//	
 	
 //	EA = 0;
-	if(RT_Temp_Not_Updated_10mS < 4000)
+	if(RT_Temp_Not_Updated_10mS < (uint16_t)4000)
 	{
 		RT_Temp_Not_Updated_10mS++;
 	}
 	
 	{
-		if(Read_Order==0)		//发温度指令	  	
+		if(Read_Order==(BYTE)0)		//发温度指令	  	
 		{
 			Read_SHT21_Err = SHT21_WriteTemp(); 
 			if(Read_SHT21_Err!=(uint8_t)0)
@@ -648,18 +669,18 @@ void GetTempHumidity_PatientFunc(void)
 				Get_time_out = 0;
 			}
 		}
-		else if(Read_Order == 1)	//温度数据接收
+		else if(Read_Order == (BYTE)1)	//温度数据接收
 		{
 			//SCL_INPUT_HIGH(); // set SCL I/O port as input
 			Read_SCL_CONF=SCL_CONF;
-			if(Read_SCL_CONF==1)
+			if(Read_SCL_CONF==(uint8_t)1)
 			{
 				Get_time_out = 0;
 				TempLong =	SHT21_ReadData();
 				//RT_Temp_Test = TempLong;
 					//LCD_ShowxNum(223,160,16,5,TempLong,0x80,BLUE18);//	
 					
-			  if((TempLong == SHT21_ERROR) || (TempLong & (UINT32)0x8000)!=(UINT32)0) //读取出错，后面为湿度标志位
+			  if((TempLong == (UINT32)SHT21_ERROR) || ((TempLong & (UINT32)0x8000)!=(UINT32)0)) //读取出错，后面为湿度标志位
 				{
 					//if(No_ReadData_Temp_Times<250) No_ReadData_Temp_Times++;	
 					Read_Order = 0;		
@@ -671,25 +692,25 @@ void GetTempHumidity_PatientFunc(void)
 										
 					if(Work_State != UI_STATE_SERVICE_MODE) //注意,测试模式下显示真实温度
 					{
-						if(WireIn_State!=0)    //有加热丝线进行温度修正
+						if(WireIn_State!=(uint8_t)0)    //有加热丝线进行温度修正
 						{
-							TempLong=(TempLong*101/100)-(4*TempLong/388);
+							TempLong=(TempLong*(UINT32)101/(UINT32)100)-((UINT32)4*TempLong/(UINT32)388);
 						}
 						else
 						{
-							TempLong=TempLong-(4*TempLong/400);	
+							TempLong=TempLong-((UINT32)4*TempLong/(UINT32)400);	
 						}
 							 
 
-						if(TempLong>=350)   //温度修正
+						if(TempLong>=(UINT32)350)   //温度修正
 						{
-							TempLong=TempLong+(6*(TempLong-350)/45);
+							TempLong=TempLong+((UINT32)6*(TempLong-(UINT32)350)/(UINT32)45);
 						}
 							
 							
-						if(TempLong>800) //如果人体端达到80说明有异常，出错报警 //2014-07-07 
+						if(TempLong>(UINT32)800) //如果人体端达到80说明有异常，出错报警 //2014-07-07 
 						{
-							if(ERR_RT_Temp_Times<100)
+							if(ERR_RT_Temp_Times<(UINT32)100)
 							{
 								ERR_RT_Temp_Times++;
 							}
@@ -715,7 +736,7 @@ void GetTempHumidity_PatientFunc(void)
 			//LCD_ShowxNum(223,150,16,3,RT_Temp,0x80,BLUE18);//	
 
 		}
-		else if(Read_Order==2)  //发湿度指令
+		else if(Read_Order==(BYTE)2)  //发湿度指令
 		{										 
 			Read_SHT21_Err = SHT21_WriteRH();
 			if(Read_SHT21_Err!=(uint8_t)0)
@@ -728,17 +749,17 @@ void GetTempHumidity_PatientFunc(void)
 				Get_time_out = 0;
 			}
 		} 	  
-		else  if(Read_Order == 3)//湿度数据接收
+		else  if(Read_Order == (BYTE)3)//湿度数据接收
 		{
 			//SCL_INPUT_HIGH(); // set SCL I/O port as input
 			Read_SCL_CONF=SCL_CONF;
-			if(Read_SCL_CONF==1)
+			if(Read_SCL_CONF==(uint8_t)1)
 			{ 
 				//Read_Order = 0;
 				Get_time_out = 0;
 				TempLong =	SHT21_ReadData();
 				//LCD_ShowxNum(223,210,16,5,TempLong,0x80,BLUE18);//	
-				if((TempLong == SHT21_ERROR)||((TempLong & (UINT32)0x8000) ==(UINT32)0)) //读取出错
+				if((TempLong == (UINT32)SHT21_ERROR)||((TempLong & (UINT32)0x8000) ==(UINT32)0)) //读取出错
 				{
 					if(No_ReadData_SHIDU_Times<(uint8_t)250)
 					{
@@ -753,7 +774,7 @@ void GetTempHumidity_PatientFunc(void)
 					Read_Order = 0;	
 					TempLong &= (UINT32)0x7fff;//最高位是1才是湿度
 					No_ReadData_SHIDU_Times = (uint8_t)0;
-					if(TempLong > 999)
+					if(TempLong > (UINT32)999)
 					{
 						TempLong = 999;
 					}  
@@ -764,10 +785,10 @@ void GetTempHumidity_PatientFunc(void)
 					{
 						if(RT_Temp>300)
 						{							  	 
-							if(TempLong>550)
+							if(TempLong>(UINT32)550)
 							{						 
-								Temp2=(TempLong-550)*80/100; //16-05-06
-								if(Temp2>249)
+								Temp2=(TempLong-(UINT32)550)*(UINT32)80/(UINT32)100; //16-05-06
+								if(Temp2>(u16)249)
 								{
 									Temp2=249;
 								}											
@@ -786,17 +807,17 @@ void GetTempHumidity_PatientFunc(void)
 						
 						if(RT_Temp>350)
 						{	
-							 RT_SHIDU=RT_SHIDU+(180*((uint16_t)RT_Temp-350)/100);  //显示湿度 16-05-06
+							 RT_SHIDU=RT_SHIDU+((u16)180*((uint16_t)RT_Temp-(u16)350)/(u16)100);  //显示湿度 16-05-06
 						}
 					}
 					else
 					{
 						//do nothing
 					}	
-					RT_SHIDU += 5;	//四舍五入				  
-					if(RT_SHIDU>999)
+					RT_SHIDU += (u16)5;	//四舍五入				  
+					if(RT_SHIDU>(uint16_t)999)
 					{
-						RT_SHIDU=999;//;	
+						RT_SHIDU=(uint16_t)999;//;	
 					}						 
 				}
 			}
@@ -818,7 +839,7 @@ void GetTempHumidity_PatientFunc(void)
 			{
 				No_ReadData_SHIDU_Times++;
 			}				
-			if(No_ReadData_Temp_Times<100)
+			if(No_ReadData_Temp_Times<(u8)100)
 			{
 				No_ReadData_Temp_Times++;
 			}				
@@ -831,14 +852,14 @@ void GetTempHumidity_PatientFunc(void)
 		} 
 
 		Get_time_out++;
-		if(Get_time_out > 100)//超过100mS
+		if(Get_time_out >(u8)100)//超过100mS
 		{
 			Get_time_out = 0;
-			if(Read_Order == 1)
+			if(Read_Order == (BYTE)1)
 			{
 				Read_Order = 0;
 			}
-			else if(Read_Order == 3)
+			else if(Read_Order == (BYTE)3)
 			{
 				Read_Order = 2;
 			}
@@ -854,7 +875,7 @@ void GetTempHumidity_PatientFunc(void)
 void GetTemp_HpChamberFunc(void)
 {
 //	bit HeaterSensorExist;
-	bit CQKSensorExist;
+	uint8_t CQKSensorExist=0;
 
 	//	static uint16_t CQK_Temp_Not_Updated_40mS = 0;//连续未采样到数据的时间S
 	//  static uint16_t JRP_Temp_Not_Updated_S = 0;//连续未采样到数据的时间S
@@ -881,42 +902,42 @@ void GetTemp_HpChamberFunc(void)
 	static uint8_t Get_Temp_Cnt=0;
 
 	Get_Temp_Cnt++;
-	if(Get_Temp_Cnt > 3)
+	if(Get_Temp_Cnt > (u8)3)
 	{
 		Get_Temp_Cnt = 0;
 	}
 	
-	if(No_CQKSensor_Times<2000)
+	if(No_CQKSensor_Times<(u16)2000)
 	{
 		No_CQKSensor_Times++;
 	}
-	if(No_HeatSensor_Times<200)
+	if(No_HeatSensor_Times<(u8)200)
 	{
 		No_HeatSensor_Times++;
 	}
 	
-	if(Get_Temp_Cnt == 0)  //
+	if(Get_Temp_Cnt == (u8)0)  //
 	{
-		HeatingPlateSensor_Port=0;                                //主机拉至低电平
-		ChamberOutletSensor_Port=0;
+		HeatingPlateSensor_Port=(bit)0;                                //主机拉至低电平
+		ChamberOutletSensor_Port=(bit)0;
 		delay_us(609);                                //609
-		HeatingPlateSensor_Port=1;                                //释放总线等电阻拉高总线,并保持15~60us
-		ChamberOutletSensor_Port=1;
+		HeatingPlateSensor_Port=(bit)1;                                //释放总线等电阻拉高总线,并保持15~60us
+		ChamberOutletSensor_Port=(bit)1;
 		delay_us(86);                           //延时70us                     //延时70us
 //		HeaterSensorExist=HeatingPlateSensor_Port;		            //接收应答信号
-		CQKSensorExist=ChamberOutletSensor_Port;
+//		CQKSensorExist=ChamberOutletSensor_Port;
 		delay_us(488);                                //403
 		DS18B20_WriteByte(0xCC);                      //跳过ROM命令
 		DS18B20_WriteByte(0x44);                      //开始转换命令
 	}
-	else if(Get_Temp_Cnt == 2) //
+	else if(Get_Temp_Cnt == (u8)2) //
 	 //进行温度转换
 	{
-		HeatingPlateSensor_Port=0;                                //主机拉至低电平
-		ChamberOutletSensor_Port=0;
+		HeatingPlateSensor_Port=(bit)0;                                //主机拉至低电平
+		ChamberOutletSensor_Port=(bit)0;
 		delay_us(609);                                //503us
-		HeatingPlateSensor_Port=1;                                //释放总线等电阻拉高总线,并保持15~60us
-		ChamberOutletSensor_Port=1;
+		HeatingPlateSensor_Port=(bit)1;                                //释放总线等电阻拉高总线,并保持15~60us
+		ChamberOutletSensor_Port=(bit)1;
 		delay_us(86);                           //延时70us
 //		HeaterSensorExist=HeatingPlateSensor_Port;		            //接收应答信号
 		CQKSensorExist=ChamberOutletSensor_Port;
@@ -931,7 +952,7 @@ void GetTemp_HpChamberFunc(void)
 		T18B20_H=Read_18B20_Value;
 		CQK_T18B20_H=Read_18B20_Value2;
 	
-		if((CQKSensorExist==0))//错误则不进行校验
+		if((CQKSensorExist==(uint8_t)0))//错误则不进行校验
 		{
 			DS18B20_Cdata[0] = CQK_T18B20_L;
 			DS18B20_Cdata[1] = CQK_T18B20_H;
@@ -953,12 +974,12 @@ void GetTemp_HpChamberFunc(void)
 
 			CRC8_error = DS18B20_CheckCrc(DS18B20_Cdata,8,checksum); 
 				
-			if(CRC8_error == CHECKSUM_ERROR)
+			if(CRC8_error == (u8)CHECKSUM_ERROR)
 			{
-				CQKSensorExist = 1;
+				CQKSensorExist = (uint8_t)1;
 			}					 
 			 
-			if((CQKSensorExist==0))//
+			if((CQKSensorExist==(uint8_t)0))//
 			{
 				CQK_T18B20_H_GET = CQK_T18B20_H;
 				CQK_T18B20_L_GET = CQK_T18B20_L;
@@ -966,19 +987,19 @@ void GetTemp_HpChamberFunc(void)
 				CQK_T18B20_H_GET = (uint8_t)((CQK_T18B20_H_GET << 4) | (CQK_T18B20_L_GET >> 4));			//加热盘温度值合并高低位存入整数位
 				if((CQK_T18B20_H_GET&(uint8_t)0x80)!=(uint8_t)0)//是负数
 				{
-					CQK_T18B20_L_GET =(((~CQK_T18B20_L_GET)&(uint8_t)0x0F)*10)/16;
-					temp=((~CQK_T18B20_H_GET)*10)+CQK_T18B20_L_GET;
+					CQK_T18B20_L_GET =(((~CQK_T18B20_L_GET)&(uint8_t)0x0F)*(u8)10)/(u8)16;
+					temp=((~CQK_T18B20_H_GET)*(u16)10)+(u16)CQK_T18B20_L_GET;
 				} 
 				else
 				{
-					CQK_T18B20_L_GET = ((CQK_T18B20_L_GET&(uint8_t)0x0F)*10)/16;
-					temp=(CQK_T18B20_H_GET*10)+CQK_T18B20_L_GET;
+					CQK_T18B20_L_GET = ((CQK_T18B20_L_GET&(uint8_t)0x0F)*(u8)10)/(u8)16;
+					temp=(CQK_T18B20_H_GET*(u16)10)+(u16)CQK_T18B20_L_GET;
 				}
 		
-				if((CQK_Temp_Last ==  temp) && (temp == 850))  //错误时一直显示85度 2014-07-18
+				if((CQK_Temp_Last ==  temp) && (temp == (u16)850))  //错误时一直显示85度 2014-07-18
 				{
 					CQK_Sensor_Temp_No_Change_Times++;//2014-07-03 出气口温度传感器温度相同的次数
-					if(CQK_Sensor_Temp_No_Change_Times > 10000)
+					if(CQK_Sensor_Temp_No_Change_Times > (u16)10000)
 					{
 						CQK_Sensor_Temp_No_Change_Times =10000;
 					}
@@ -988,7 +1009,7 @@ void GetTemp_HpChamberFunc(void)
 					CQK_Sensor_Temp_No_Change_Times = 0;		
 				}
 				 
-				if(temp > 800)
+				if(temp > (u16)800)
 				{
 				//					 if(CQKSensor_Hithen800_Times < 2000) CQKSensor_Hithen800_Times++;						
 				}
@@ -997,10 +1018,10 @@ void GetTemp_HpChamberFunc(void)
 					CQKSensor_Hithen800_Times = 0;
 				}					
 
-				if(((CQK_Temp_Last >=  temp) && ((CQK_Temp_Last - temp) < 200))
-				||((CQK_Temp_Last <=  temp) && ((temp - CQK_Temp_Last)  < 200)))//EFT对策：温度不能瞬变,1S变化不能超过20度
+				if(((CQK_Temp_Last >=  temp) && ((CQK_Temp_Last - temp) < (u16)200))
+				||((CQK_Temp_Last <=  temp) && ((temp - CQK_Temp_Last)  < (u16)200)))//EFT对策：温度不能瞬变,1S变化不能超过20度
 				{	
-					if((temp > 0)&&(temp < 850))//不读零
+					if((temp > (u16)0)&&(temp < (u16)850))//不读零
 					{
 						CQK_Temp = (LONG)temp;//实时显示温度
 						if(Work_State != UI_STATE_SERVICE_MODE) //注意,测试模式下显示真实温度
@@ -1039,20 +1060,20 @@ void GetTemp_HpChamberFunc(void)
 		T18B20_H_GET = (uint8_t)((T18B20_H_GET << 4) | (T18B20_L_GET >> 4));			//加热盘温度值合并高低位存入整数位
 		if((T18B20_H_GET&(uint8_t)0x80)!=(uint8_t)0)//是负数
 		{
-			T18B20_L_GET =(((~T18B20_L_GET)&(uint8_t)0x0F)*10)/16;
-			temp=((~T18B20_H_GET)*10)+T18B20_L_GET;
+			T18B20_L_GET =(((~T18B20_L_GET)&(uint8_t)0x0F)*(u8)10)/(u8)16;
+			temp=((~T18B20_H_GET)*(u16)10)+(u16)T18B20_L_GET;
 		} 
 		else
 		{
-			T18B20_L_GET = ((T18B20_L_GET&(uint8_t)0x0F)*10)/16;
-			temp=(T18B20_H_GET*10)+T18B20_L_GET;
+			T18B20_L_GET = ((T18B20_L_GET&(uint8_t)0x0F)*(u8)10)/(u8)16;
+			temp=(T18B20_H_GET*(u16)10)+(u16)T18B20_L_GET;
 		}
 		  
 			 
 		if((JRP_Temp_Last ==  temp))// && (temp == 850))  //错误时一直显示85度 2014-07-18
 		{
 			JRP_Sensor_Temp_No_Change_Times++;//2014-07-03 加热盘温度传感器温度相同的次数
-			if(JRP_Sensor_Temp_No_Change_Times > 6000)
+			if(JRP_Sensor_Temp_No_Change_Times > (u16)6000)
 			{
 				JRP_Sensor_Temp_No_Change_Times = 6000;
 			}
@@ -1080,7 +1101,7 @@ void GetTemp_HpChamberFunc(void)
 	}
 } 
 
-static INT  Temp1_Int = 260;
+
 static INT  Temp2_Int = 400;
 static uint16_t NoneWire_Heat_Sec=0;
 static INT  Set_CQK_Temp_Comp;//出气口校正过后的目标温度
@@ -1092,11 +1113,13 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 	INT  Humidity_Err=0; //未达到目标湿度的差值
 	INT  Humidity_Comp=0;//超过目标温度的差值 
 	static uint16_t Last_Rem_Humidity=0;	
+	static uint16_t   Aim_SHIDU=900;  //目标湿度 
+	static INT  Temp1_Int = 260;
 	
 	static uint16_t WarmUp_S_Cnt=0;	
 	//uint16_t  CQK_Vaul_Err;//差值
 
-	if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == 1))
+	if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == (u8)1))
 	{	//8表示高位为0也显示,0表示非叠加显示 出气口
 		Back_Color=WHITE18;
 		LCD_ShowxNum(POS_RT_RH_X-50,5,16,2,Micro_Adj_Mode_Test,0x80,BLACK18); //发热盘加热的模式显示
@@ -1120,7 +1143,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 		//LCD_ShowxNum(POS_RT_RH_X-33,141,16,3,Plate_Warm_Up_Sec,0x80,BLACK18); //600S计时	
 		LCD_ShowxNum(POS_RT_RH_X-33,185,16,3,Humidity_No_Change_Sec,0x80,BLACK18); //600S计时			
 		
-		if(WireIn_State!=0)	//有发热丝
+		if(WireIn_State!=(u8)0)	//有发热丝
 		{
 			LCD_ShowxNum(POS_RT_RH_X-33,34,16,4,(u32)JEP_Temp_Aim,0x80,BLACK18); //发热盘的目标温度
 			LCD_ShowxNum(POS_RT_RH_X-16,34,16,3,WarmUp_S_Cnt,0x80,BLACK18); //无发热丝回路时改变时间	
@@ -1183,7 +1206,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 	{				
 		//管内发热丝工作,控制温度调节========================== 			
 
-		if(Work_Mode==Noninvasive_Mode) //无创模式时,人体端温度对目标湿度的控制逻辑
+		if(Work_Mode==(u8)Noninvasive_Mode) //无创模式时,人体端温度对目标湿度的控制逻辑
 		{	  	 	
 			Aim_SHIDU=790;  
 		}else	  //有创模式时,人体端温度对目标湿度的影响
@@ -1193,11 +1216,11 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 
 		Val_Calc = 0;				
 		//if(Boot_Start_RT_Temp_Heating_Timer_Sec > 300) //患者端开机渐进式加热结束
-		if(Low_Power_Mode_Flag == 0)//非低功率模式才可以控制
+		if(Low_Power_Mode_Flag == (u16)0)//非低功率模式才可以控制
 		{//回路发热丝的控制
-			if(WireIn_State!=0)		//当有管内IN发热丝时，管内发热丝的加热逻辑
+			if(WireIn_State!=(u8)0)		//当有管内IN发热丝时，管内发热丝的加热逻辑
 			{
-				if(Working_Normal >= 1200)
+				if(Working_Normal >= (u16)1200)
 				{
 					Temp1_Int = Set_RT_Temp;//20分钟以后为设定温度
 				}
@@ -1216,7 +1239,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 				Controler_Calc(); 
 				Val_Calc = (uint8_t)Controler_temp.Uk;	//计算出加热时间					
 					
-				if(WireIn_State!=0)
+				if(WireIn_State!=(u8)0)
 				{
 					if (RT_Temp<(Set_RT_Temp-20))
 					{
@@ -1249,13 +1272,13 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 				Val_Calc=0;
 			}
 				
-			if(Working_Normal >= 1200)//正常工作20分钟之后
+			if(Working_Normal >= (u16)1200)//正常工作20分钟之后
 			{
 
 			}
 			else
 			{
-				if(Val_Calc > 160)
+				if(Val_Calc > (u16)160)
 				{
 					Val_Calc = 160;//20分钟内限制加热功率
 				}
@@ -1265,19 +1288,19 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 			Micro_Temp_In = Val_Calc;
 
 			Val_Calc=0;
-			if(WireOut_State!=0)	  //当有管内OUT发热丝时，管内发热丝的加热逻辑
+			if(WireOut_State!=(u8)0)	  //当有管内OUT发热丝时，管内发热丝的加热逻辑
 			{
 				{
-					Val_Calc = Micro_Temp_In *(10+In_Exp_Ratio-1)/10;
-					if(Val_Calc > 195)
+					Val_Calc = Micro_Temp_In *((u16)10+In_Exp_Ratio-(u16)1)/(u16)10;
+					if(Val_Calc > (u16)195)
 					{
 						Val_Calc = 195;
 					}
-					if(In_Exp_Ratio > 1)
+					if(In_Exp_Ratio > (u8)1)
 					{	
-						if(Val_Calc==0)
+						if(Val_Calc==(u16)0)
 						{
-							Val_Calc=40*(10+In_Exp_Ratio-1)/10;
+							Val_Calc=(u16)40*((u16)10+In_Exp_Ratio-(u16)1)/(u16)10;
 						}
 					}
 					if (RT_Temp >= (Set_RT_Temp+10))//大于1度,停止加热,保护措施
@@ -1298,7 +1321,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 		//不区分加热线/////////////////////////////	  
 		if(CONTROL_RT_SHIDU<=Aim_SHIDU)//主要是针对大流量时的补偿
 		{
-			Humidity_Err = (INT)(Aim_SHIDU - CONTROL_RT_SHIDU);///2;//湿度误差计算
+			Humidity_Err = (INT)((INT)Aim_SHIDU - (INT)CONTROL_RT_SHIDU);///2;//湿度误差计算
 			if(Humidity_Err > 100)
 			{
 				Humidity_Err = 100;//最大限定为100
@@ -1309,7 +1332,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 			Humidity_Err = 0;	
 		}			
 					
-		Humidity_Comp = (INT) (CONTROL_RT_SHIDU - Aim_SHIDU);	//控制湿度以减少冷凝水		
+		Humidity_Comp = (INT) ((INT)CONTROL_RT_SHIDU - (INT)Aim_SHIDU);	//控制湿度以减少冷凝水		
 		if(Humidity_Comp > 100)
 		{
 			Humidity_Comp  = 100;
@@ -1321,7 +1344,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 		}
 		Last_Rem_Humidity = CONTROL_RT_SHIDU;
 
-		if(Humidity_No_Change_Sec >= 900)//可能进入冷凝状态
+		if(Humidity_No_Change_Sec >= (uint16_t)900)//可能进入冷凝状态
 		{
 			Humidity_No_Change_Sec = 901;
 			Humidity_Err = 0;	 //进入冷凝状态则湿度控制无效
@@ -1334,9 +1357,9 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 			 Micro_Adj_Mode_Test = 2;//加热模式测试       	 
 		}				
 		//带加热线的温度调节===========================
-		else if(WireIn_State!=0)
+		else if(WireIn_State!=(uint8_t)0)
 		{
-			if(Low_Power_Mode_Flag == 0)//非低功率模式才可以控制
+			if(Low_Power_Mode_Flag == (u16)0)//非低功率模式才可以控制
 			{
 				if(JEP_Temp>=HeatingTemperature_MAX)	 //105度
 				{
@@ -1347,9 +1370,9 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 				{	
 					Set_CQK_Temp_Comp = (INT)Set_CQK_Temp; //出气口设定温度
 					
-					if(Work_Mode==Invasive_Mode)//
+					if(Work_Mode==(u8)Invasive_Mode)//
 					{	
-						if(Humidity_Err >= 50)  //当目标湿度相差5%以上且为无创时，允许最高超过度
+						if(Humidity_Err >= (INT)50)  //当目标湿度相差5%以上且为无创时，允许最高超过度
 						{
 							//Set_CQK_Temp_Comp += Humidity_Err/6;//最高允许超过1.6度
 							Set_CQK_Temp_Comp += Humidity_Err/10;//最高允许超过1度
@@ -1369,7 +1392,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 						Set_CQK_Temp_Comp = Set_CQK_Temp_Comp - (Humidity_Comp/10);//湿度每上1%则出气口温度下降0.1度，最多1度
 					}		
 
-					if(Work_Mode==Invasive_Mode)//
+					if(Work_Mode==(uint8_t)Invasive_Mode)//
 					{	
 						//Set_CQK_Temp_Comp -= 5;//有创时降低0.5度	
 						if(Set_CQK_Temp_Comp < 320)
@@ -1395,7 +1418,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 					else
 					{
 						WarmUp_S_Cnt++;
-						if(WarmUp_S_Cnt >= 20)//每两分钟调整一次加热盘目标温度
+						if(WarmUp_S_Cnt >= (u16)20)//每两分钟调整一次加热盘目标温度
 						{
 							WarmUp_S_Cnt = 0;
 							Controler_temp3.Ek = Set_CQK_Temp_Comp - CQK_Temp;//当前的误差量 设定温度-当前实际温度
@@ -1403,7 +1426,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 
 							JEP_Temp_Aim = JEP_Temp_Aim + Controler_temp3.Uk;//												
 							
-							if(Work_Mode==Invasive_Mode)//
+							if(Work_Mode==(u8)Invasive_Mode)//
 							{
 								if(JEP_Temp_Aim < 500)
 								{
@@ -1418,7 +1441,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 								}
 							}	
 							
-							if(Working_Normal >= 1200)
+							if(Working_Normal >= (u16)1200)
 	//										if(Work_Min>=20||Work_Day>0 ||Work_Hour>0)//开机20分钟之后
 							{
 								if(JEP_Temp_Aim > 1045)
@@ -1443,7 +1466,7 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 
 					if((CQK_Temp - Set_CQK_Temp_Comp) > 20)//出气口温度比目标温度高
 					{
-						if(Val_Calc > 20)
+						if(Val_Calc > (u16)20)
 						{
 							Val_Calc = 20;	
 						}
@@ -1461,17 +1484,17 @@ void  HeaterPlateWireControlFunc(void)//温度控制
 			}					 
 					
 					
-			if(Val_Calc > 195)
+			if(Val_Calc > (u16)195)
 			{
 				Val_Calc = 195;	
 			}				
-			if(Low_Power_Mode_Flag == 0)//非低功率模式才可以控制
+			if(Low_Power_Mode_Flag == (u16)0)//非低功率模式才可以控制
 			{
 				Micro_Temp_Val = (uint8_t)Val_Calc;//便于计算，以免超过190进入中断	
 			}
 					
 			}
-		else if(Low_Power_Mode_Flag == 0)//非低功率模式才可以控制
+		else if(Low_Power_Mode_Flag == (u16)0)//非低功率模式才可以控制
 		{	
 			PatientTemp_NoneHeatWire_Adj();
 			//不带加热线的温度调节==============================================================
@@ -1489,20 +1512,23 @@ static void   Store_Data(void)   //存放数据地址从1开始
 {
 	uint16_t i;
 	uint8_t N,j;
-	if (Run_Count<1)
+	if (Run_Count<(u16)1)
 	{
-		return;
-	}		
-	i=((Run_Count-1)/8)+1;     //计算地址
-	N=Run_Count%8;       //计算位
-	if ((Run_Count!=0) && (N==0)) 
-	{
-		N=8;
+//		return;
 	}
-	j=(uint8_t)((uint8_t)0xFF<<N);
-	SPI_Write_nBytes(i,1,&j);
+	else
+	{
+		i=((Run_Count-(u16)1)/(u16)8)+(u16)1;     //计算地址
+		N=(u8)(Run_Count%(u16)8);       //计算位
+		if ((Run_Count!=(u16)0) && (N==(u16)0)) 
+		{
+			N=8;
+		}
+		j=(uint8_t)((uint16_t)0xFF<<N);
+		SPI_Write_nBytes(i,1,&j);
 
-			//delay_us(100);
+				//delay_us(100);
+	}
 }
 
 static void  Get_RunCount(void)   //得到存放数据的条数
@@ -1511,32 +1537,32 @@ static void  Get_RunCount(void)   //得到存放数据的条数
 	uint8_t N,K,j;
 	Start1=0x1;
 	Start2=0x2000;
-	for(j=0;j<14;j++) //查找计数位
+	for(j=0;j<(u8)14;j++) //查找计数位
 	{
-		StartAdr=(Start1+Start2)/2;
+		StartAdr=(Start1+Start2)/(u16)2;
 		SPI_Read_nBytes(StartAdr,1,&N);
 		delay_us(100);
-		if(N==0xFF)
+		if(N==(u8)0xFF)
 		{
 			Start2=StartAdr;
 		}else
 		{
 			Start1=StartAdr;
-			Start2=Start1+((uint16_t)2<<(12-(uint16_t)j));
-			SPI_Read_nBytes(StartAdr+1,1,&K);
-			if(K==0xFF)
+			Start2=Start1+((uint16_t)2<<((u16)12-(uint16_t)j));
+			SPI_Read_nBytes(StartAdr+(u16)1,1,&K);
+			if(K==(u8)0xFF)
 			{	 break;  }
 			else
 			{
-				StartAdr=StartAdr+1;
+				StartAdr=StartAdr+(u16)1;
 				N=K;
 			}
 		}
 	}
-	Run_Count=(StartAdr-1)*8;//计算时1个字节表8
-	for(j=0;j<8;j++)
+	Run_Count=(StartAdr-(u16)1)*(u16)8;//计算时1个字节表8
+	for(j=0;j<(u8)8;j++)
 	{
-		if((((uint8_t)0x01<<j) & N)!=0)
+		if((((u16)0x01<<j) & (u8)N)!=(u8)0)
 		{
 			break;
 		}			
@@ -1588,517 +1614,517 @@ void AlarmErrorFunc(void)    //错误事件
 	uint8_t     Err_Event_2=0;
 	  
 	static uint8_t AlarmInfoRem = 0;//报警状态记忆
+
+	Err_Event_Cnt++;//闪烁计数及减少程序运行时间
+	if(Err_Event_Cnt > (u8)1)
+	{	
+		Err_Event_Cnt = 0;//红	
+	}
+	Err_Event_1 = 0;
+	Err_Event_2 = 1;			
+
+	//LCD_ShowxNum(POS_RT_RH_X-40,5,16,4,RT_Temp,0x80,BLACK18); //8表示高位为0也显示,0表示非叠加显示
+	//LCD_ShowxNum(POS_RT_RH_X-40,60,16,4,ERR_RT_Temp_Times,0x80,BLACK18); //
+
+	if(((No_CQKSensor_Times>(u16)1000) || (CQK_Sensor_Temp_No_Change_Times > (u16)6000)) //出气口温度传感器错误检测
+		||(CQKSensor_Hithen800_Times > (u16)250)//连续10S > 80度
+		||(No_ReadData_Temp_Times>(u8)20)//加速显示
+		)
 	{
-		Err_Event_Cnt++;//闪烁计数及减少程序运行时间
-		if(Err_Event_Cnt > 1)
-		{	
-			Err_Event_Cnt = 0;//红	
-		}
-		Err_Event_1 = 0;
-		Err_Event_2 = 1;			
-	
-		//LCD_ShowxNum(POS_RT_RH_X-40,5,16,4,RT_Temp,0x80,BLACK18); //8表示高位为0也显示,0表示非叠加显示
-		//LCD_ShowxNum(POS_RT_RH_X-40,60,16,4,ERR_RT_Temp_Times,0x80,BLACK18); //
-	
-		if(((No_CQKSensor_Times>1000) || (CQK_Sensor_Temp_No_Change_Times > 6000)) //出气口温度传感器错误检测
-			||(CQKSensor_Hithen800_Times > 250)//连续10S > 80度
-			||(No_ReadData_Temp_Times>20)//加速显示
-			)
-		{
-			CQK_Sensor_Err=(uint8_t)1;
-			CQK_Temp = 0;	
-			LoTemp_CQK_Count	= 0;//传感器错误,不可检测低温报警
-			Working_Normal = 0;//正常工作时间清零	
-			Set_bit(&ERR_Kind,Alarm_Const_CQK_Sensor); 				
-		}
-		else
-		{
-			CQK_Sensor_Err=(uint8_t)0;
-			Clear_bit(&ERR_Kind,Alarm_Const_CQK_Sensor); 				
-		}
-			
-		if((Nochange_Times>900) || (No_ReadData_SHIDU_Times>20) || (RT_Temp_Not_Updated_10mS > 3000))//人体端湿度传感器错误检测
-		{
-			SHIDU_Sensor_Err=(uint8_t)1;
-			RTD_Sensor_Err=(uint8_t)1;
-			RT_SHIDU = 0; 
-			HiTemp_Count = 0;//传感器错误,不可检测高温报警
-			LoTemp_Count = 0;//传感器错误,不可检测低温报警
-			LoHumity_Count = 0;//传感器错误,不可检测低湿报警
-			Working_Normal = 0;//正常工作时间清零		
-			Set_bit(&ERR_Kind,Alarm_Const_RTD_Sensor); 
-		}		
-		else
-		{
-			SHIDU_Sensor_Err=(uint8_t)0;
-			Clear_bit(&ERR_Kind,Alarm_Const_RTD_Sensor); 
-		}
-			
-		if((Nochange_Times>900) ||  (No_ReadData_Temp_Times>20) 
-		|| (ERR_RT_Temp_Times>20) || (RT_Temp_Not_Updated_10mS > 3000))//人体端温度传感器错误检测 2014-07-03
-		{
-			RTD_Sensor_Err=(uint8_t)1;
-			if(ERR_RT_Temp_Times<10)//高温异常报警时温度不清零
-			{
-				RT_Temp = 0; 		
-				Diplay_RTtemp = 0;
-			}
-			HiTemp_Count = 0;//传感器错误,不可检测高温报警
-			LoTemp_Count = 0;//传感器错误,不可检测低温报警
-			LoHumity_Count = 0;//传感器错误,不可检测低湿报警
-			Working_Normal = 0;//正常工作时间清零		
-		}
-		else
-		{
-			RTD_Sensor_Err=(uint8_t)0;
-		}
-			
+		CQK_Sensor_Err=(uint8_t)1;
+		CQK_Temp = 0;	
+		LoTemp_CQK_Count	= 0;//传感器错误,不可检测低温报警
+		Working_Normal = 0;//正常工作时间清零	
+		Set_bit(&ERR_Kind,Alarm_Const_CQK_Sensor); 				
+	}
+	else
+	{
+		CQK_Sensor_Err=(uint8_t)0;
+		Clear_bit(&ERR_Kind,Alarm_Const_CQK_Sensor); 				
+	}
 		
-		if( (No_HeatSensor_Times>150) || (JRP_Sensor_Temp_No_Change_Times > 600))//加热盘传感器错误检测	 
-		{			
-			JRP_Sensor_Err=(uint8_t)1;
-			Set_bit(&ERR_Kind,Alarm_Const_JRP_Sensor); 
-		}
-		else
-		{
-			JRP_Sensor_Err=(uint8_t)0;
-			Clear_bit(&ERR_Kind,Alarm_Const_JRP_Sensor); 
-		}
-		if(HiTemp_Count>2)  //高温错误检测
-		{
-			Set_bit(&ERR_Kind,Alarm_Const_HiTemp);
-		}
-		else
-		{
-			Clear_bit(&ERR_Kind,Alarm_Const_HiTemp);
-		}
-			
+	if((Nochange_Times>(u16)900) || (No_ReadData_SHIDU_Times>(u8)20) || (RT_Temp_Not_Updated_10mS > (u16)3000))//人体端湿度传感器错误检测
+	{
+		SHIDU_Sensor_Err=(uint8_t)1;
+		RTD_Sensor_Err=(uint8_t)1;
+		RT_SHIDU = 0; 
+		HiTemp_Count = 0;//传感器错误,不可检测高温报警
+		LoTemp_Count = 0;//传感器错误,不可检测低温报警
+		LoHumity_Count = 0;//传感器错误,不可检测低湿报警
+		Working_Normal = 0;//正常工作时间清零		
+		Set_bit(&ERR_Kind,Alarm_Const_RTD_Sensor); 
+	}		
+	else
+	{
+		SHIDU_Sensor_Err=(uint8_t)0;
+		Clear_bit(&ERR_Kind,Alarm_Const_RTD_Sensor); 
+	}
 		
-		if(LoTemp_Count>120)  //低温错误检测
+	if((Nochange_Times>(u16)900) ||  (No_ReadData_Temp_Times>(u8)20) 
+	|| (ERR_RT_Temp_Times>(u8)20) || (RT_Temp_Not_Updated_10mS > (u16)3000))//人体端温度传感器错误检测 2014-07-03
+	{
+		RTD_Sensor_Err=(uint8_t)1;
+		if(ERR_RT_Temp_Times<(u8)10)//高温异常报警时温度不清零
 		{
-			Set_bit(&ERR_Kind,Alarm_Const_LoTemp);
-		}	
-		else
-		{
-			Clear_bit(&ERR_Kind,Alarm_Const_LoTemp);
+			RT_Temp = 0; 		
+			Diplay_RTtemp = 0;
 		}
-			
-
-		if(LoHumity_Count>120) //低湿度错误检测
-		{
-			Set_bit(&ERR_Kind,Alarm_Const_LoHumity);//设置低湿度报警标志
-		}
-		else
-		{
-			if (Bit_is_one(ERR_Kind,Alarm_Const_LoHumity)!=(uint8_t)0)
-			{
-				Clear_bit(&ERR_Kind,Alarm_Const_LoHumity);//清除低湿度报警标志
-			}
-		}
-
-	//色块报警  VHB15A_FUNCTION_ALARM_COLOR_DISPLAY
-	/*人体探头出错   	---红
-	 出气口探头出错 	---绿
-	 加热盘探头出错 	---蓝
-	 高温报警 			---黑
-	 低温报警 			---灰
-	 低湿度报警 		---黄
-	 水罐未安装好报警 	---青
-	 发热线未安装或开路	---紫
-	 无水/干烧		    ---黑
-	*/
+		HiTemp_Count = 0;//传感器错误,不可检测高温报警
+		LoTemp_Count = 0;//传感器错误,不可检测低温报警
+		LoHumity_Count = 0;//传感器错误,不可检测低湿报警
+		Working_Normal = 0;//正常工作时间清零		
+	}
+	else
+	{
+		RTD_Sensor_Err=(uint8_t)0;
+	}
+		
 	
-		if(Work_State != UI_STATE_SCREENSAVER_MODE)//屏保时不显示
-		{
-			if((SHIDU_Sensor_Err==(uint8_t)1)||(RTD_Sensor_Err!=(uint8_t)0))	//人体端探头
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+5,RED18);
-			}
-			if(CQK_Sensor_Err==(uint8_t)1)//出气口探头
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+5,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+10,GREEN18);
-			}
-			if(JRP_Sensor_Err==(uint8_t)1)//加热盘探头
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+10,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+15,BLUE18);
-			}
-			if(HiTemp_Count>2)//高温
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+15,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+20,BLACK18);
-			}
-			if(LoTemp_Count>120)//低温
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+20,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+25,GRAY18);
-			}
-			if(LoHumity_Count>120)//低湿度
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+25,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+30,YELLOW18);
-			}
-			if(HeaterPlate_State==0)//水罐未装好或发热盘开路
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+30,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+35,BRIGHT_BLUE18);
-			}
-			if(Wire_Mode_Mismatch == (uint8_t)1)//回路发热丝模式和实际不匹配	
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+35,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+40,PURPLE18);
-			}
-			if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0) //无水(干烧)报警
-			{
-				Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+40,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+45,BLACK18);
-			} 
-		}
+	if( (No_HeatSensor_Times>(u8)150) || (JRP_Sensor_Temp_No_Change_Times > (u16)600))//加热盘传感器错误检测	 
+	{			
+		JRP_Sensor_Err=(uint8_t)1;
+		Set_bit(&ERR_Kind,Alarm_Const_JRP_Sensor); 
+	}
+	else
+	{
+		JRP_Sensor_Err=(uint8_t)0;
+		Clear_bit(&ERR_Kind,Alarm_Const_JRP_Sensor); 
+	}
+	if(HiTemp_Count>(u8)2)  //高温错误检测
+	{
+		Set_bit(&ERR_Kind,Alarm_Const_HiTemp);
+	}
+	else
+	{
+		Clear_bit(&ERR_Kind,Alarm_Const_HiTemp);
+	}
+		
+	
+	if(LoTemp_Count>(u8)120)  //低温错误检测
+	{
+		Set_bit(&ERR_Kind,Alarm_Const_LoTemp);
+	}	
+	else
+	{
+		Clear_bit(&ERR_Kind,Alarm_Const_LoTemp);
+	}
+		
 
+	if(LoHumity_Count>(u8)120) //低湿度错误检测
+	{
+		Set_bit(&ERR_Kind,Alarm_Const_LoHumity);//设置低湿度报警标志
+	}
+	else
+	{
+		if (Bit_is_one(ERR_Kind,Alarm_Const_LoHumity)!=(uint8_t)0)
+		{
+			Clear_bit(&ERR_Kind,Alarm_Const_LoHumity);//清除低湿度报警标志
+		}
+	}
 
-		if(HeaterPlate_State==(uint8_t)0)  //没有放入罐子
+//色块报警  VHB15A_FUNCTION_ALARM_COLOR_DISPLAY
+/*人体探头出错   	---红
+ 出气口探头出错 	---绿
+ 加热盘探头出错 	---蓝
+ 高温报警 			---黑
+ 低温报警 			---灰
+ 低湿度报警 		---黄
+ 水罐未安装好报警 	---青
+ 发热线未安装或开路	---紫
+ 无水/干烧		    ---黑
+*/
+
+	if(Work_State != UI_STATE_SCREENSAVER_MODE)//屏保时不显示
+	{
+		if((SHIDU_Sensor_Err==(uint8_t)1)||(RTD_Sensor_Err!=(uint8_t)0))	//人体端探头
 		{
-			AlarmInfoIndex = (uint8_t)1;
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+5,RED18);
 		}
-		else if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0) //无水错误
+		if(CQK_Sensor_Err==(uint8_t)1)//出气口探头
 		{
-			AlarmInfoIndex = (uint8_t)2;
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+5,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+10,GREEN18);
 		}
-		else if(CQK_Sensor_Err!=(uint8_t)0 || RTD_Sensor_Err!=(uint8_t)0 || SHIDU_Sensor_Err!=(uint8_t)0)
+		if(JRP_Sensor_Err==(uint8_t)1)//加热盘探头
 		{
-			AlarmInfoIndex = (uint8_t)3;
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+10,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+15,BLUE18);
+		}
+		if(HiTemp_Count>(u8)2)//高温
+		{
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+15,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+20,BLACK18);
+		}
+		if(LoTemp_Count>(u8)120)//低温
+		{
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+20,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+25,GRAY18);
+		}
+		if(LoHumity_Count>(u8)120)//低湿度
+		{
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+25,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+30,YELLOW18);
+		}
+		if(HeaterPlate_State==(u8)0)//水罐未装好或发热盘开路
+		{
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+30,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+35,BRIGHT_BLUE18);
+		}
+		if(Wire_Mode_Mismatch == (uint8_t)1)//回路发热丝模式和实际不匹配	
+		{
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+35,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+40,PURPLE18);
+		}
+		if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0) //无水(干烧)报警
+		{
+			Draw_Rectangle_Real(POS_ALARM_COL_X,POS_ALARM_COL_Y+40,POS_ALARM_COL_X+10,POS_ALARM_COL_Y+45,BLACK18);
 		} 
-		else if(Bit_is_one(ERR_Kind,Alarm_Const_HiTemp)!=(uint8_t)0) //高温错误
-		{
-			AlarmInfoIndex = (uint8_t)4;
-		}
-		else if(Bit_is_one(ERR_Kind,Alarm_Const_LoTemp)!=(uint8_t)0) //患者端持续低温
-		{
-			AlarmInfoIndex = (uint8_t)5;
-		}
-		else if(LoTemp_CQK_Count>(uint8_t)120)//出气口持续低温
-		{
-			AlarmInfoIndex = (uint8_t)6;
-		}	
-		else if(Bit_is_one(ERR_Kind,Alarm_Const_LoHumity)!=(uint8_t)0)//持续低湿度错误
-		{
-			AlarmInfoIndex = (uint8_t)7;
-		}
-		else if(Wire_Mode_Mismatch == (uint8_t)1)//回路发热丝模式和实际不匹配	
-		{
-			AlarmInfoIndex = (uint8_t)8;
-		}	
-		else
-		{
-			AlarmInfoIndex = (uint8_t)0;
-			AlarmSoundPauseStatus = (uint8_t)0;//无报警，不可声音暂停
-		}
+	}
 
-		if(AlarmInfoIndex !=  AlarmInfoRem)//报警状态改变
-		{
-			AlarmSoundPauseStatus = 0;//声音暂停取消
-			Sound_Alarm_Pause_Disable();	
-		}	
-					
-		AlarmInfoRem = AlarmInfoIndex;
-		
+
+	if(HeaterPlate_State==(uint8_t)0)  //没有放入罐子
+	{
+		AlarmInfoIndex = (uint8_t)1;
+	}
+	else if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0) //无水错误
+	{
+		AlarmInfoIndex = (uint8_t)2;
+	}
+	else if((CQK_Sensor_Err!=(uint8_t)0) || (RTD_Sensor_Err!=(uint8_t)0) || (SHIDU_Sensor_Err!=(uint8_t)0))
+	{
+		AlarmInfoIndex = (uint8_t)3;
+	} 
+	else if(Bit_is_one(ERR_Kind,Alarm_Const_HiTemp)!=(uint8_t)0) //高温错误
+	{
+		AlarmInfoIndex = (uint8_t)4;
+	}
+	else if(Bit_is_one(ERR_Kind,Alarm_Const_LoTemp)!=(uint8_t)0) //患者端持续低温
+	{
+		AlarmInfoIndex = (uint8_t)5;
+	}
+	else if(LoTemp_CQK_Count>(uint8_t)120)//出气口持续低温
+	{
+		AlarmInfoIndex = (uint8_t)6;
+	}	
+	else if(Bit_is_one(ERR_Kind,Alarm_Const_LoHumity)!=(uint8_t)0)//持续低湿度错误
+	{
+		AlarmInfoIndex = (uint8_t)7;
+	}
+	else if(Wire_Mode_Mismatch == (uint8_t)1)//回路发热丝模式和实际不匹配	
+	{
+		AlarmInfoIndex = (uint8_t)8;
+	}	
+	else
+	{
+		AlarmInfoIndex = (uint8_t)0;
+		AlarmSoundPauseStatus = (uint8_t)0;//无报警，不可声音暂停
+	}
+
+	if(AlarmInfoIndex !=  AlarmInfoRem)//报警状态改变
+	{
+		AlarmSoundPauseStatus = 0;//声音暂停取消
+		Sound_Alarm_Pause_Disable();	
+	}	
+				
+	AlarmInfoRem = AlarmInfoIndex;
 	
-  	//传感器错误==============================================================
-		ERR_Kind&=(uint8_t)0xFE;  ////清除第一位是传感器错误
-		if(CQK_Sensor_Err!=(uint8_t)0 || RTD_Sensor_Err!=(uint8_t)0 || JRP_Sensor_Err!=(uint8_t)0 || SHIDU_Sensor_Err!=(uint8_t)0)
+
+	//传感器错误==============================================================
+	ERR_Kind&=(uint8_t)0xFE;  ////清除第一位是传感器错误
+	if((CQK_Sensor_Err!=(uint8_t)0) || (RTD_Sensor_Err!=(uint8_t)0) || (JRP_Sensor_Err!=(uint8_t)0) || (SHIDU_Sensor_Err!=(uint8_t)0))
+	{
+		ERR_Kind|=(uint8_t)0x01;//第一位是传感器错误
+	} 
+
+	if(Work_State != UI_STATE_SCREENSAVER_MODE)//非屏保模式，否则要先退出屏保模式
+	{	
+		if(HeaterPlate_State==(u8)0)    //无加热盘，显示所有的图片   Plate_State==0
 		{
-			ERR_Kind|=(uint8_t)0x01;//第一位是传感器错误
-		} 
+			Working_Normal = 0;//正常工作时间清零
 
-		if(Work_State != UI_STATE_SCREENSAVER_MODE)//非屏保模式，否则要先退出屏保模式
-		{	
-			if(HeaterPlate_State==0)    //无加热盘，显示所有的图片   Plate_State==0
+			if(Work_State != UI_STATE_SCREENSAVER_MODE)
 			{
-				Working_Normal = 0;//正常工作时间清零
-
-				if(Work_State != UI_STATE_SCREENSAVER_MODE)
+				if(Disp_ERR_VHB80_Code!=(u8)1)
 				{
-					if(Disp_ERR_VHB80_Code!=1)
+					Disp_ERR_VHB80_Code=1;
+					DISP_VHB80_PIC(BLUE18);	
+
+					if(Wire_Mode_Sel_Rem != (uint8_t)Wire_Mode_Sel)
 					{
-						Disp_ERR_VHB80_Code=1;
-						DISP_VHB80_PIC(BLUE18);	
-
-						if(Wire_Mode_Sel_Rem != (uint8_t)Wire_Mode_Sel)
-						{
-							if(Wire_Mode_Sel == Wire_Sel_None)
+						if(Wire_Mode_Sel == Wire_Sel_None)
+						{ 
+							if(Err_Event_Cnt == Err_Event_1) //无加热
 							{ 
-								if(Err_Event_Cnt == Err_Event_1) //无加热
-								{ 
-									Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,GRAY18);  //画吸气管上部，下部
-									Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,GRAY18); 
-								}
-							} 
+								Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,GRAY18);  //画吸气管上部，下部
+								Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,GRAY18); 
+							}
+						} 
 
-							if((Wire_Mode_Sel==Wire_Sel_In_Only) || (Wire_Mode_Sel== Wire_Sel_None))
+						if((Wire_Mode_Sel==Wire_Sel_In_Only) || (Wire_Mode_Sel== Wire_Sel_None))
+						{
+							if(Err_Event_Cnt == Err_Event_1)
 							{
-								if(Err_Event_Cnt == Err_Event_1)
-								{
-									Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //画出气管上部，下部
-									Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //画出气管上部，下部
-									Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //画封口 	       	 	 
-								}
+								Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //画出气管上部，下部
+								Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //画出气管上部，下部
+								Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //画封口 	       	 	 
 							}
 						}
-						Wire_Mode_Sel_Rem = (uint8_t)Wire_Mode_Sel;								 
 					}
-					if(Err_Event_Cnt == Err_Event_1)  	 
-					{
-						color=RED18;//改颜色
-					}
-					else if(Err_Event_Cnt == Err_Event_2)
-					{
-						color=GRAY18;
-					}
-					else 
-					{
-						//do nothing
-					}
-
-					//				 if((Err_Event_Cnt == Err_Event_1)||(Err_Event_Cnt == Err_Event_2))
-					DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color); 
+					Wire_Mode_Sel_Rem = (uint8_t)Wire_Mode_Sel;								 
 				}
-				else
+				if(Err_Event_Cnt == Err_Event_1)  	 
 				{
-					Disp_ERR_VHB80_Code = 0;				
-				}			
-			}
-			else  if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0) //无水(干烧)报警
-			// if(0)
-			{
-				//显示无水错误================================
-				if(Disp_ERR_VHB80_Code!=2)
-				{
-					Disp_ERR_VHB80_Code=2; 
-					DISP_VHB80_PIC(BLUE18);
-				}
-				if(Err_Event_Cnt == Err_Event_1)
-				{
-					color=RED18;          //无水错误改为红色
+					color=RED18;//改颜色
 				}
 				else if(Err_Event_Cnt == Err_Event_2)
 				{
-					color=WHITE18;
+					color=GRAY18;
 				}
 				else 
 				{
 					//do nothing
 				}
-				Draw_Rectangle_Real(POS_HEAT_X,POS_HEAT_Y+2,POS_HEAT_X+8,POS_HEAT_Y+33,color);
-							
+
+				//				 if((Err_Event_Cnt == Err_Event_1)||(Err_Event_Cnt == Err_Event_2))
+				DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color); 
 			}
-			else if(CQK_Sensor_Err!=(uint8_t)0 || RTD_Sensor_Err!=(uint8_t)0 || SHIDU_Sensor_Err!=(uint8_t)0  
-				||(HiTemp_Count>2) || (LoTemp_Count>120) ||(LoTemp_CQK_Count>120)) //探头错误或高低温报警
-			//	 || Heat_ERR
-			//else if(0)
+			else
 			{
-				//显示图形，闪烁错误部分==========================================
-				if(Disp_ERR_VHB80_Code!=3)
-				{
-					Disp_ERR_VHB80_Code=3; 
-					DISP_VHB80_PIC(GRAY18);
-				}	   	
-
-				if(Err_Event_Cnt == Err_Event_1)
-				{
-					color=RED18;  //红
-				}
-				else if(Err_Event_Cnt == Err_Event_2)
-				{
-					color=GRAY18;	//灰
-				}
-				else
-				{
-					//do nothing
-				}
-
-
-				{
-
-					if(CQK_Sensor_Err!=(uint8_t)0||(LoTemp_CQK_Count>(uint8_t)120))//显示出气口错误///
-					{
-						DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,color);
-					}else
-					{
-						DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,GRAY18);
-					} 
-					if(RTD_Sensor_Err!=(uint8_t)0||(HiTemp_Count>(uint8_t)2) || (LoTemp_Count>(uint8_t)120))  //人体端探头错误
-					{ 
-						DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,color);
-					}else
-					{
-						DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,GRAY18);
-					} 
-					if(JRP_Sensor_Err!=(uint8_t)0) //加热盘探头
-					{
-						//DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color);  
-						DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,GRAY18);
-						//DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,RED18); 
-					}else
-					{
-						DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,GRAY18); 
-						//DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,RED18); 				 
-					} 
-				}
-			}
-			else if(Wire_Mode_Mismatch == (uint8_t)1)//回路发热丝模式和实际不匹配	
-				//else if(0)
+				Disp_ERR_VHB80_Code = 0;				
+			}			
+		}
+		else  if(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0) //无水(干烧)报警
+		// if(0)
+		{
+			//显示无水错误================================
+			if(Disp_ERR_VHB80_Code!=(u8)2)
 			{
-				Working_Normal = (uint16_t)0;//正常工作时间清零	
-
-				{
-					if(Disp_ERR_VHB80_Code!=4)
-					{
-						Disp_ERR_VHB80_Code=4; 
-						DISP_VHB80_PIC(BLUE18);
-					}
-
-					//画In加热线段
-					if(WireIn_State > 0)//有In回路发热丝，显示蓝色
-					{
-						color=BLUE18;
-					}
-					else
-					{
-						color=GRAY18;//无In回路发热丝，显示灰色
-					}
-					if(Err_Event_Cnt <= Err_Event_1)//显示当前状态，有或者无，蓝色或灰色
-					{//按上面的颜色显示
-					}								
-					else if(Err_Event_Cnt <= Err_Event_2)//根据模式确定显示红色报警还是当前状态颜色
-					{
-						if(((WireIn_State == 0)&&(Wire_Mode_Sel == Wire_Sel_None))//无In回路发热丝且是None模式不需要报警
-							||((WireIn_State == 1)&&(Wire_Mode_Sel == Wire_Sel_Double))//有In回路发热丝且是双支模式不需要报警
-							||((WireIn_State == 1)&&(Wire_Mode_Sel == Wire_Sel_In_Only)))//有In回路发热丝且是单支模式不需要报警
-						
-						{
-						}
-						else//除以上情况均需要报警:如无In时单/双支/Un,有In时None/Un
-						{
-							color=RED18;
-						}
-					}
-					else 
-					{
-						//do nothing
-					}
-					
-					Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,color);  //画吸气管上部，下部
-					Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,color); 			
-			
-						
-					 //画Exp加热线段
-					if(WireOut_State > 0)//有Out回路发热丝，显示蓝色
-					{
-						color=BLUE18;
-					}
-					else
-					{
-						color=GRAY18;//无Out回路发热丝，显示灰色
-					}
-					if(Err_Event_Cnt <= Err_Event_1)//显示当前状态，有或者无，蓝色或灰色
-					{//按上面的颜色显示
-					}								
-					else if(Err_Event_Cnt <= Err_Event_2)//根据模式确定显示红色报警还是当前状态颜色
-					{
-						if(((WireOut_State == 0)&&(Wire_Mode_Sel == Wire_Sel_None))//无Out回路发热丝且是None模式不需要报警
-							||((WireOut_State == 0)&&(Wire_Mode_Sel == Wire_Sel_In_Only))//无Out回路发热丝且是单支模式不需要报警
-							||((WireOut_State == 1)&&(Wire_Mode_Sel == Wire_Sel_Double)))//有In回路发热丝且是双支模式不需要报警							
-						
-						{
-						}
-						else//除以上情况均需要报警:如无Out时双支/Un,有Out时单/None/Un
-						{
-							color=RED18;
-						}
-					}
-					else
-					{
-						//do nothing
-					}
-						
-					Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,color);  //画出气管上部，下部
-					Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,color);   //画出气管上部，下部
-					Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,color);  //画封口 
-				}    		 
+				Disp_ERR_VHB80_Code=2; 
+				DISP_VHB80_PIC(BLUE18);
 			}
-			else if(JRP_Sensor_Err!=(uint8_t)0)//加热盘探头错误
+			if(Err_Event_Cnt == Err_Event_1)
 			{
-				Working_Normal = 0;//正常工作时间清零		
-				//显示图形，闪烁错误部分==========================================
-				if(Disp_ERR_VHB80_Code!=5)
-				{
-					Disp_ERR_VHB80_Code=5; 
-					DISP_VHB80_PIC(GRAY18);
-				}	
-				if(Err_Event_Cnt == Err_Event_1)
-				{
-						//color=RED18;  //红
-					color=BLUE18;	//灰
-				}
-				//else
-				else if(Err_Event_Cnt == Err_Event_2)
-				{
-					color=GRAY18;	//灰
-				}
-				else
-				{
-					//do nothing
-				}
-				DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color); 	
-		 
+				color=RED18;          //无水错误改为红色
 			}
-			else if((Wire_Mode_Sel==Wire_Sel_In_Only) || (Wire_Mode_Sel== Wire_Sel_None))//经过确认后的单支加热或无加热回路	
-			{	
-
-				if(Work_State != UI_STATE_SCREENSAVER_MODE)  //没有屏幕保护时才能显示加热模式
-				{
-					if(Disp_ERR_VHB80_Code!=6)
-					{
-						Disp_ERR_VHB80_Code=6; 
-						DISP_VHB80_PIC(BLUE18);
-					}
-
-					//画加热线 
-					if(Err_Event_Cnt == Err_Event_1) //		
-					{	
-						if(Wire_Mode_Sel_Rem != (uint8_t)Wire_Mode_Sel)
-						{				 
-							if(Wire_Mode_Sel == Wire_Sel_None)//无加热丝
-							{ 
-								Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,GRAY18);  //画吸气管上部，下部
-								Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,GRAY18); 
-							
-								Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //画出气管上部，下部
-								Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //画出气管上部，下部
-								Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //画封口 				
-							} 
-							else if(Wire_Mode_Sel==Wire_Sel_In_Only)
-							{
-								Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,BLUE18);  //画吸气管上部，下部
-								Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,BLUE18); 
-								
-								Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //画出气管上部，下部
-								Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //画出气管上部，下部
-								Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //画封口 
-							}
-							else
-							{
-								//do nothing
-							}
-						}
-						Wire_Mode_Sel_Rem = (uint8_t)Wire_Mode_Sel;
-					}	
-				}			
-			}
-			else   //消除所有错误显示
+			else if(Err_Event_Cnt == Err_Event_2)
 			{
-				if(Disp_ERR_VHB80_Code!=0)
+				color=WHITE18;
+			}
+			else 
+			{
+				//do nothing
+			}
+			Draw_Rectangle_Real(POS_HEAT_X,POS_HEAT_Y+2,POS_HEAT_X+8,POS_HEAT_Y+33,color);
+						
+		}
+		else if((CQK_Sensor_Err!=(uint8_t)0) || (RTD_Sensor_Err!=(uint8_t)0) || (SHIDU_Sensor_Err!=(uint8_t)0)  
+			||(HiTemp_Count>(u8)2) || (LoTemp_Count>(u8)120) ||(LoTemp_CQK_Count>(u8)120)) //探头错误或高低温报警
+		//	 || Heat_ERR
+		//else if(0)
+		{
+			//显示图形，闪烁错误部分==========================================
+			if(Disp_ERR_VHB80_Code!=(u8)3)
+			{
+				Disp_ERR_VHB80_Code=3; 
+				DISP_VHB80_PIC(GRAY18);
+			}	   	
+
+			if(Err_Event_Cnt == Err_Event_1)
+			{
+				color=RED18;  //红
+			}
+			else if(Err_Event_Cnt == Err_Event_2)
+			{
+				color=GRAY18;	//灰
+			}
+			else
+			{
+				//do nothing
+			}
+
+
+			{
+
+				if((CQK_Sensor_Err!=(uint8_t)0)||(LoTemp_CQK_Count>(uint8_t)120))//显示出气口错误///
 				{
-					Disp_ERR_VHB80_Code=0;
-					DISP_VHB80_PIC(WHITE18);  	  	
-				}     
+					DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,color);
+				}else
+				{
+					DISP_CQK25X24(POS_CQK_X,POS_CQK_Y,GRAY18);
+				} 
+				if((RTD_Sensor_Err!=(uint8_t)0)||(HiTemp_Count>(uint8_t)2) || (LoTemp_Count>(uint8_t)120))  //人体端探头错误
+				{ 
+					DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,color);
+				}else
+				{
+					DISP_RTD28X24(POS_RTD_X,POS_RTD_Y,GRAY18);
+				} 
+				if(JRP_Sensor_Err!=(uint8_t)0) //加热盘探头
+				{
+					//DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color);  
+					DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,GRAY18);
+					//DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,RED18); 
+				}else
+				{
+					DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,GRAY18); 
+					//DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,RED18); 				 
+				} 
 			}
 		}
-   //DISP_TIME_10X16(POS_RT_RH_X,POS_RT_RH_Y+145,Disp_ERR_VHB80_Code,BLACK18);
+		else if(Wire_Mode_Mismatch == (uint8_t)1)//回路发热丝模式和实际不匹配	
+			//else if(0)
+		{
+			Working_Normal = (uint16_t)0;//正常工作时间清零	
+
+			{
+				if(Disp_ERR_VHB80_Code!=(u8)4)
+				{
+					Disp_ERR_VHB80_Code=4; 
+					DISP_VHB80_PIC(BLUE18);
+				}
+
+				//画In加热线段
+				if(WireIn_State > (u8)0)//有In回路发热丝，显示蓝色
+				{
+					color=BLUE18;
+				}
+				else
+				{
+					color=GRAY18;//无In回路发热丝，显示灰色
+				}
+				if(Err_Event_Cnt <= Err_Event_1)//显示当前状态，有或者无，蓝色或灰色
+				{//按上面的颜色显示
+				}								
+				else if(Err_Event_Cnt <= Err_Event_2)//根据模式确定显示红色报警还是当前状态颜色
+				{
+					if(((WireIn_State ==(u8) 0)&&(Wire_Mode_Sel == Wire_Sel_None))//无In回路发热丝且是None模式不需要报警
+						||((WireIn_State == (u8)1)&&(Wire_Mode_Sel == Wire_Sel_Double))//有In回路发热丝且是双支模式不需要报警
+						||((WireIn_State == (u8)1)&&(Wire_Mode_Sel == Wire_Sel_In_Only)))//有In回路发热丝且是单支模式不需要报警
+					
+					{
+					}
+					else//除以上情况均需要报警:如无In时单/双支/Un,有In时None/Un
+					{
+						color=RED18;
+					}
+				}
+				else 
+				{
+					//do nothing
+				}
+				
+				Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,color);  //画吸气管上部，下部
+				Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,color); 			
+		
+					
+				 //画Exp加热线段
+				if(WireOut_State > (u8)0)//有Out回路发热丝，显示蓝色
+				{
+					color=BLUE18;
+				}
+				else
+				{
+					color=GRAY18;//无Out回路发热丝，显示灰色
+				}
+				if(Err_Event_Cnt <= Err_Event_1)//显示当前状态，有或者无，蓝色或灰色
+				{//按上面的颜色显示
+				}								
+				else if(Err_Event_Cnt <= Err_Event_2)//根据模式确定显示红色报警还是当前状态颜色
+				{
+					if(((WireOut_State == (u8)0)&&(Wire_Mode_Sel == Wire_Sel_None))//无Out回路发热丝且是None模式不需要报警
+						||((WireOut_State == (u8)0)&&(Wire_Mode_Sel == Wire_Sel_In_Only))//无Out回路发热丝且是单支模式不需要报警
+						||((WireOut_State == (u8)1)&&(Wire_Mode_Sel == Wire_Sel_Double)))//有In回路发热丝且是双支模式不需要报警							
+					
+					{
+					}
+					else//除以上情况均需要报警:如无Out时双支/Un,有Out时单/None/Un
+					{
+						color=RED18;
+					}
+				}
+				else
+				{
+					//do nothing
+				}
+					
+				Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,color);  //画出气管上部，下部
+				Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,color);   //画出气管上部，下部
+				Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,color);  //画封口 
+			}    		 
+		}
+		else if(JRP_Sensor_Err!=(uint8_t)0)//加热盘探头错误
+		{
+			Working_Normal = 0;//正常工作时间清零		
+			//显示图形，闪烁错误部分==========================================
+			if(Disp_ERR_VHB80_Code!=(u8)5)
+			{
+				Disp_ERR_VHB80_Code=5; 
+				DISP_VHB80_PIC(GRAY18);
+			}	
+			if(Err_Event_Cnt == Err_Event_1)
+			{
+					//color=RED18;  //红
+				color=BLUE18;	//灰
+			}
+			//else
+			else if(Err_Event_Cnt == Err_Event_2)
+			{
+				color=GRAY18;	//灰
+			}
+			else
+			{
+				//do nothing
+			}
+			DISP_HEAT_36X24(POS_HEAT_X,POS_HEAT_Y,color); 	
+	 
+		}
+		else if((Wire_Mode_Sel==Wire_Sel_In_Only) || (Wire_Mode_Sel== Wire_Sel_None))//经过确认后的单支加热或无加热回路	
+		{	
+
+			if(Work_State != UI_STATE_SCREENSAVER_MODE)  //没有屏幕保护时才能显示加热模式
+			{
+				if(Disp_ERR_VHB80_Code!=(u8)6)
+				{
+					Disp_ERR_VHB80_Code=6; 
+					DISP_VHB80_PIC(BLUE18);
+				}
+
+				//画加热线 
+				if(Err_Event_Cnt == Err_Event_1) //		
+				{	
+					if(Wire_Mode_Sel_Rem != (uint8_t)Wire_Mode_Sel)
+					{				 
+						if(Wire_Mode_Sel == Wire_Sel_None)//无加热丝
+						{ 
+							Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,GRAY18);  //画吸气管上部，下部
+							Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,GRAY18); 
+						
+							Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //画出气管上部，下部
+							Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //画出气管上部，下部
+							Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //画封口 				
+						} 
+						else if(Wire_Mode_Sel==Wire_Sel_In_Only)
+						{
+							Draw_Rectangle_Real(POS_XQGS_X1,POS_XQGS_Y1,POS_XQGS_X2,POS_XQGS_Y2,BLUE18);  //画吸气管上部，下部
+							Draw_Rectangle_Real(POS_XQGX_X1,POS_XQGX_Y1,POS_XQGX_X2,POS_XQGX_Y2,BLUE18); 
+							
+							Draw_Rectangle_Real(POS_CQGS_X1,POS_CQGS_Y1,POS_CQGS_X2,POS_CQGS_Y2,GRAY18);  //画出气管上部，下部
+							Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGX_X2,POS_CQGX_Y2,GRAY18);   //画出气管上部，下部
+							Draw_Rectangle_Real(POS_CQGX_X1,POS_CQGX_Y1,POS_CQGS_X2,POS_CQGX_Y1+1,GRAY18);  //画封口 
+						}
+						else
+						{
+							//do nothing
+						}
+					}
+					Wire_Mode_Sel_Rem = (uint8_t)Wire_Mode_Sel;
+				}	
+			}			
+		}
+		else   //消除所有错误显示
+		{
+			if(Disp_ERR_VHB80_Code!=(u8)0)
+			{
+				Disp_ERR_VHB80_Code=0;
+				DISP_VHB80_PIC(WHITE18);  	  	
+			}     
+		}
 	}
+ //DISP_TIME_10X16(POS_RT_RH_X,POS_RT_RH_Y+145,Disp_ERR_VHB80_Code,BLACK18);
+
 }	  
 
 //void Event_1s(void)       //1秒钟事件 内部定时中断置标志
@@ -2110,25 +2136,25 @@ void LowTempDet1SFunc(void)
 	static uint16_t     Last1s_RThumity=0;
 	static uint16_t     Last1s_RTtemp=0;
 
-	if(Working_Normal < 65000)
+	if(Working_Normal < (u16)65000)
 	{
 		Working_Normal++;
 	}
 
 
-	if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == 1))
+	if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == (u8)1))
 	{
 		LCD_ShowxNum(105,180,16,3,RT_Temp_Reach_Set_Cnt,0x80,BLACK18); //
 		LCD_ShowxNum(105,215,16,3,LoTemp_Count,0x80,BLACK18); //	
 	}
 
 
-	if(Wire_Warm_Up_Sec < 900)
+	if(Wire_Warm_Up_Sec < (u16)900)
 	{
 		Wire_Warm_Up_Sec++;
 	}
 
-	if(Plate_Warm_Up_Sec < 900)
+	if(Plate_Warm_Up_Sec < (u16)900)
 	{
 		Plate_Warm_Up_Sec++;
 	}
@@ -2138,7 +2164,7 @@ void LowTempDet1SFunc(void)
   {	
 		if((Last1s_RThumity==CONTROL_RT_SHIDU) && (Last1s_RTtemp==(uint16_t)RT_Temp))	//人体端温度和湿度同时不改变
 		{
-			if(Nochange_Times<1000)
+			if(Nochange_Times<(u16)1000)
 			{
 				Nochange_Times++;
 			}				
@@ -2171,17 +2197,17 @@ void LowTempDet1SFunc(void)
 		Clear_bit(&ERR_Kind,Alarm_Const_NoWater);   	
 	} 
 	 
-	if(RT_SHIDU >= 900) //便于快速检测，只要湿度达到90%持续10S，然后连续2分钟小于60%则报警
+	if(RT_SHIDU >= (u16)900) //便于快速检测，只要湿度达到90%持续10S，然后连续2分钟小于60%则报警
 	{		 
 		RT_SHIDU_More_then_90_Cnt++;
-		if(RT_SHIDU_More_then_90_Cnt >= 10)//连续10秒超过90%
+		if(RT_SHIDU_More_then_90_Cnt >= (u8)10)//连续10秒超过90%
 		{
 			RT_SHIDU_More_then_90_Cnt = 10;
 		}
 	}
 	else
 	{
-		if(RT_SHIDU_More_then_90_Cnt < 10)//小于90%且在10次以内则清零,10次以上则不清零
+		if(RT_SHIDU_More_then_90_Cnt < (u8)10)//小于90%且在10次以内则清零,10次以上则不清零
 		{
 			RT_SHIDU_More_then_90_Cnt = 0;
 		}
@@ -2189,15 +2215,15 @@ void LowTempDet1SFunc(void)
 
 	//干烧报警	<60% 
 	//if(Work_Min>=20||Work_Day>0 ||Work_Hour>0) //|| RT_SHIDU_More_then_90_Cnt >= 10)
-	if(Working_Normal >= 1200)
+	if(Working_Normal >= (u16)1200)
 	{
-		if(RT_SHIDU<600) //连续2分钟少于60%报警	 认为是干烧，必须重启机器
+		if(RT_SHIDU<(u16)600) //连续2分钟少于60%报警	 认为是干烧，必须重启机器
 		{  		   		
-			if(No_Water_Times<240) 
+			if(No_Water_Times<(u8)240) 
 			{
 				No_Water_Times++;
 			}				
-			if(RTD_Sensor_Err!=(uint8_t)0 || SHIDU_Sensor_Err!=(uint8_t)0) //传感器错误不可依湿度来检测无水报警
+			if((RTD_Sensor_Err!=(uint8_t)0) || (SHIDU_Sensor_Err!=(uint8_t)0)) //传感器错误不可依湿度来检测无水报警
 			{
 				No_Water_Times = 0;
 			}
@@ -2206,13 +2232,13 @@ void LowTempDet1SFunc(void)
 		{
 			No_Water_Times=0;
 		}
-		if( No_Water_Times>=120)
+		if( No_Water_Times>=(u8)120)
 		{
 			Set_bit(&ERR_Kind,Alarm_Const_NoWater);
 		} 
 	}
 	 
-	if(RT_SHIDU>650)//温度大于65%，取消无水报警
+	if(RT_SHIDU>(u16)650)//温度大于65%，取消无水报警
 	{
 	 No_Water_Times=0;
 	 Clear_bit(&ERR_Kind,Alarm_Const_NoWater);
@@ -2226,24 +2252,24 @@ void LowTempDet1SFunc(void)
 		if(RT_Temp >= (Set_RT_Temp - 15)) //便于快速检测，只要达到设定温度-1.5度10S，然后连续2分钟小于60%则报警
 		{		 
 			RT_Temp_Reach_Set_Cnt++;
-			if(RT_Temp_Reach_Set_Cnt >= 180)//连续180秒超过设定-1
+			if(RT_Temp_Reach_Set_Cnt >= (u8)180)//连续180秒超过设定-1
 			{
 				RT_Temp_Reach_Set_Cnt = 180;
 			}
 		}
 		else
 		{
-			if(RT_Temp_Reach_Set_Cnt < 180)//小于设定且在10次以内则清零,10次以上则不清零
+			if(RT_Temp_Reach_Set_Cnt < (u8)180)//小于设定且在10次以内则清零,10次以上则不清零
 			{
 				RT_Temp_Reach_Set_Cnt = 0;
 			}
 		}
 	}	
 		
-	if(Work_Mode==Noninvasive_Mode)//无创模式
+	if(Work_Mode==(u8)Noninvasive_Mode)//无创模式
 	{
 		a = Const_NoninvasPatientTemp_Max+10;//高温报警限值
-		if(WireIn_State!=0)//有加热丝单支或双支
+		if(WireIn_State!=(u8)0)//有加热丝单支或双支
 		{
 			b = Const_NoninvasPatientTemp_Min-10;//无创低温报警限值 29度
 		}
@@ -2254,10 +2280,10 @@ void LowTempDet1SFunc(void)
 		//c = 700;//低湿报警限值 V2.0
 		c = 300;//低湿报警限值 V2.02 无创模式取消低湿度报警
 	}
-	else if(Work_Mode==Invasive_Mode) //有创模式
+	else if(Work_Mode==(u8)Invasive_Mode) //有创模式
 	{
 		a = Const_InvasPatientTemp_Max+10;
-		if(WireIn_State!=0)//有加热丝单支或双支
+		if(WireIn_State!=(u8)0)//有加热丝单支或双支
 		{
 			b = Const_InvasPatientTemp_Min-10;//有创低温报警限值 34度
 		}
@@ -2275,7 +2301,7 @@ void LowTempDet1SFunc(void)
 
 	if(Diplay_RTtemp>a)
 	{
-		if(HiTemp_Count<240)
+		if(HiTemp_Count<(u8)240)
 		{
 			HiTemp_Count++;
 		}			
@@ -2293,19 +2319,19 @@ void LowTempDet1SFunc(void)
 
 //人体端低温报警		
 	//if(Work_Min>=20||Work_Day>0 ||Work_Hour>0)// || RT_Temp_Reach_Set_Cnt >= 180)	 //人体低温报警
-	if(Working_Normal >= 1200)//20分钟
+	if(Working_Normal >= (u16)1200)//20分钟
 	{
-		if((RT_Temp_Reach_Set_Cnt >= 180)//达到温度连续180S
+		if((RT_Temp_Reach_Set_Cnt >= (u8)180)//达到温度连续180S
 		//&&(WireIn_State!=0)//有加热丝单支或双支
-		&&(Diplay_RTtemp <= ((uint16_t)Set_RT_Temp - 30)))//温度低于设定温度3度	//气源中断或探头脱落		  
+		&&(Diplay_RTtemp <= ((uint16_t)Set_RT_Temp - (u16)30)))//温度低于设定温度3度	//气源中断或探头脱落		  
 		{
-			if(((WireIn_State!=0) && (Micro_Temp_In >= 190)))//有加热丝单支或双支
+			if(((WireIn_State!=(u8)0) && (Micro_Temp_In >= (u16)190)))//有加热丝单支或双支
 			 //||(WireIn_State==0))//无发热丝不一定是全功率加热 无发热丝不使用 
 
 			{
-				if(LoTemp_Count<240)
+				if(LoTemp_Count<(u8)240)
 				{
-					LoTemp_Count+= 12;	//当温度达到设定温度后，连续10S下降到设定温度-2.5度，低温报警	
+					LoTemp_Count+= (u8)12;	//当温度达到设定温度后，连续10S下降到设定温度-2.5度，低温报警	
 				}					
 			}
 			else 
@@ -2315,9 +2341,9 @@ void LowTempDet1SFunc(void)
 		}
 		else if(Diplay_RTtemp<b)//55分钟开始检测温度过低报警
 		{
-			if(Working_Normal >= 3300)
+			if(Working_Normal >= (u16)3300)
 			{
-				if(LoTemp_Count<240) 
+				if(LoTemp_Count<(u8)240) 
 				{
 					LoTemp_Count++;
 				}
@@ -2335,11 +2361,11 @@ void LowTempDet1SFunc(void)
 
 //人体端低湿报警			
 	//if(Work_Min>=20||Work_Day>0 ||Work_Hour>0)// || RT_SHIDU_More_then_90_Cnt >= 10)	 //人体低湿报警
-	if(Working_Normal >= 1200)
+	if(Working_Normal >= (u16)1200)
 	{
-		if(RT_SHIDU<c)	  //2014-07-23	  低湿度报警
+		if(RT_SHIDU<(u16)c)	  //2014-07-23	  低湿度报警
 		{
-			if(LoHumity_Count<250) 
+			if(LoHumity_Count<(u8)250) 
 			{
 				LoHumity_Count++;
 			}				
@@ -2359,27 +2385,27 @@ void LowTempDet1SFunc(void)
 	if(CQK_Temp >= 300) //便于快速检测，只要达到设定温度10S，然后连续2分钟小于60%则报警
 	{		 
 		CQK_Temp_Reach_Set_Cnt++;
-		if(CQK_Temp_Reach_Set_Cnt >= 10)//连续10秒达到
+		if(CQK_Temp_Reach_Set_Cnt >= (u8)10)//连续10秒达到
 		{
 			CQK_Temp_Reach_Set_Cnt = 10;
 		}
 	}
 	else
 	{
-		if(CQK_Temp_Reach_Set_Cnt < 10)//10次以内则清零,10次以上则不清零
+		if(CQK_Temp_Reach_Set_Cnt < (u8)10)//10次以内则清零,10次以上则不清零
 		{
 			CQK_Temp_Reach_Set_Cnt = 0;
 		}
 	}	
 
-	if(Working_Normal >= 1200)
+	if(Working_Normal >= (u16)1200)
 	{
 		if((CQK_Temp < (Const_NoninvasChamberTemp_Min - 10))
-		 &&(Work_Mode==Invasive_Mode))//有创模式才有出气口低温报警
+		 &&(Work_Mode==(u8)Invasive_Mode))//有创模式才有出气口低温报警
 		{
-			if(LoTemp_CQK_Count<240)
+			if(LoTemp_CQK_Count<(u8)240)
 			{
-				if(CQK_Temp_Reach_Set_Cnt>= 10)//若达到过温度则加快速度
+				if(CQK_Temp_Reach_Set_Cnt>= (u8)10)//若达到过温度则加快速度
 				{
 					//LoTemp_CQK_Count += 12;
 					LoTemp_CQK_Count++;
@@ -2403,55 +2429,56 @@ void LowTempDet1SFunc(void)
 
 void SaveDateToFlashFunc(void)
 {
-	static uint8_t     Enable_Save_Data=0;  //保存数据计数
+
 	uint16_t a,b,c;//
 	UINT32 Adress;	
-	if(Enable_Save_Data>=1)
+	INT tmp=0;
+	if(Enable_Save_Data>=(uint8_t)1)
 	{
 		Enable_Save_Data++;
-		if(Enable_Save_Data>=10)
+		if(Enable_Save_Data>=(uint8_t)10)
 		{
-			Enable_Save_Data=0;
+			Enable_Save_Data=(uint8_t)0;
 		}			
 	}
-	if(Enable_Save_Data==2)
+	if(Enable_Save_Data==(uint8_t)2)
 	{
-		if(((Run_Count-1)%256)==0)//一个扇区为4K，每次存储的数据为16字节，即256组数据即为4K 256*16=4096;
+		if(((Run_Count-(u16)1)%(u16)256)==(u16)0)//一个扇区为4K，每次存储的数据为16字节，即256组数据即为4K 256*16=4096;
 		{
 			//清除下面256的数据
-			Adress=Run_Count-1;	 //假设为257-1=256
+			Adress=Run_Count-(u16)1;	 //假设为257-1=256
 			Adress=(Adress<<4);	 //	 256*16= 4096
-			Adress=Adress+0x2000;//起始地址为0X2000，即8192为保留字节
+			Adress=Adress+(UINT32)0x2000;//起始地址为0X2000，即8192为保留字节
 			SPI_Erase_Sector(Adress);
 		}
 	}
-	else  if(Enable_Save_Data==3)//存放数据
+	else  if(Enable_Save_Data==(uint8_t)3)//存放数据
 	{
-		Adress=Run_Count-1;
+		Adress=Run_Count-(u16)1;
 		Adress=(Adress<<4);
-		Adress=Adress+0x2000; 
+		Adress=Adress+(UINT32)0x2000; 
 		 
 		{
 			RX8010_GetTime(SaveData);
 
 			//LCD_ShowxNum(POS_RT_RH_X-40,5,16,3,SaveData[2],0x80,BLACK18); //
 
-			a = ((SaveData[2]&(uint8_t)0x0F)%10) + (((SaveData[2]>>(uint8_t)4)& (uint8_t)0x03)*10);
+			a = (((u16)SaveData[2]&(u16)0x0F)%(u16)10) + ((((u16)SaveData[2]>>(u16)4)& (u16)0x03)*(u16)10);
 			SaveData[2] = (uint8_t)a;//转换为24小时制小时
 
 			//LCD_ShowxNum(POS_RT_RH_X-40,45,16,3,SaveData[2],0x80,BLACK18); //
 			
-			if(SaveData[2] >= 12)
+			if(SaveData[2] >= (u8)12)
 			{
 				a = (uint16_t)((u8)0x80 | (u8)0x20);//PM
-				SaveData[2] -= 12;
+				SaveData[2] -= (u8)12;
 			}
 			else
 			{
 				a = 0x80;//AM
 			}
-			b = SaveData[2]/10;
-			c = SaveData[2]%10;
+			b = (u16)SaveData[2]/(u16)10;
+			c = (u16)SaveData[2]%(u16)10;
 			SaveData[2] = (uint8_t)(((b << 4) + c) | a);//时间转换为DS1302格式
 			 
 			 //LCD_ShowxNum(POS_RT_RH_X-40,95,16,3,SaveData[2],0x80,BLACK18); //
@@ -2469,43 +2496,61 @@ void SaveDateToFlashFunc(void)
 		if(JRP_Sensor_Err!=(uint8_t)0)
 		{
 			SaveData[7]|=(uint8_t)0x80;
-		}			    		
-		SaveData[8]=(uint8_t)(RT_Temp/256);
-		SaveData[9]=(uint8_t)(RT_Temp%256);
-		SaveData[10]=(uint8_t)(RT_SHIDU/256);
-		SaveData[11]=RT_SHIDU%256; 
+		}		
+		
+		
+//		SaveData[8]=(uint8_t)RT_Temp/256;
+//		SaveData[9]=(uint8_t)(RT_Temp%256);
+		tmp=RT_Temp/256;
+		SaveData[8]=(uint8_t)tmp;
+		tmp=RT_Temp%256;
+		SaveData[9]=(uint8_t)tmp;
+		
+		SaveData[10]=(uint8_t)(RT_SHIDU/(u16)256);
+		SaveData[11]=(u8)(RT_SHIDU%(u16)256); 
+		
+		
 		//SaveData[10]=CONTROL_RT_SHIDU/256;	//2015-06-04 存储真实的湿度
 		//SaveData[11]=CONTROL_RT_SHIDU%256; 
 
-		SaveData[12]=(uint8_t)(CQK_Temp/256);   	
-		SaveData[13]=(uint8_t)(CQK_Temp%256);
-		SaveData[14]=(uint8_t)(JEP_Temp/256);
-		SaveData[15]=(uint8_t)(JEP_Temp%256);
+		tmp=(INT)CQK_Temp/256;
+		SaveData[12]=(uint8_t)tmp;  
+		tmp=(INT)CQK_Temp%256;
+		SaveData[13]=(uint8_t)tmp;
+		tmp=JEP_Temp/256;
+		SaveData[14]=(uint8_t)tmp;
+		tmp=JEP_Temp%256;
+		SaveData[15]=(uint8_t)tmp;
+		
+//		SaveData[12]=(uint8_t)(CQK_Temp/256);   	
+//		SaveData[13]=(uint8_t)(CQK_Temp%256);
+//		SaveData[14]=(uint8_t)(JEP_Temp/256);
+//		SaveData[15]=(uint8_t)(JEP_Temp%256);
 		SPI_Write_nBytes(Adress,16,&SaveData[0]);
 
 	}
-	else if(Enable_Save_Data==4)  //存放数据地址
+	else if(Enable_Save_Data==(uint8_t)4)  //存放数据地址
 	{
 		Store_Data();   	 
 	}
-	else if(Enable_Save_Data==5)  //擦调数据
+	else if(Enable_Save_Data==(uint8_t)5)  //擦调数据
 	{
 		//清除所有数据,重新计数
-		if(Run_Count>=44896) 
+		if(Run_Count>=(u16)44896) 
 		{
 			SPI_Erase_Sector(0x000);
 		}
 	}
-	else if(Enable_Save_Data==6)  //擦调数据
+	else if(Enable_Save_Data==(uint8_t)6)  //擦调数据
 	{
 		//清除所有数据,重新计数
-		if(Run_Count>=44896) 
+		if(Run_Count>=(u16)44896) 
 		{	
 			SPI_Erase_Sector(0x1000);        
 			Run_Count=0;
 		}  
 	} 
-	else if(Enable_Save_Data==9)  //擦数据
+	else if(Enable_Save_Data==(uint8_t)9)  //擦数据
 	{
 		//do nothing
 	} 
@@ -2532,17 +2577,17 @@ void	Init_port(void) //初始化端口状态--------------------------------
 
 	WDT_CONTR = 0x3F; //WDT Enable(4.55S)		
 	LCD_LIGHT_CLOSE; 	
-	Rec_Count=0;
-	Buzzer_Port=0;
-	Heat_JRP_Port=0;
-	Heat_WireIn_Port=0;
-	Heat_WireOut_Port=0;
-	Heat_WIRE_EN_OUT = 1;
-	EX1=1;
-	IT1=1;	 
+//	Rec_Count=0;
+	Buzzer_Port=(bit)0;
+	Heat_JRP_Port=(bit)0;
+	Heat_WireIn_Port=(bit)0;
+	Heat_WireOut_Port=(bit)0;
+	Heat_WIRE_EN_OUT = (bit)1;
+	EX1=(bit)1;
+	IT1=(bit)1;	 
 	LCD_1DIR_L;			
 	JEP_Temp=0;
-	EA=1;  //
+	EA=(bit)1;  //
 	 
 	EUSART_Initialize();//Uart initialization
   SPI_init();//SPI Flash initialization
@@ -2562,23 +2607,23 @@ void	Init_port(void) //初始化端口状态--------------------------------
 	if((KEY_LEFT_DOWN_IN==0) &&(KEY_RIGHT_DOWN_IN==0))
 	{
 		Work_State = UI_STATE_DATAREADER_MODE;//数据传输界面
-		ET0=0;
-		TR0=0;
+//		ET0=0;
+//		TR0=0;
 		Back_Color=WHITE18;	
 
 		Draw_Rectangle_Real(0,0,239,319,WHITE18);
 //Display Data Reading Interface===============	DATA OUTPUT...
-		for(j=4;j<8;j++)
+		for(j=4;j<(u16)8;j++)
 		{
-				DISP_FNT10X24(115,100+((j-4)*12),(uint8_t)j,BLUE18);
+				DISP_FNT10X24((u8)115,(u16)100+((j-(u16)4)*(u16)12),(uint8_t)j,BLUE18);
 		}
-		for(j=j;j<14;j++)
+		for(j=j;j<(u16)14;j++)
 		{
-				DISP_FNT10X24(115,100+((j-3)*12),(uint8_t)j,BLUE18);
+				DISP_FNT10X24((u8)115,(u16)100+((j-(u16)3)*(u16)12),(uint8_t)j,BLUE18);
 		}		
-		DISP_FNT10X24(115,100+(11*12),14,BLUE18);
-		DISP_FNT10X24(115,100+(12*12),14,BLUE18);
-		DISP_FNT10X24(115,100+(13*12),14,BLUE18);	
+		DISP_FNT10X24((u8)115,(u16)100+((u16)11*(u16)12),(u8)14,BLUE18);
+		DISP_FNT10X24((u8)115,(u16)100+((u16)12*(u16)12),(u8)14,BLUE18);
+		DISP_FNT10X24((u8)115,(u16)100+((u16)13*(u16)12),(u8)14,BLUE18);	
 
 //Display soft version
 		LCD_Show_Verion();	
@@ -2613,7 +2658,7 @@ void	Main_Init(void)	//主程序初始化
 	Set_CQK_Temp_Comp = 360;//初始化
 	Humidity_No_Change_Sec = 0;//湿度不改变的计数	
 	
-	JEP_Temp_Aim = (INT)(Set_CQK_Temp + 100);     //加热盘目标温度 400 - 530
+	JEP_Temp_Aim = (INT)((INT)Set_CQK_Temp + 100);     //加热盘目标温度 400 - 530
 	Controler_temp3.Sum_error = 0;
 	Controler_temp3.Ek = 0;
 	Controler_temp3.Ek1 = 0;
@@ -2631,7 +2676,7 @@ void ServiceMode_TempHumidy_Disp(void)
 	Back_Color=WHITE18;	
 //	Disp_Err=0;		
 
-	if((CQK_Temp>=0x0FFF) || (No_CQKSensor_Times>20) ) //出气口温度传感器错误检测
+	if((CQK_Temp>=0x0FFF) || (No_CQKSensor_Times>(u16)20) ) //出气口温度传感器错误检测
 	{
 		CQK_Sensor_Err=(uint8_t)1;
 		CQK_Temp = 0;
@@ -2651,7 +2696,7 @@ void ServiceMode_TempHumidy_Disp(void)
 		SHIDU_Sensor_Err=(uint8_t)0;
 	}
 
-	if((No_ReadData_Temp_Times>20) || (ERR_RT_Temp_Times>10))//人体端温度传感器错误检测 2014-07-03
+	if((No_ReadData_Temp_Times>(u8)20) || (ERR_RT_Temp_Times>(u8)10))//人体端温度传感器错误检测 2014-07-03
 	{ 	 
 		RTD_Sensor_Err=(uint8_t)1;
 		RT_Temp = 0; 		
@@ -2663,7 +2708,7 @@ void ServiceMode_TempHumidy_Disp(void)
 	}
 		
 			
-	if( No_HeatSensor_Times>20)//加热盘传感器错误检测
+	if( No_HeatSensor_Times>(u8)20)//加热盘传感器错误检测
 	{
 		JRP_Sensor_Err=(uint8_t)1;
 		JEP_Temp = 0;
@@ -2681,59 +2726,59 @@ void ServiceMode_TempHumidy_Disp(void)
 	}
 	color=BLACK18;	 
 
-	if(Disp>=1000)
+	if(Disp>=(u16)1000)
 	{
-		DISP_TEMP_30X56((POS_RT_TEMP_X-8),POS_RT_TEMP_Y,(Disp/1000)%10,(uint8_t)color);  
-		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34,(uint8_t)((Disp%1000)/100),(uint8_t)color);   
-		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+73,(Disp%100)/10,(uint8_t)color);    
+		DISP_TEMP_30X56((POS_RT_TEMP_X-8),POS_RT_TEMP_Y,(u8)((Disp/(u16)1000)%(u16)10),(uint8_t)color);  
+		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34,(uint8_t)((Disp%(u16)1000)/(u16)100),(uint8_t)color);   
+		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+73,(u8)((Disp%(u16)100)/(u16)10),(uint8_t)color);    
 		Draw_Rectangle_Real(POS_RT_TEMP_X+1-8,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8-8,POS_RT_TEMP_Y+71,WHITE18); //去掉小数点
 	}
 	else
 	{
-		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y,(Disp/100)%10,(uint8_t)color);  
-		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34,Disp%100/10,(uint8_t)color);   
-		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+(34*2)+5,Disp%10,(uint8_t)color);    
+		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y,(u8)((Disp/(u16)100)%(u16)10),(uint8_t)color);  
+		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+34,(u8)(Disp%(u16)100/(u16)10),(uint8_t)color);   
+		DISP_TEMP_30X56(POS_RT_TEMP_X-8,POS_RT_TEMP_Y+(34*2)+5,(u8)(Disp%(u16)10),(uint8_t)color);    
 		Draw_Rectangle_Real(POS_RT_TEMP_X+1-8,POS_RT_TEMP_Y+67,POS_RT_TEMP_X+8-8,POS_RT_TEMP_Y+71,(uint8_t)color); //画点
 	}		  
 
 	//出气口温度
 	Disp=(uint16_t)CQK_Temp; 
-	if(Disp>=1000)
+	if(Disp>=(u16)1000)
 	{
-		DISP_RH_17X40(55,POS_RT_TEMP_Y,(Disp/1000)%10,(uint8_t)color);  
-		DISP_RH_17X40(55,POS_RT_TEMP_Y+20,(uint8_t)((Disp%1000)/100),(uint8_t)color);   
-		DISP_RH_17X40(55,POS_RT_TEMP_Y+(20*2)+5,(Disp%100)/10,(uint8_t)color);    
+		DISP_RH_17X40(55,POS_RT_TEMP_Y,(u8)((Disp/(u16)1000)%(u16)10),(uint8_t)color);  
+		DISP_RH_17X40(55,POS_RT_TEMP_Y+20,(uint8_t)((Disp%(u16)1000)/(u16)100),(uint8_t)color);   
+		DISP_RH_17X40(55,POS_RT_TEMP_Y+(20*2)+5,(u8)((Disp%(u16)100)/(u16)10),(uint8_t)color);    
 		Draw_Rectangle_Real(56,POS_RT_TEMP_Y+40,61,POS_RT_TEMP_Y+43,WHITE18); //去掉小数点
 	}
 	else
 	{
-		DISP_RH_17X40(55,POS_RT_TEMP_Y,(Disp/100)%10,(uint8_t)color);  
-		DISP_RH_17X40(55,POS_RT_TEMP_Y+20,Disp%100/10,(uint8_t)color);   
-		DISP_RH_17X40(55,POS_RT_TEMP_Y+(20*2)+5,Disp%10,(uint8_t)color);    
+		DISP_RH_17X40(55,POS_RT_TEMP_Y,(u8)((Disp/(u16)100)%(u16)10),(uint8_t)color);  
+		DISP_RH_17X40(55,POS_RT_TEMP_Y+20,(u8)(Disp%(u16)100/(u16)10),(uint8_t)color);   
+		DISP_RH_17X40(55,POS_RT_TEMP_Y+(20*2)+5,(u8)(Disp%(u16)10),(uint8_t)color);    
 		Draw_Rectangle_Real(56,POS_RT_TEMP_Y+40,61,POS_RT_TEMP_Y+43,(uint8_t)color); //画点
 	}
    
 	//加热盘温度
 	Disp=(uint16_t)JEP_Temp;
-	if(Disp>=1000)
+	if(Disp>=(u16)1000)
 	{
-		DISP_RH_17X40(5,POS_RT_TEMP_Y,(Disp/1000)%10,(uint8_t)color);  
-		DISP_RH_17X40(5,POS_RT_TEMP_Y+20,(uint8_t)((Disp%1000)/100),(uint8_t)color);   
-		DISP_RH_17X40(5,POS_RT_TEMP_Y+(20*2)+5,(Disp%100)/10,(uint8_t)color);    
+		DISP_RH_17X40(5,POS_RT_TEMP_Y,(u8)((Disp/(u16)1000)%(u16)10),(uint8_t)color);  
+		DISP_RH_17X40(5,POS_RT_TEMP_Y+20,(uint8_t)((Disp%(u16)1000)/(u16)100),(uint8_t)color);   
+		DISP_RH_17X40(5,POS_RT_TEMP_Y+(20*2)+5,(u8)((Disp%(u16)100)/(u16)10),(uint8_t)color);    
 		Draw_Rectangle_Real(51,POS_RT_TEMP_Y+40,56,POS_RT_TEMP_Y+43,WHITE18); //去掉小数点
 	}
 	else
 	{
-		DISP_RH_17X40(5,POS_RT_TEMP_Y,(Disp/100)%10,(uint8_t)color);  
-		DISP_RH_17X40(5,POS_RT_TEMP_Y+20,Disp%100/10,(uint8_t)color);   
-		DISP_RH_17X40(5,POS_RT_TEMP_Y+(20*2)+5,Disp%10,(uint8_t)color);    
+		DISP_RH_17X40(5,POS_RT_TEMP_Y,(u8)((Disp/(u16)100)%(u16)10),(uint8_t)color);  
+		DISP_RH_17X40(5,POS_RT_TEMP_Y+20,(u8)(Disp%(u16)100/(u16)10),(uint8_t)color);   
+		DISP_RH_17X40(5,POS_RT_TEMP_Y+(20*2)+5,(u8)(Disp%(u16)10),(uint8_t)color);    
 		Draw_Rectangle_Real(6,POS_RT_TEMP_Y+40,11,POS_RT_TEMP_Y+43,(uint8_t)color); //画点
 	}	
 
 	//显示湿度
 	{	
-		DISP_RH_17X40(POS_RT_RH_X+2,POS_RT_RH_Y,(uint8_t)(RT_SHIDU%1000/100),(uint8_t)color);
-		DISP_RH_17X40(POS_RT_RH_X+2,POS_RT_RH_Y+19,RT_SHIDU%100/10,(uint8_t)color);
+		DISP_RH_17X40(POS_RT_RH_X+2,POS_RT_RH_Y,(uint8_t)(RT_SHIDU%(u16)1000/(u16)100),(uint8_t)color);
+		DISP_RH_17X40(POS_RT_RH_X+2,POS_RT_RH_Y+19,(u8)(RT_SHIDU%(u16)100/(u16)10),(uint8_t)color);
 	}   
 }
 
@@ -2755,7 +2800,7 @@ void Setting_write_to_flash(void)
 //将默认的参数写入到STC EEPROM
 static void Write_Default_Setting_to_flash(void) //把默认出厂设定写入FLASH
 {
-	data_flash.First = 'Z';
+	data_flash.First = (u8)'Z';
 	data_flash.Work_Mode = Invasive_Mode;//有创
 	data_flash.Set_RT_WCTemp = (340/5);//
 	data_flash.Set_RT_YCTemp = (390/5);//
@@ -2780,19 +2825,19 @@ void Mem_Flash_Recall(void) //读取上次的记忆并验证数据
 	data_flash.Language = STC_IAP_Byte_Read(DATA_FLASH_ADDRESS_Language); 
 	
 	if( //校验数据是否正确
-			(data_flash.First != 'Z')
-			||(data_flash.Work_Mode > 1) 
-			||(data_flash.Set_RT_WCTemp > (Const_NoninvasPatientTemp_Max/5)) //370/5 = 74;  
-			||(data_flash.Set_RT_WCTemp < (Const_NoninvasPatientTemp_Min/5)) //300/5 = 60;  
-			||(data_flash.Set_RT_YCTemp > (Const_InvasPatientTemp_Max/5))	//400/5 = 80; 
-			||(data_flash.Set_RT_YCTemp < (Const_InvasPatientTemp_Min/5))	//350/5 = 70;
-			||(data_flash.In_Exp_Ratio > 6)
-			||(data_flash.In_Exp_Ratio < 1)
-			||(data_flash.Set_CQK_WCTemp > (Const_NoninvasChamberTemp_Max/5)) //360/5 = 74;  
-			||(data_flash.Set_CQK_WCTemp < (Const_NoninvasChamberTemp_Min/5)) //310/5 = 60;  
-			||(data_flash.Set_CQK_YCTemp > (Const_InvasChamberTemp_Max/5))	//400/5 = 80; 
-			||(data_flash.Set_CQK_YCTemp < (Const_InvasChamberTemp_Min/5))	//350/5 = 70;
-			||(data_flash.Language > Lan_French)//最多4种语言
+			(data_flash.First != (u8)'Z')
+			||(data_flash.Work_Mode > (u8)1) 
+			||(data_flash.Set_RT_WCTemp > (u8)(Const_NoninvasPatientTemp_Max/5)) //370/5 = 74;  
+			||(data_flash.Set_RT_WCTemp < (u8)(Const_NoninvasPatientTemp_Min/5)) //300/5 = 60;  
+			||(data_flash.Set_RT_YCTemp > (u8)(Const_InvasPatientTemp_Max/5))	//400/5 = 80; 
+			||(data_flash.Set_RT_YCTemp < (u8)(Const_InvasPatientTemp_Min/5))	//350/5 = 70;
+			||(data_flash.In_Exp_Ratio > (u8)6)
+			||(data_flash.In_Exp_Ratio < (u8)1)
+			||(data_flash.Set_CQK_WCTemp > (u8)(Const_NoninvasChamberTemp_Max/5)) //360/5 = 74;  
+			||(data_flash.Set_CQK_WCTemp < (u8)(Const_NoninvasChamberTemp_Min/5)) //310/5 = 60;  
+			||(data_flash.Set_CQK_YCTemp > (u8)(Const_InvasChamberTemp_Max/5))	//400/5 = 80; 
+			||(data_flash.Set_CQK_YCTemp < (u8)(Const_InvasChamberTemp_Min/5))	//350/5 = 70;
+			||(data_flash.Language > (u8)Lan_French)//最多4种语言
 		)
 	{
 		data_flash.Language = Lan_English;
@@ -2804,19 +2849,19 @@ void Mem_Flash_Recall(void) //读取上次的记忆并验证数据
 
 void Load_Settings_Before_Choice(void)//在选择方框出现之前，要处理的数据，以同时兼容有无选择记忆界面程序
 {
-	if(defalut_mode == Load_Fac_MODE)  //若是工厂默认设定  
+	if(defalut_mode == (u8)Load_Fac_MODE)  //若是工厂默认设定  
 	{
 		Write_Default_Setting_to_flash();//把默认出厂设定写入FLASH
 	}
 
 	Work_Mode = data_flash.Work_Mode;  //工作模式
-	Set_RT_WCTemp = data_flash.Set_RT_WCTemp * 5;//
-	Set_RT_YCTemp = data_flash.Set_RT_YCTemp * 5;//
-	Set_CQK_WCTemp = data_flash.Set_CQK_WCTemp * 5;//
-	Set_CQK_YCTemp = data_flash.Set_CQK_YCTemp * 5;//
+	Set_RT_WCTemp = data_flash.Set_RT_WCTemp * (u16)5;//
+	Set_RT_YCTemp = data_flash.Set_RT_YCTemp * (u16)5;//
+	Set_CQK_WCTemp = data_flash.Set_CQK_WCTemp * (u16)5;//
+	Set_CQK_YCTemp = data_flash.Set_CQK_YCTemp * (u16)5;//
 	In_Exp_Ratio = data_flash.In_Exp_Ratio;	 //
 
-	if(Work_Mode==0)	
+	if(Work_Mode==(u8)0)	
 	{			
 		Set_RT_Temp=(INT)Set_RT_WCTemp;
 		Set_CQK_Temp=Set_CQK_WCTemp;
@@ -2842,8 +2887,8 @@ void LowPowerModeFunc(void)
 	if(((LoTemp_Count > (uint8_t)120) || (LoTemp_CQK_Count > (uint8_t)120))||(Bit_is_one(ERR_Kind,Alarm_Const_NoWater)!=(uint8_t)0)) //无水(干烧)报警
 	{
 		if(		
-				 ((ERR_Kind & (uint8_t)0x01)!=0)//传感器错误
-			|| ((ERR_Kind & (uint8_t)0x02)!=0)//高温
+				 ((ERR_Kind & (uint8_t)0x01)!=(u8)0)//传感器错误
+			|| ((ERR_Kind & (uint8_t)0x02)!=(u8)0)//高温
 			|| (Wire_Mode_Mismatch == (uint8_t)1)  //发热丝未选
 			|| (HeaterPlate_State==(uint8_t)0))//水罐未装好
 		{	
@@ -2852,7 +2897,7 @@ void LowPowerModeFunc(void)
 		{			
 			if(AlarmSoundPauseStatus == (uint8_t)0)//未按下静音键
 			{
-				Low_Power_Mode_Flag = 1;//低功率模式标志
+				Low_Power_Mode_Flag = (u16)1;//低功率模式标志
 				if(JEP_Temp<=450)
 				{				
 					Micro_Temp_Val=50;  //停止加热
@@ -2867,13 +2912,13 @@ void LowPowerModeFunc(void)
 			}
 			else
 			{
-				Low_Power_Mode_Flag = 0;
+				Low_Power_Mode_Flag = (u16)0;
 			}
 		}
 	}
 	else
 	{
-		Low_Power_Mode_Flag = 0;
+		Low_Power_Mode_Flag = (u16)0;
 	}
 		
 }
@@ -2926,7 +2971,7 @@ static void Controler_Calc(void) //设定温度最高400,最低000,实际0-800,
 	
 	tmp = Controler_temp.Sum_error * Controler_Ki / 50; //积分 最大3000*2/100=60,一个加热周期是250次  250*5/15*3=250;
 	Vlaue1 += tmp;
- 	tmp = (Controler_temp.Ek - (2 * Controler_temp.Ek1) + Controler_temp.Ek2) * Controler_Kd;//微分 
+ 	tmp = ((Controler_temp.Ek - (2 * Controler_temp.Ek1)) + Controler_temp.Ek2) * Controler_Kd;//微分 
 	Controler_temp.Sum_error = Controler_temp.Sum_error + tmp;//2015-06-16 把微分计入积分和
  	Vlaue1 += tmp;
 	Controler_temp.Uk = Vlaue1;// Controler_temp.Uk1 + Vlaue1;       // 结果 /100最大为250次
@@ -2983,7 +3028,7 @@ static void HeatPlate_Controler_Calc(void) //设定温度最高400,最低000,实际0-800,
 	
 	tmp = Controler_temp2.Sum_error * Controler_Ki2/50; //积分 最大3000*2/100=60,一个加热周期是250次  250*5/15*3=250;
 	Vlaue1 += tmp;
- 	tmp = (Controler_temp2.Ek - (2 * Controler_temp2.Ek1) + Controler_temp2.Ek2) * Controler_Kd2;//微分 
+ 	tmp = ((Controler_temp2.Ek - (2 * Controler_temp2.Ek1)) + Controler_temp2.Ek2) * Controler_Kd2;//微分 
 	Controler_temp2.Sum_error = Controler_temp2.Sum_error + tmp;//2015-06-16 把微分计入积分和
  	Vlaue1 += tmp;
 	Controler_temp2.Uk = Vlaue1;//;       // 结果 /100最大为250次
@@ -3041,7 +3086,7 @@ static void HeatPlateTemp_Aim_Controler_Calc(void) //
 	tmp = Controler_temp3.Sum_error * Controler_Ki3; //积分 最大3500*8/100=280
 	Vlaue1 += tmp;
  	//tmp = (Controler_temp3.Ek - (2 * Controler_temp3.Ek1) + Controler_temp3.Ek2) * Controler_Kd3;//微分 
-	tmp = ((2 * Controler_temp3.Ek) - Controler_temp3.Ek1 - Controler_temp3.Ek2) * Controler_Kd3;//微分 
+	tmp = (((2 * Controler_temp3.Ek) - Controler_temp3.Ek1) - Controler_temp3.Ek2) * Controler_Kd3;//微分 
 	Controler_temp3.Sum_error = Controler_temp3.Sum_error + tmp;//把微分计入积分和
  	Vlaue1 += tmp;
 	Controler_temp3.Uk = Vlaue1;// Controler_temp.Uk1 + Vlaue1;       // 结果 /100最大为250次
@@ -3066,9 +3111,10 @@ static void HeatPlateTemp_Aim_Controler_Calc(void) //
 
 
 //无回路发热丝时的患者端温度调节
-static uint16_t NoneWire_Warm_Up_Sec=0;
+//static uint16_t NoneWire_Warm_Up_Sec=0;
 static void PatientTemp_NoneHeatWire_Adj(void)
 {
+	static uint16_t NoneWire_Warm_Up_Sec=0;
 	static INT err_sum=0;
 	static INT RT_Temp_Mem = 0;
 	//	static uint16_t WarmUpstate=0;
@@ -3092,11 +3138,11 @@ static void PatientTemp_NoneHeatWire_Adj(void)
 		else
 		{	
 			NoneWire_Warm_Up_Sec++;
-			if(NoneWire_Warm_Up_Sec > 2000)
+			if(NoneWire_Warm_Up_Sec > (u16)2000)
 			{
 				NoneWire_Warm_Up_Sec = 2000;
 			}
-			if(NoneWire_Warm_Up_Sec < 3)//00)//10分钟内设定
+			if(NoneWire_Warm_Up_Sec < (u16)3)//00)//10分钟内设定
 			{
 				//Temp2_Int = 500 + Set_RT_Temp - 300;//发热盘温度设定在50度-60度
 				if(Temp2_Int < (550 + ((Set_RT_Temp - 300)*2)))//发热盘温度设定在50度-60度
@@ -3123,7 +3169,7 @@ static void PatientTemp_NoneHeatWire_Adj(void)
 				//if((RT_Temp - Set_RT_Temp) >= 1){if(err_sum > 0)err_sum = 0;}//达到设定温度，误差不能为正
 				//else if((Set_RT_Temp - RT_Temp) >= 1){if(err_sum < 0)err_sum = 0;}//未达到设定温度，误差不能为负
 				
-				if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == 1))
+				if((Work_State != UI_STATE_SCREENSAVER_MODE)&&(Test_Mode_Dis_Jrp_Ctl == (u8)1))
 				{	//8表示高位为0也显示,0表示非叠加显示 出气口
 					Back_Color=WHITE18;
 					if(err_sum >=0)
@@ -3138,7 +3184,7 @@ static void PatientTemp_NoneHeatWire_Adj(void)
 				}						
 
 				NoneWire_Heat_Sec++;
-				if(NoneWire_Heat_Sec >= 180)//3分钟调整一次温度
+				if(NoneWire_Heat_Sec >= (u16)180)//3分钟调整一次温度
 				{
 					NoneWire_Heat_Sec = 0;//-Temp2_Int
 					
@@ -3177,15 +3223,15 @@ static void PatientTemp_NoneHeatWire_Adj(void)
 //正常运行界面,按下确认键确定回路的模式
 void WireInOut_State_Confirm(void)
 {
-	if((WireIn_State > 0) && (WireOut_State > 0)) //双管加热模式
+	if((WireIn_State > (u8)0) && (WireOut_State > (u8)0)) //双管加热模式
 	{
 		Wire_Mode_Sel = Wire_Sel_Double;	
 	} 
-	else if((WireIn_State > 0) && (WireOut_State == 0)) //单管加热模式
+	else if((WireIn_State > (u8)0) && (WireOut_State == (u8)0)) //单管加热模式
 	{
 		Wire_Mode_Sel = Wire_Sel_In_Only;	
 	}
-	else if((WireIn_State == 0) && (WireOut_State == 0)) //无加热丝模式
+	else if((WireIn_State == (u8)0) && (WireOut_State == (u8)0)) //无加热丝模式
 	{
 		Wire_Mode_Sel = Wire_Sel_None;	
 	}	
@@ -3205,16 +3251,16 @@ void HeaterPlateWireDriveFbTask(void)//16
 	static uint8_t NoHpCheck_Times = 0;//无加热盘的次数.
 	
 	Micro_Temp_CLK++;
-	if(Micro_Temp_CLK > 200)//时基
+	if(Micro_Temp_CLK > (u8)200)//时基
 	{		
 		Micro_Temp_CLK = 0;
 
 		//每个周期检测加热盘是否存在
 		 HP_CNT_Int_End_Rem = HP_CNT_Int;
-		if(HP_CNT_Int < 1)//未检测到
+		if(HP_CNT_Int < (u16)1)//未检测到
 		{
 			NoHpCheck_Times++;
-			if(NoHpCheck_Times >=2)
+			if(NoHpCheck_Times >=(u8)2)
 			{
 				NoHpCheck_Times = 2;
 				HeaterPlate_State=0; //未检测到加热盘
@@ -3231,25 +3277,25 @@ void HeaterPlateWireDriveFbTask(void)//16
 //加热盘驱动	
 	if (Micro_Temp_Val>Micro_Temp_CLK)
 	{
-		Heat_JRP_Port=1;
+		Heat_JRP_Port=(bit)1;
 	}	 
 	else
 	{
-		Heat_JRP_Port=0;
+		Heat_JRP_Port=(bit)0;
 	}
 	
 //INSP进支气加热驱动和检测
-	if (Micro_Temp_In>Micro_Temp_CLK)
+	if (Micro_Temp_In>(u16)Micro_Temp_CLK)
 	{
-		Heat_WireIn_Port=1;
-		Heat_WIRE_EN_OUT=0;//防止单一故障	
+		Heat_WireIn_Port=(bit)1;
+		Heat_WIRE_EN_OUT=(bit)0;//防止单一故障	
 	}
 	else  //不加热时的检测
 	{	 	  
 		if(Heat_WireIn_Port!=0)
 		{
-			Heat_WireIn_Port=0;
-			Heat_WIRE_EN_OUT=1;//防止单一故障	  	
+			Heat_WireIn_Port=(bit)0;
+			Heat_WIRE_EN_OUT=(bit)1;//防止单一故障	  	
 			Check_WireInTimes=0;
 			WireIn_FB_Count=0;
 		}
@@ -3260,9 +3306,9 @@ void HeaterPlateWireDriveFbTask(void)//16
 			{
 				WireIn_FB_Count++;
 			}				
-			if(Check_WireInTimes>4)
+			if(Check_WireInTimes>(u8)4)
 			{
-				if(WireIn_FB_Count<3)   //连续检测到五次不加热报错
+				if(WireIn_FB_Count<(u8)3)   //连续检测到五次不加热报错
 				{
 					WireIn_State=0; //未检测到发热丝						 
 				}
@@ -3279,15 +3325,15 @@ void HeaterPlateWireDriveFbTask(void)//16
 //EXP出支气加热驱动和检测
 	if (Micro_Temp_Out>Micro_Temp_CLK)
 	{
-		Heat_WireOut_Port=1;
-		Heat_WIRE_EN_OUT = 0;//防止单一故障	  
+		Heat_WireOut_Port=(bit)1;
+		Heat_WIRE_EN_OUT = (bit)0;//防止单一故障	  
 	}
 	else
 	{
 		if(Heat_WireOut_Port!=0)
 		{
-			Heat_WireOut_Port=0;
-			Heat_WIRE_EN_OUT = 1;//防止单一故障	  
+			Heat_WireOut_Port=(bit)0;
+			Heat_WIRE_EN_OUT =(bit)1;//防止单一故障	  
 			Check_WireOutTimes=0;
 			WireOut_FB_Count=0;
 		}
@@ -3298,9 +3344,9 @@ void HeaterPlateWireDriveFbTask(void)//16
 			{
 				WireOut_FB_Count++;
 			}				
-			if(Check_WireOutTimes>4  )
+			if(Check_WireOutTimes>(u8)4  )
 			{
-				if(WireOut_FB_Count<3)   //连续检测到五次不加热报错
+				if(WireOut_FB_Count<(u8)3)   //连续检测到五次不加热报错
 				{
 					WireOut_State=0; //没加热，代表检测到发热丝
 				}
