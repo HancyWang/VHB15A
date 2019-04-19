@@ -15,23 +15,23 @@ typedef enum
 
 extern uint8_t Key_UP_Tik;//按键计时
 extern void Key_UP_TikFunc(void);//按键计时函数
-extern const struct Key_Multifun_Element Key_UP_Element;//事件
-extern struct Multifun_Key Key_UP;//按键
+//extern const struct Key_Multifun_Element Key_UP_Element;//事件
+//extern struct Multifun_Key Key_UP;//按键
 
 extern uint8_t Key_Down_Tik;//按键计时
 extern void Key_Down_TikFunc(void);//按键计时函数
-extern const struct Key_Multifun_Element Key_Down_Element;//事件 
-extern struct Multifun_Key Key_Down;//按键
+//extern const struct Key_Multifun_Element Key_Down_Element;//事件 
+//extern struct Multifun_Key Key_Down;//按键
 
 extern uint8_t Key_OK_Tik;//按键计时
 extern void Key_OK_TikFunc(void);//按键计时函数
-extern const struct Key_Multifun_Element Key_OK_Element;//事件
-extern struct Multifun_Key Key_OK;//按键
+//extern const struct Key_Multifun_Element Key_OK_Element;//事件
+//extern struct Multifun_Key Key_OK;//按键
 
 extern uint8_t Key_Mute_Tik;//按键计时
 extern void Key_Mute_TikFunc(void);//按键计时函数
-extern const struct Key_Multifun_Element Key_Mute_Element;//事件
-extern struct Multifun_Key Key_Mute;//按键
+//extern const struct Key_Multifun_Element Key_Mute_Element;//事件
+//extern struct Multifun_Key Key_Mute;//按键
 
 typedef enum
 {
@@ -52,7 +52,19 @@ typedef enum
 
 extern KEY_STATE_DEF Key_State_Present;
 
+extern void	KeyUpPressShortAction(void);
+extern void	KeyUpPressLongFirstAction(void);    //按键长键后的响应函数
+extern void	KeyUpPressLongRepeatAction(void);  //连续按下持续,连+连-
 
+extern void	KeyDownPressShortAction(void);
+extern void	KeyDownPressLongFirstAction(void);    //按键长键后的响应函数
+extern void	KeyDownPressLongRepeatAction(void);  //连续按下持续,连+连-
 
+extern void	KeyOKPressShortAction(void);
+extern void	KeyOKPressLongFirstAction(void);    //按键长键后的响应函数
+extern void	KeyOKPressLongRepeatAction(void);  //连续按下持续,连+连-
 
+extern void	KeyMutePressShortAction(void);
+extern void	KeyMutePressLongFirstAction(void);    //按键长键后的响应函数
+extern void	KeyMutePressLongRepeatAction(void);  //连续按下持续,连+连-
 #endif

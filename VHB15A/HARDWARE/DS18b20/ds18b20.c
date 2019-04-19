@@ -1,4 +1,4 @@
-// #include "STC12C32AD.h"
+ #include "STC12C32AD.h"
  #include "all.h"
 // #include "INTRINS.H" 
 // #include "delay.h"
@@ -7,10 +7,10 @@
 uint8_t   Read_18B20_Value;
 uint8_t   Read_18B20_Value2; 
 
-//2019.03.30
-//sbit P10 = (u8)0x90^(u8)0;
-sbit P10 = (u8)0x90;
-sbit P37 = (u8)0xB0^(u8)7;
+////2019.03.30
+////sbit P10 = (u8)0x90^(u8)0;
+//sbit P10 = (u8)0x90;
+//sbit P37 = (u8)0xB0^(u8)7;
 
 //DS18B20程序=================================================
 void DS18B20_ReadByte(void)
@@ -31,8 +31,24 @@ void DS18B20_ReadByte(void)
         HeatingPlateSensor_Port = (bit)1;             //准备接收
         ChamberOutletSensor_Port =(bit)1;
         delay_us(2);              //接收延时
-        Wei=HeatingPlateSensor_Port;
-        Wei2=ChamberOutletSensor_Port;
+//        Wei=HeatingPlateSensor_Port;
+				if(HeatingPlateSensor_Port)
+				{
+					Wei=(u8)1;
+				}
+				else
+				{
+					Wei=(u8)0;
+				}
+//        Wei2=ChamberOutletSensor_Port;
+				if(ChamberOutletSensor_Port)
+				{
+					Wei2=(u8)1;
+				}
+				else
+				{
+					Wei2=(u8)0;
+				}
         if (Wei==(u8)1)
 				{
 					Read_18B20_Value |= (uint8_t)0x80;        //读取数据

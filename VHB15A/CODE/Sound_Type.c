@@ -4,8 +4,8 @@
 static uint8_t Sound_En_Cnt = 0;
 static uint16_t SoundPauseCnt = 0;
 
-//2019.03.30
-sbit P43 = (uint8_t)0xC0^(uint8_t)3;
+////2019.03.30
+//sbit P43 = (uint8_t)0xC0^(uint8_t)3;
 
 void Sound_Short(void)//ßÙ¶ÌÏìÒ»Éù
 {	

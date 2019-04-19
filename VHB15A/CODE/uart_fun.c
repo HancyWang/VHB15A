@@ -8,11 +8,11 @@
 #include "uart_fun.h"
 #include "all.h"
 
-//2019.03.29
-sfr TMOD = 0x89;
-sfr TH1  = 0x8D;
-sbit TI  = (u8)0x98^(u8)1;
-sbit TR1 = (u8)0x88^(u8)6;
+////2019.03.29
+//sfr TMOD = 0x89;
+//sfr TH1  = 0x8D;
+//sbit TI  = (u8)0x98^(u8)1;
+//sbit TR1 = (u8)0x88^(u8)6;
 
 /**
   Section: Macro Declarations
@@ -31,12 +31,12 @@ static uint8_t Send_uart_busy = 0;// 发送忙标志
   Section: EUSART APIs
 */
 
-//2019.03.29
-sfr ACC  = 0xE0; 
-sfr PCON   = 0x87;
-sfr SBUF = 0x99;
-sfr IE = 0xA8;
-sfr SCON = 0x98;
+////2019.03.29
+//sfr ACC  = 0xE0; 
+//sfr PCON   = 0x87;
+//sfr SBUF = 0x99;
+//sfr IE = 0xA8;
+//sfr SCON = 0x98;
 
 //串口初始化
 void EUSART_Initialize(void)
@@ -56,7 +56,7 @@ void EUSART_Initialize(void)
 //从串口接收缓冲区读一个字节
 uint8_t EUSART_Read(void)
 {
-    uint8_t readValue  = 0; 
+    uint8_t readValue; 
 
     readValue = eusartRxBuffer[eusartRxTail];//读出计数
 		++eusartRxTail;

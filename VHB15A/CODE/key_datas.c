@@ -7,29 +7,29 @@ KEY_STATE_DEF Key_State_Present;
 
 //==================UP按键属性设置-1============================
 
-static void	KeyUpPressShortAction(void);
-static void	KeyUpPressLongFirstAction(void);    //按键长键后的响应函数
-static void	KeyUpPressLongRepeatAction(void);  //连续按下持续,连+连-
+//static void	KeyUpPressShortAction(void);
+//static void	KeyUpPressLongFirstAction(void);    //按键长键后的响应函数
+//static void	KeyUpPressLongRepeatAction(void);  //连续按下持续,连+连-
 
-const struct Key_Multifun_Element Key_UP_Element = 
-{
-  KEY_STATE_PressValue,       	//PressValue
-  KEY_STATE_ReleaseValue,     	//ReleaseValue
-  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
-  20,                         	//TimOfSe 初次长按响应时间
-  5,                          	//TimOfLg 后续长连续按下状态时间
-  KeyUpPressShortAction,      	//void (*)(void)短按键由低到高弹起
-  KeyUpPressLongFirstAction,    //按键长键后的响应函数
-  KeyUpPressLongRepeatAction,  //连续按下持续,连+连-
-};
+//const struct Key_Multifun_Element Key_UP_Element = 
+//{
+//  KEY_STATE_PressValue,       	//PressValue
+//  KEY_STATE_ReleaseValue,     	//ReleaseValue
+//  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+//  20,                         	//TimOfSe 初次长按响应时间
+//  5,                          	//TimOfLg 后续长连续按下状态时间
+//  KeyUpPressShortAction,      	//void (*)(void)短按键由低到高弹起
+//  KeyUpPressLongFirstAction,    //按键长键后的响应函数
+//  KeyUpPressLongRepeatAction,  //连续按下持续,连+连-
+//};
 
 
-struct Multifun_Key Key_UP =
-{
-  &KeyToFuncVal,		        //按键码值
-  &Key_UP_Tik,	//按键时标
-  1,			      //处理状态
-};
+//struct Multifun_Key Key_UP =
+//{
+//  &KeyToFuncVal,		        //按键码值
+//  &Key_UP_Tik,	//按键时标
+//  1,			      //处理状态
+//};
 
 uint8_t Key_UP_Tik = 0;
 void Key_UP_TikFunc(void)
@@ -40,17 +40,17 @@ void Key_UP_TikFunc(void)
     }
 }
 
-static void	KeyUpPressShortAction(void)
+void	KeyUpPressShortAction(void)
 {
 	Key_State_Present = KEY_STATE_UP_Short;	
 }
 
-static void	KeyUpPressLongFirstAction(void) //按键长键后的响应函数
+void	KeyUpPressLongFirstAction(void) //按键长键后的响应函数
 {
 	Key_State_Present = KEY_STATE_UP_Long_First;	
 }    
 
-static void	KeyUpPressLongRepeatAction(void) //连续按下持续,连+连-
+void	KeyUpPressLongRepeatAction(void) //连续按下持续,连+连-
 {
 	Key_State_Present = KEY_STATE_UP_Long_Repeat;
 }
@@ -59,28 +59,28 @@ static void	KeyUpPressLongRepeatAction(void) //连续按下持续,连+连-
 
 //==================DOWN按键属性设置-1============================
 
-static void	KeyDownPressShortAction(void);
-static void	KeyDownPressLongFirstAction(void);    //按键长键后的响应函数
-static void	KeyDownPressLongRepeatAction(void);  //连续按下持续,连+连-
+//static void	KeyDownPressShortAction(void);
+//static void	KeyDownPressLongFirstAction(void);    //按键长键后的响应函数
+//static void	KeyDownPressLongRepeatAction(void);  //连续按下持续,连+连-
 
-const struct Key_Multifun_Element Key_Down_Element = 
-{
-  KEY_STATE_PressValue,       	//PressValue
-  KEY_STATE_ReleaseValue,     	//ReleaseValue
-  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
-  20,                         	//TimOfSe 初次长按响应时间
-  5,                          	//TimOfLg 后续长连续按下状态时间
-  KeyDownPressShortAction,      	//void (*)(void)短按键由低到高弹起
-  KeyDownPressLongFirstAction,    //按键长键后的响应函数
-  KeyDownPressLongRepeatAction,  //连续按下持续,连+连-
-};
+//const struct Key_Multifun_Element Key_Down_Element = 
+//{
+//  KEY_STATE_PressValue,       	//PressValue
+//  KEY_STATE_ReleaseValue,     	//ReleaseValue
+//  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+//  20,                         	//TimOfSe 初次长按响应时间
+//  5,                          	//TimOfLg 后续长连续按下状态时间
+//  KeyDownPressShortAction,      	//void (*)(void)短按键由低到高弹起
+//  KeyDownPressLongFirstAction,    //按键长键后的响应函数
+//  KeyDownPressLongRepeatAction,  //连续按下持续,连+连-
+//};
 
-struct Multifun_Key Key_Down =
-{
-  &KeyToFuncVal,		        //按键码值
-  &Key_Down_Tik,	//按键时标
-  1,			      //处理状态
-};
+//struct Multifun_Key Key_Down =
+//{
+//  &KeyToFuncVal,		        //按键码值
+//  &Key_Down_Tik,	//按键时标
+//  1,			      //处理状态
+//};
 
 uint8_t Key_Down_Tik = 0;
 void Key_Down_TikFunc(void)
@@ -92,17 +92,17 @@ void Key_Down_TikFunc(void)
 }
 
 
-static void	KeyDownPressShortAction(void)
+void	KeyDownPressShortAction(void)
 {
 	Key_State_Present = KEY_STATE_Down_Short;	
 }
 
-static void	KeyDownPressLongFirstAction(void) //按键长键后的响应函数
+void	KeyDownPressLongFirstAction(void) //按键长键后的响应函数
 {
 	Key_State_Present = KEY_STATE_Down_Long_First;	
 }    
 
-static void	KeyDownPressLongRepeatAction(void) //连续按下持续,连+连-
+void	KeyDownPressLongRepeatAction(void) //连续按下持续,连+连-
 {
 	Key_State_Present = KEY_STATE_Down_Long_Repeat;
 }
@@ -111,28 +111,28 @@ static void	KeyDownPressLongRepeatAction(void) //连续按下持续,连+连-
 
 //==================OK按键属性设置-1============================
 
-static void	KeyOKPressShortAction(void);
-static void	KeyOKPressLongFirstAction(void);    //按键长键后的响应函数
-static void	KeyOKPressLongRepeatAction(void);  //连续按下持续,连+连-
+//static void	KeyOKPressShortAction(void);
+//static void	KeyOKPressLongFirstAction(void);    //按键长键后的响应函数
+//static void	KeyOKPressLongRepeatAction(void);  //连续按下持续,连+连-
 
-const struct Key_Multifun_Element Key_OK_Element = 
-{
-  KEY_STATE_PressValue,       	//PressValue
-  KEY_STATE_ReleaseValue,     	//ReleaseValue
-  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
-  20,                         	//TimOfSe 初次长按响应时间
-  5,                          	//TimOfLg 后续长连续按下状态时间
-  KeyOKPressShortAction,      	//void (*)(void)短按键由低到高弹起
-  KeyOKPressLongFirstAction,    //按键长键后的响应函数
-  KeyOKPressLongRepeatAction,  //连续按下持续,连+连-
-};
+//const struct Key_Multifun_Element Key_OK_Element = 
+//{
+//  KEY_STATE_PressValue,       	//PressValue
+//  KEY_STATE_ReleaseValue,     	//ReleaseValue
+//  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+//  20,                         	//TimOfSe 初次长按响应时间
+//  5,                          	//TimOfLg 后续长连续按下状态时间
+//  KeyOKPressShortAction,      	//void (*)(void)短按键由低到高弹起
+//  KeyOKPressLongFirstAction,    //按键长键后的响应函数
+//  KeyOKPressLongRepeatAction,  //连续按下持续,连+连-
+//};
 
-struct Multifun_Key Key_OK =
-{
-  &KeyToFuncVal,		        //按键码值
-  &Key_OK_Tik,	//按键时标
-  1,			      //处理状态
-};
+//struct Multifun_Key Key_OK =
+//{
+//  &KeyToFuncVal,		        //按键码值
+//  &Key_OK_Tik,	//按键时标
+//  1,			      //处理状态
+//};
 
 uint8_t Key_OK_Tik = 0;
 void Key_OK_TikFunc(void)
@@ -144,17 +144,17 @@ void Key_OK_TikFunc(void)
 }
 
 
-static void	KeyOKPressShortAction(void)
+void	KeyOKPressShortAction(void)
 {
 	Key_State_Present = KEY_STATE_OK_Short;	
 }
 
-static void	KeyOKPressLongFirstAction(void) //按键长键后的响应函数
+void	KeyOKPressLongFirstAction(void) //按键长键后的响应函数
 {
 	Key_State_Present = KEY_STATE_OK_Long_First;	
 }    
 
-static void	KeyOKPressLongRepeatAction(void) //连续按下持续,连+连-
+void	KeyOKPressLongRepeatAction(void) //连续按下持续,连+连-
 {
 	Key_State_Present = KEY_STATE_OK_Long_Repeat;
 }
@@ -164,28 +164,28 @@ static void	KeyOKPressLongRepeatAction(void) //连续按下持续,连+连-
 
 //==================UP按键属性设置-1============================
 
-static void	KeyMutePressShortAction(void);
-static void	KeyMutePressLongFirstAction(void);    //按键长键后的响应函数
-static void	KeyMutePressLongRepeatAction(void);  //连续按下持续,连+连-
+//static void	KeyMutePressShortAction(void);
+//static void	KeyMutePressLongFirstAction(void);    //按键长键后的响应函数
+//static void	KeyMutePressLongRepeatAction(void);  //连续按下持续,连+连-
 
-const struct Key_Multifun_Element Key_Mute_Element = 
-{
-  KEY_STATE_PressValue,       	//PressValue
-  KEY_STATE_ReleaseValue,     	//ReleaseValue
-  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
-  20,                         	//TimOfSe 初次长按响应时间
-  5,                          	//TimOfLg 后续长连续按下状态时间
-  KeyMutePressShortAction,      	//void (*)(void)短按键由低到高弹起
-  KeyMutePressLongFirstAction,    //按键长键后的响应函数
-  KeyMutePressLongRepeatAction,  //连续按下持续,连+连-
-};
+//const struct Key_Multifun_Element Key_Mute_Element = 
+//{
+//  KEY_STATE_PressValue,       	//PressValue
+//  KEY_STATE_ReleaseValue,     	//ReleaseValue
+//  10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+//  20,                         	//TimOfSe 初次长按响应时间
+//  5,                          	//TimOfLg 后续长连续按下状态时间
+//  KeyMutePressShortAction,      	//void (*)(void)短按键由低到高弹起
+//  KeyMutePressLongFirstAction,    //按键长键后的响应函数
+//  KeyMutePressLongRepeatAction,  //连续按下持续,连+连-
+//};
 
-struct Multifun_Key Key_Mute =
-{
-  &KeyToFuncVal,		        //按键码值
-  &Key_Mute_Tik,	//按键时标
-  1,			      //处理状态
-};
+//struct Multifun_Key Key_Mute =
+//{
+//  &KeyToFuncVal,		        //按键码值
+//  &Key_Mute_Tik,	//按键时标
+//  1,			      //处理状态
+//};
 
 uint8_t Key_Mute_Tik = 0;
 void Key_Mute_TikFunc(void)
@@ -197,7 +197,7 @@ void Key_Mute_TikFunc(void)
 }
 
 
-static void	KeyMutePressShortAction(void)
+void	KeyMutePressShortAction(void)
 {
 	Key_State_Present = KEY_STATE_Mute_Short;	
 	
@@ -216,12 +216,12 @@ static void	KeyMutePressShortAction(void)
 	}
 }
 
-static void	KeyMutePressLongFirstAction(void) //按键长键后的响应函数
+void	KeyMutePressLongFirstAction(void) //按键长键后的响应函数
 {
 	Key_State_Present = KEY_STATE_Mute_Long_First;	
 }    
 
-static void	KeyMutePressLongRepeatAction(void) //连续按下持续,连+连-
+void	KeyMutePressLongRepeatAction(void) //连续按下持续,连+连-
 {
 	Key_State_Present = KEY_STATE_Mute_Long_Repeat;
 }

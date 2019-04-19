@@ -1,9 +1,11 @@
 #include "all.h"
 
-//2019.03.29
-sfr WDT_CONTR = 0xC1;
+////2019.03.29
+//sfr WDT_CONTR = 0xC1;
+void main(void);
 
-void main(void)
+
+void main(void)  
 {
 	uint8_t TRUE=(uint8_t)1;
 	

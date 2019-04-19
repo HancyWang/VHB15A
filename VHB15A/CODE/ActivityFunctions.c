@@ -2,47 +2,48 @@
 
 #include "all.h"
 
-//2019.03.29
-sfr P4M0 = 0xB4; 
-sfr P4M1 = 0xB3;
-sfr P4SW = 0xBB;
-sfr WDT_CONTR = 0xC1;
-sbit EA	 = (uint8_t)0xA8^(uint8_t)7;
-sbit EX1 = (uint8_t)0xA8^(uint8_t)2;
-sbit ET0 = (uint8_t)0xA8^(uint8_t)1;
-sfr P1M0 = 0x92; 
-sfr P1M1 = 0x91;
-//sbit P10 = (uint8_t)0x90^(uint8_t)0;
-sbit P10 = (uint8_t)0x90;
-sbit P12 = (uint8_t)0x90^(uint8_t)2;
-sbit P13 = (uint8_t)0x90^(uint8_t)3;
-sbit P17 = (uint8_t)0x90^(uint8_t)7;
-//sbit P20 = (uint8_t)0xA0^(uint8_t)0;
-sbit P20 = (uint8_t)0xA0;
-sbit P21 = (uint8_t)0xA0^(uint8_t)1;
-sbit P22 = (uint8_t)0xA0^(uint8_t)2;
-sbit P27 = (uint8_t)0xA0^(uint8_t)7;
-sfr P2M0 = 0x96;
-sfr P2M1 = 0x95;
-sbit P32 = (uint8_t)0xB0^(uint8_t)2;
-sbit P34 = (uint8_t)0xB0^(uint8_t)4;
-sbit P35 = (uint8_t)0xB0^(uint8_t)5;
-sbit P36 = (uint8_t)0xB0^(uint8_t)6;
-sbit P37 = (uint8_t)0xB0^(uint8_t)7;
-sfr P3M0 = 0xB2;
-sfr P3M1 = 0xB1; 
-//sbit P40 = (uint8_t)0xC0^(uint8_t)0;
-sbit P40 = (uint8_t)0xC0;
-sbit P43 = (uint8_t)0xC0^(uint8_t)3;
-sbit TI  = (uint8_t)0x98^(uint8_t)1;
-//sbit RI  = (uint8_t)0x98^(uint8_t)0;
-sbit RI  = (uint8_t)0x98;
-sbit TR0 = (uint8_t)0x88^(uint8_t)4;
-sbit IT1 = (uint8_t)0x88^(uint8_t)2;
+////2019.03.29
+//sfr P4M0 = 0xB4; 
+//sfr P4M1 = 0xB3;
+//sfr P4SW = 0xBB;
+//sfr WDT_CONTR = 0xC1;
+//sbit EA	 = (uint8_t)0xA8^(uint8_t)7;
+//sbit EX1 = (uint8_t)0xA8^(uint8_t)2;
+//sbit ET0 = (uint8_t)0xA8^(uint8_t)1;
+//sfr P1M0 = 0x92; 
+//sfr P1M1 = 0x91;
+////sbit P10 = (uint8_t)0x90^(uint8_t)0;
+//sbit P10 = (uint8_t)0x90;
+//sbit P12 = (uint8_t)0x90^(uint8_t)2;
+//sbit P13 = (uint8_t)0x90^(uint8_t)3;
+//sbit P17 = (uint8_t)0x90^(uint8_t)7;
+////sbit P20 = (uint8_t)0xA0^(uint8_t)0;
+//sbit P20 = (uint8_t)0xA0;
+//sbit P21 = (uint8_t)0xA0^(uint8_t)1;
+//sbit P22 = (uint8_t)0xA0^(uint8_t)2;
+//sbit P27 = (uint8_t)0xA0^(uint8_t)7;
+//sfr P2M0 = 0x96;
+//sfr P2M1 = 0x95;
+//sbit P32 = (uint8_t)0xB0^(uint8_t)2;
+//sbit P34 = (uint8_t)0xB0^(uint8_t)4;
+//sbit P35 = (uint8_t)0xB0^(uint8_t)5;
+//sbit P36 = (uint8_t)0xB0^(uint8_t)6;
+//sbit P37 = (uint8_t)0xB0^(uint8_t)7;
+//sfr P3M0 = 0xB2;
+//sfr P3M1 = 0xB1; 
+////sbit P40 = (uint8_t)0xC0^(uint8_t)0;
+//sbit P40 = (uint8_t)0xC0;
+//sbit P43 = (uint8_t)0xC0^(uint8_t)3;
+//sbit TI  = (uint8_t)0x98^(uint8_t)1;
+////sbit RI  = (uint8_t)0x98^(uint8_t)0;
+//sbit RI  = (uint8_t)0x98;
+//sbit TR0 = (uint8_t)0x88^(uint8_t)4;
+//sbit IT1 = (uint8_t)0x88^(uint8_t)2;
 
-static void  Interrupt_EXT1(void);
-static void  Interrupt_Time0(void);
-static void  Serial (void);		//串口中断
+//static void  Interrupt_EXT1(void);
+//static void  Interrupt_Time0(void);
+//static void  Serial (void);		//串口中断
+
 
 
 //static enum  //heating wire mode
@@ -199,7 +200,7 @@ uint8_t  Bit_is_one(uint8_t Value,INT bit_num)
 
 
 
-static void  Interrupt_EXT1(void)  interrupt 2  //外部中断EXT1
+static void  Interrupt_EXT1(void)  interrupt 2 //外部中断EXT1
 {
 	HP_CNT_Int++;	
 }
@@ -211,7 +212,7 @@ static void  Interrupt_Time0(void)  interrupt 1  using  2  //10ms中断一次 //22.1
 //	++Tick_20ms;
 }
 
-static void  Serial (void) interrupt 4 using 1		//串口中断
+static void  Interrupt_Serial (void) interrupt 4 using 1		//串口中断
 {
 	if(RI)
 	{
@@ -384,7 +385,7 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 	static uint8_t     Refresh_WenDu_Cnt = 0; 
 	static uint8_t     Alarm_WenDu_Cnt = 0; 
 
-	uint16_t Disp=0,color=0;
+	uint16_t Disp=0,color;
 
 	uint16_t Temp_Dis_En = 0;//温度显示标志
 	uint8_t Disp_Err;
@@ -411,7 +412,7 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 		Temp_Dis_En = (uint16_t)1;//强制刷新一次	
 	}
 
-	color=BLACK18;
+	color=(u16)BLACK18;
 	if((Bit_is_one(ERR_Kind,Alarm_Const_HiTemp)!=(uint8_t)0)   //患者端高温红色
 		&&(Display_Temp_Kind==DISPLAY_Temperature_Patient))
 	{
@@ -520,7 +521,7 @@ void RefreshTempHumidyFunc(uint8_t Refresh_En)//刷新显示温度和湿度
 void RefreshRunTimeFunc(uint8_t Refresh_En)
 //Refresh_En 1-强制刷新一次，否则每分钟刷新一次
 { 
-	uint8_t t=0;
+	uint8_t t;
 //	uint8_t refreshEn=Refresh_En;
 	static uint8_t Last_Sec = 60;		
 	static uint8_t   Work_Min=0;
@@ -589,7 +590,7 @@ void RefreshRTCTimeFunc(void)
 {
 	static uint8_t Last_Min=0;
 //	uint8_t color;
-	uint8_t t=0;
+	uint8_t t;
 	static uint8_t Last_Sec = 60;
 
 	
@@ -672,7 +673,15 @@ void GetTempHumidity_PatientFunc(void)
 		else if(Read_Order == (BYTE)1)	//温度数据接收
 		{
 			//SCL_INPUT_HIGH(); // set SCL I/O port as input
-			Read_SCL_CONF=SCL_CONF;
+//			Read_SCL_CONF=SCL_CONF;
+			if(SCL_CONF)
+			{
+				Read_SCL_CONF=(u8)1;
+			}
+			else
+			{
+				Read_SCL_CONF=(u8)0;
+			}
 			if(Read_SCL_CONF==(uint8_t)1)
 			{
 				Get_time_out = 0;
@@ -752,7 +761,15 @@ void GetTempHumidity_PatientFunc(void)
 		else  if(Read_Order == (BYTE)3)//湿度数据接收
 		{
 			//SCL_INPUT_HIGH(); // set SCL I/O port as input
-			Read_SCL_CONF=SCL_CONF;
+//			Read_SCL_CONF=SCL_CONF;
+			if(SCL_CONF)
+			{
+				Read_SCL_CONF=(u8)1;
+			}
+			else
+			{
+				Read_SCL_CONF=(u8)0;
+			}
 			if(Read_SCL_CONF==(uint8_t)1)
 			{ 
 				//Read_Order = 0;
@@ -939,8 +956,16 @@ void GetTemp_HpChamberFunc(void)
 		HeatingPlateSensor_Port=(bit)1;                                //释放总线等电阻拉高总线,并保持15~60us
 		ChamberOutletSensor_Port=(bit)1;
 		delay_us(86);                           //延时70us
-//		HeaterSensorExist=HeatingPlateSensor_Port;		            //接收应答信号
-		CQKSensorExist=ChamberOutletSensor_Port;
+////		HeaterSensorExist=HeatingPlateSensor_Port;		            //接收应答信号
+//		CQKSensorExist=ChamberOutletSensor_Port;
+		if(ChamberOutletSensor_Port)
+		{
+			CQKSensorExist=(u8)1;
+		}
+		else
+		{
+			CQKSensorExist=(u8)0;
+		}
 		delay_us(488);
 		DS18B20_WriteByte(0xCC);                      //跳过ROM命令
 		DS18B20_WriteByte(0xBE);                      //读暂存存储器命令
@@ -1610,8 +1635,8 @@ void AlarmErrorFunc(void)    //错误事件
 {
 	uint8_t color=0;
 	static uint8_t     Err_Event_Cnt=0;  //减小工作次数
-	uint8_t     Err_Event_1=0;
-	uint8_t     Err_Event_2=0;
+	uint8_t     Err_Event_1;
+	uint8_t     Err_Event_2;
 	  
 	static uint8_t AlarmInfoRem = 0;//报警状态记忆
 
@@ -2594,7 +2619,8 @@ void	Init_port(void) //初始化端口状态--------------------------------
 	LCD_Initial();//TFT LCD initialization	
 	 
 	//Holding down these two keys for three seconds at boot time will enter service mode. 
-	if((KEY_LEFT_UP_IN==0)&&(KEY_LEFT_DOWN_IN==0))
+//	if((KEY_LEFT_UP_IN==0)&&(KEY_LEFT_DOWN_IN==0))
+	if((!KEY_LEFT_UP_IN)&&(!KEY_LEFT_DOWN_IN))
 	{
 		Work_State = UI_STATE_SERVICE_MODE;
 	}
@@ -2604,7 +2630,7 @@ void	Init_port(void) //初始化端口状态--------------------------------
 	}
 	
 //Holding down these two keys for three seconds at boot time will enter Data Reading Interface. 
-	if((KEY_LEFT_DOWN_IN==0) &&(KEY_RIGHT_DOWN_IN==0))
+	if((!KEY_LEFT_DOWN_IN) &&(!KEY_RIGHT_DOWN_IN))
 	{
 		Work_State = UI_STATE_DATAREADER_MODE;//数据传输界面
 //		ET0=0;
@@ -3292,7 +3318,7 @@ void HeaterPlateWireDriveFbTask(void)//16
 	}
 	else  //不加热时的检测
 	{	 	  
-		if(Heat_WireIn_Port!=0)
+		if(Heat_WireIn_Port)
 		{
 			Heat_WireIn_Port=(bit)0;
 			Heat_WIRE_EN_OUT=(bit)1;//防止单一故障	  	
@@ -3302,7 +3328,7 @@ void HeaterPlateWireDriveFbTask(void)//16
 		else
 		{
 			Check_WireInTimes++;
-			if(WireIn_Exist_Port==0)
+			if(!WireIn_Exist_Port)
 			{
 				WireIn_FB_Count++;
 			}				
@@ -3330,7 +3356,7 @@ void HeaterPlateWireDriveFbTask(void)//16
 	}
 	else
 	{
-		if(Heat_WireOut_Port!=0)
+		if(Heat_WireOut_Port)
 		{
 			Heat_WireOut_Port=(bit)0;
 			Heat_WIRE_EN_OUT =(bit)1;//防止单一故障	  
@@ -3340,7 +3366,7 @@ void HeaterPlateWireDriveFbTask(void)//16
 		else
 		{
 			Check_WireOutTimes++;
-			if(WireOut_Exist_Port==0)
+			if(!WireOut_Exist_Port)
 			{
 				WireOut_FB_Count++;
 			}				

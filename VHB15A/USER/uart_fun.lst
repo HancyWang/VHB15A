@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   UART_FUN                                                          04/11/2019 16:15:52 PAGE 1   
+C51 COMPILER V9.59.0.0   UART_FUN                                                          04/19/2019 09:14:00 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART_FUN
@@ -20,11 +20,11 @@ line level    source
    8          #include "uart_fun.h"
    9          #include "all.h"
   10          
-  11          //2019.03.29
-  12          sfr TMOD = 0x89;
-  13          sfr TH1  = 0x8D;
-  14          sbit TI  = (u8)0x98^(u8)1;
-  15          sbit TR1 = (u8)0x88^(u8)6;
+  11          ////2019.03.29
+  12          //sfr TMOD = 0x89;
+  13          //sfr TH1  = 0x8D;
+  14          //sbit TI  = (u8)0x98^(u8)1;
+  15          //sbit TR1 = (u8)0x88^(u8)6;
   16          
   17          /**
   18            Section: Macro Declarations
@@ -43,12 +43,12 @@ line level    source
   31            Section: EUSART APIs
   32          */
   33          
-  34          //2019.03.29
-  35          sfr ACC  = 0xE0; 
-  36          sfr PCON   = 0x87;
-  37          sfr SBUF = 0x99;
-  38          sfr IE = 0xA8;
-  39          sfr SCON = 0x98;
+  34          ////2019.03.29
+  35          //sfr ACC  = 0xE0; 
+  36          //sfr PCON   = 0x87;
+  37          //sfr SBUF = 0x99;
+  38          //sfr IE = 0xA8;
+  39          //sfr SCON = 0x98;
   40          
   41          //串口初始化
   42          void EUSART_Initialize(void)
@@ -62,7 +62,7 @@ line level    source
   50   1      
   51   1        eusartRxHead = 0;
   52   1        eusartRxTail = 0;
-C51 COMPILER V9.59.0.0   UART_FUN                                                          04/11/2019 16:15:52 PAGE 2   
+C51 COMPILER V9.59.0.0   UART_FUN                                                          04/19/2019 09:14:00 PAGE 2   
 
   53   1        eusartRxCount = 0;  
   54   1      }
@@ -70,7 +70,7 @@ line level    source
   56          //从串口接收缓冲区读一个字节
   57          uint8_t EUSART_Read(void)
   58          {
-  59   1          uint8_t readValue  = 0; 
+  59   1          uint8_t readValue; 
   60   1      
   61   1          readValue = eusartRxBuffer[eusartRxTail];//读出计数
   62   1          ++eusartRxTail;
@@ -126,7 +126,7 @@ line level    source
  112   2          }
  113   1          eusartRxCount++;
  114   1      }
-C51 COMPILER V9.59.0.0   UART_FUN                                                          04/11/2019 16:15:52 PAGE 3   
+C51 COMPILER V9.59.0.0   UART_FUN                                                          04/19/2019 09:14:00 PAGE 3   
 
  115           
  116          

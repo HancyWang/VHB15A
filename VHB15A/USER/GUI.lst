@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 1   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE GUI
@@ -12,13 +12,13 @@ line level    source
 
    1          #include "all.h"
    2          
-   3          //2019.03.29
-   4          sfr WDT_CONTR = 0xC1;
-   5          sbit P21 = (u8)0xA0^(u8)1;
-   6          sbit P22 = (u8)0xA0^(u8)2;
-   7          sbit P23 = (u8)0xA0^(u8)3;
-   8          //sbit P40 = (u8)0xC0^(u8)0;
-   9          sbit P40 = (u8)0xC0;
+   3          ////2019.03.29
+   4          //sfr WDT_CONTR = 0xC1;
+   5          //sbit P21 = (u8)0xA0^(u8)1;
+   6          //sbit P22 = (u8)0xA0^(u8)2;
+   7          //sbit P23 = (u8)0xA0^(u8)3;
+   8          ////sbit P40 = (u8)0xC0^(u8)0;
+   9          //sbit P40 = (u8)0xC0;
   10          
   11          static uint8_t Tik_POST_Tick_100mS = 0;//‘À––ƒ£ Ωµƒ ±±Í
   12          static uint8_t Tik_HmiFac_Tick_100mS_10S = 0;//10Sƒ⁄≤ªœÏ”¶‘Ú…¡À∏∑≈»Î«∞Ã®»ŒŒÒ
@@ -62,7 +62,7 @@ line level    source
   50   1        {
   51   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+120,16,200,(const u8*)"In/Exp:",0,WHITE18); //≤ªœ‘ æ
   52   2          LCD_ShowString(POS_RT_RH_X ,POS_RT_RH_Y+180,16,200,(const u8*)"      ",0,WHITE18);  
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 2   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 2   
 
   53   2        }
   54   1        
@@ -126,7 +126,7 @@ line level    source
  112          {
  113   1        Back_Color=WHITE18;   //œ‘ æ…Ë∂®÷µ
  114   1        //Œ¬∂»Õº±Íø™ º…¡À∏,Ω¯»ÎŒ¬∂»…Ë∂®
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 3   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 3   
 
  115   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y,(uint8_t)(Temp/(u16)100),BLACK18);  
  116   1        DISP_TEMP_30X56(POS_RT_TEMP_X,POS_RT_TEMP_Y+34,(u8)(Temp%(u16)100/(u16)10),BLACK18);   
@@ -190,7 +190,7 @@ line level    source
  173   5                LCD_ShowString(20,125,16,280,(const u8*)show_str,0,BLUE18);
  174   5                strcpy((CHAR*)show_str,str_enter);        
  175   5                LCD_ShowString(20,245,16,280,(const u8*)show_str,0,BLUE18);
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 4   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 4   
 
  176   5                  
  177   5                Back_Color=WHITE18;   
@@ -254,7 +254,7 @@ line level    source
  230   3          }
  231   2          
  232   2          case UI_STATE_SetTempChamber_MODE:
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 5   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 5   
 
  233   2          {
  234   3            Remeber_Temp_Value = Set_CQK_Temp;  
@@ -318,7 +318,7 @@ line level    source
  292   2          if(Key_State_Present == KEY_STATE_Down_Short)
  293   2          {
  294   3            ServiceMode_Step = 3;
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 6   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 6   
 
  295   3            Draw_Rectangle_Real(0,0,239,319,BLUE18);   //¿∂
  296   3            Back_Color=BLUE18;
@@ -380,9 +380,9 @@ line level    source
  352   2        }
  353   1        else if(ServiceMode_Step == 5)
  354   1        {
- 355   2          if((KEY_LEFT_DOWN_IN == (bit)0)&&(KEY_RIGHT_DOWN_IN == (bit)0))  //œ‘ æ∞Ê±æ»’∆⁄
+ 355   2          if((!KEY_LEFT_DOWN_IN)&&(!KEY_RIGHT_DOWN_IN))  //œ‘ æ∞Ê±æ»’∆⁄
  356   2          {
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 7   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 7   
 
  357   3            //œ‘ æ»’∆⁄  
  358   3            LCD_ShowString((u16)20,(u16)20,(u16)16,(u16)200,(const u8*)DATE_VER,0,GRAY18);    
@@ -417,7 +417,7 @@ line level    source
  387   1        {
  388   2          ServiceMode_TempHumidy_Disp(); //≤‚ ‘ƒ£ Ωœ¬œ‘ æŒ¬ ™∂»
  389   2          
- 390   2          if(KEY_RIGHT_UP_IN==0)
+ 390   2          if(!KEY_RIGHT_UP_IN)
  391   2          {
  392   3            if(JEP_Temp<=800)
  393   3            {
@@ -445,8 +445,8 @@ line level    source
  415   3            Micro_Temp_Out = 0;
  416   3          }
  417   2          
- 418   2          if((KEY_LEFT_DOWN_IN == 0)&&(KEY_RIGHT_DOWN_IN==0))//Õ¨ ±∞¥œ¬¡Ωº¸,Ω¯»Î’˝≥£π§◊˜ƒ£ Ω
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 8   
+ 418   2          if((!KEY_LEFT_DOWN_IN)&&(!KEY_RIGHT_DOWN_IN))//Õ¨ ±∞¥œ¬¡Ωº¸,Ω¯»Î’˝≥£π§◊˜ƒ£ Ω
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 8   
 
  419   2          {     
  420   3            Test_Mode_Dis_Jrp_Ctl = 1; // «¥”≤‚ ‘ƒ£ ΩΩ¯»Î’˝≥£ƒ£ Ω,º¥œ‘ æº”»»≈Ãøÿ÷∆µƒ ˝æ›  
@@ -510,7 +510,7 @@ line level    source
  478   1        {
  479   2          //LCD_ShowString(190,20,16,200,"POST STEP1!",0,RED18);
  480   2          if(Tik_POST_Tick_100mS > (u8)20)
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 9   
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 9   
 
  481   2          {
  482   3            Post_Step = 2;
@@ -574,7 +574,7 @@ line level    source
  540   3            {
  541   4              Post_Step = 7;//PASS    
  542   4            }
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 10  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 10  
 
  543   3          }
  544   2        }
@@ -638,7 +638,7 @@ line level    source
  602   1        if(Tik_HmiFac_Tick_100mS_10S >= (u8)100)//10S
  603   1        {
  604   2          OK_not_Pressed_flag = 1;
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 11  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 11  
 
  605   2        }   
  606   1        
@@ -702,7 +702,7 @@ line level    source
  664   2          {          
  665   3            Work_State = UI_STATE_NON_INVASIVE_MODE;
  666   3            HmiEnterToWorkStateFunc(UI_STATE_NON_INVASIVE_MODE);
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 12  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 12  
 
  667   3          }
  668   2          else//…œ“ª¥Œµƒ…Ë∂®
@@ -766,7 +766,7 @@ line level    source
  724   4              LCD_ShowString(Load_User_Pre_Set_X - 36,Load_User_Pre_Set_Y,16,280,(const u8*)show_str,0,BLUE18);
  725   4            }
  726   3            
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 13  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 13  
 
  727   3            LCD_ShowxNum(Load_User_Pre_Set_X - 56,Load_User_Pre_Set_Y+(8*8),16,2,Pre_Disp_Deg_10,0x00,BLUE18);//ªº’
              -ﬂ∂ÀŒ¬∂»
@@ -830,7 +830,7 @@ line level    source
  774   3            Draw_Rectangle_Real(143,Load_User_Pre_Set_Y-30,204,Load_User_Pre_Set_Y-29,WHITE18);//
  775   3           
  776   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,84,Load_User_Pre_Set_Y-10,RED18);//
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 14  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 14  
 
  777   3            Draw_Rectangle_Real(83,Load_User_Pre_Set_Y-30,144,Load_User_Pre_Set_Y-29,RED18);//  
  778   3            strcpy((CHAR*)show_str,str_invasive);
@@ -894,7 +894,7 @@ line level    source
  834   2      
  835   2          {
  836   3           LCD_LIGHT_CLOSE;    
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 15  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 15  
 
  837   3           Work_State = UI_STATE_RUNNING_NORMAL_MODE;
  838   3           HmiEnterToWorkStateFunc(UI_STATE_RUNNING_NORMAL_MODE);
@@ -958,7 +958,7 @@ line level    source
  895   2          else
  896   2          {
  897   3            Work_Mode=Invasive_Mode;  
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 16  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 16  
 
  898   3            Set_RT_Temp=(INT)Set_RT_YCTemp;   
  899   3            Set_CQK_Temp=Set_CQK_YCTemp;        
@@ -1022,7 +1022,7 @@ line level    source
  957   2          {
  958   3            Back_Color=WHITE18;
  959   3            Display_Temp_Kind = DISPLAY_Temperature_Patient;  
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 17  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 17  
 
  960   3            DISP_ICO_52X64(POS_ICO_TEMP_X,POS_ICO_TEMP_Y,0,BLACK18);
  961   3            Display_In_Exp_Ratio(In_Exp_Ratio,0);
@@ -1086,7 +1086,7 @@ line level    source
 1019   3            if(Remeber_Temp_Value>(u16)Const_NoninvasPatientTemp_Min)
 1020   3            {
 1021   4              Remeber_Temp_Value=Remeber_Temp_Value-(u16)5;
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 18  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 18  
 
 1022   4            } 
 1023   3          } 
@@ -1150,7 +1150,7 @@ line level    source
 1081   2          
 1082   2          Setting_write_to_flash(); 
 1083   2          Display_Return_Cnt = 0;
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 19  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 19  
 
 1084   2          Work_State = UI_STATE_RUNNING_NORMAL_MODE;
 1085   2          DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
@@ -1214,7 +1214,7 @@ line level    source
 1143   2          {//≥ˆ∆¯ø⁄Œ¬∂»◊Ó¥Û32∂»
 1144   3            if(Remeber_Temp_Value<(uint16_t)Const_NoninvasChamberTemp_Max)
 1145   3            {
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 20  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 20  
 
 1146   4              Remeber_Temp_Value=Remeber_Temp_Value+(u16)5;
 1147   4            } 
@@ -1278,7 +1278,7 @@ line level    source
 1203   3            
 1204   3            Display_Return_Cnt = 0;
 1205   3            Work_State = UI_STATE_RUNNING_NORMAL_MODE;
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 21  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 21  
 
 1206   3            DISP_ICO_32X40(POS_RT_TEMP_X,POS_RT_TEMP_Y+(34*3)+5,ICO_DU,BLACK18);
 1207   3            RefreshTempHumidyFunc(1);//«ø÷∆À¢–¬Œ¬Œ¬∂»œ‘ æ 
@@ -1342,7 +1342,7 @@ line level    source
 1264   3          }
 1265   2        }
 1266   1        if(Temp_Bit1!=(u8)0) //»ÚƒÍ29ÃÏ£¨∆ΩƒÍ28ÃÏ
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 22  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 22  
 
 1267   1        {
 1268   2          if(TempTime[4]==(u8)2)
@@ -1406,7 +1406,7 @@ line level    source
 1326   2          {
 1327   3            TempTime[6]++;
 1328   3            if((TempTime[6]&(uint8_t)0x0F)>=(u8)10)
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 23  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 23  
 
 1329   3            {
 1330   4                 TempTime[6]=(TempTime[6]& (uint8_t)0xF0)+(u8)0x10;;
@@ -1470,7 +1470,7 @@ line level    source
 1388   3            TempTime[0]++;
 1389   3            if((TempTime[0]&(uint8_t)0x0F)>=(u8)10)
 1390   3            {
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 24  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 24  
 
 1391   4                 TempTime[0]=(TempTime[0]& (uint8_t)0xF0)+(u8)0x10;
 1392   4            }
@@ -1534,7 +1534,7 @@ line level    source
 1450   3            if((TempTime[0]&(uint8_t)0x0F)>(u8)9)
 1451   3            {
 1452   4              TempTime[0]&=(uint8_t)0xF9;
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 25  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 25  
 
 1453   4            }       
 1454   3          }
@@ -1598,7 +1598,7 @@ line level    source
 1512          
 1513          
 1514          //uint8_t  In_Exp_Ratio=4;   //In∫ÕExpº”»»∑Ω Ωµƒ±»¿˝  //1-1:1 2-1:1.1 3-1:1.2 4-1:1.3 5-1:1.4 6-1:1.5
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 26  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 26  
 
 1515          static uint8_t  In_Exp_Ratio_temp=3;   //In∫ÕExpº”»»∑Ω Ωµƒ±»¿˝¡Ÿ ±±‰¡ø
 1516          static void EnterSetInExp(void)//Ω¯»ÎInExp…Ë∂®
@@ -1662,7 +1662,7 @@ line level    source
 1574   2          Display_In_Exp_Ratio(In_Exp_Ratio_temp,0);  
 1575   2          data_flash.In_Exp_Ratio = In_Exp_Ratio;// 
 1576   2          Setting_write_to_flash();     
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 27  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 27  
 
 1577   2        } 
 1578   1        else
@@ -1726,7 +1726,7 @@ line level    source
 1636   3            LCD_LIGHT_CLOSE;
 1637   3            Draw_Rectangle_Real(0,0,239,319,BLACK18);           
 1638   3            DispEnable = 1; 
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 28  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 28  
 
 1639   3          }
 1640   2        }
@@ -1790,7 +1790,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.59.0.0   GUI                                                               04/11/2019 16:15:52 PAGE 29  
+C51 COMPILER V9.59.0.0   GUI                                                               04/19/2019 09:14:00 PAGE 29  
 
    BIT SIZE         =   ----    ----
    EDATA SIZE       =   ----    ----

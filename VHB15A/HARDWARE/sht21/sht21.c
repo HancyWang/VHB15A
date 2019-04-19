@@ -1,4 +1,4 @@
-// #include "STC12C32AD.h"
+ #include "STC12C32AD.h"
  #include "all.h"
 // #include "sht21.h"
 // #include "delay.h"	
@@ -36,11 +36,11 @@ static uint8_t SHT21_Read8Bit(uint8_t ask);
 //extern uint8_t  Test_Mode_Dis_Data_Flag; //测试模式显示数据DATA的标志	外部变量
 
 
-//2019.03.29
-sfr P1M0 = 0x92; // 
-sfr P1M1 = 0x91;
-sbit P11 = (u8)0x90^(u8)1;
-sbit P12 = (u8)0x90^(u8)2;
+////2019.03.29
+//sfr P1M0 = 0x92; // 
+//sfr P1M1 = 0x91;
+//sbit P11 = (u8)0x90^(u8)1;
+//sbit P12 = (u8)0x90^(u8)2;
 
 
 static void SCL_INPUT_HIGH(void)
@@ -145,7 +145,7 @@ static uint8_t SHT21_Read8Bit(uint8_t ask)
 		{
 			SCL_INPUT_HIGH();                   //sht21_start clock on SCL-line
 		  delay_us(10);                     //SCL input_high time (t_HIGH)
-		  if (SDA_CONF==1) 
+		  if (SDA_CONF) 
 			{
 				rxByte=(rxByte | mask); //read bit
 			}
@@ -178,10 +178,34 @@ uint8_t SHT21_WriteTemp(void)
 {
 	uint8_t  Read_SHT21_Err;
 	SHT21_Start();
-	Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
-	Read_SHT21_Err=SHT21_Write8Bit(TempCmd);
+//	Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
+//	Read_SHT21_Err=SHT21_Write8Bit(TempCmd);
+	if(SHT21_Write8Bit(WriteCmd)==(u8)1)
+	{
+		Read_SHT21_Err=(u8)1;
+	}
+	else
+	{
+		Read_SHT21_Err=(u8)0;
+	}
+	if(SHT21_Write8Bit(TempCmd)==(u8)1)
+	{
+		Read_SHT21_Err=(u8)1;
+	}
+	else
+	{
+		Read_SHT21_Err=(u8)0;
+	}
 	SHT21_Start();
-	Read_SHT21_Err=SHT21_Write8Bit(ReadCmd);
+//	Read_SHT21_Err=SHT21_Write8Bit(ReadCmd);
+	if(SHT21_Write8Bit(ReadCmd)==(u8)1)
+	{
+		Read_SHT21_Err=(u8)1;
+	}
+	else
+	{
+		Read_SHT21_Err=(u8)0;
+	}
 	SCL_INPUT_HIGH();    // set SCL I/O port as input	
 
 	return Read_SHT21_Err;
@@ -191,14 +215,38 @@ uint8_t SHT21_WriteRH(void)
 {
 	uint8_t  Read_SHT21_Err;
 	SHT21_Start();
-	Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
-	Read_SHT21_Err=SHT21_Write8Bit(RHCmd);
+//	Read_SHT21_Err=SHT21_Write8Bit(WriteCmd);
+//	Read_SHT21_Err=SHT21_Write8Bit(RHCmd);
+	if(SHT21_Write8Bit(WriteCmd)==(u8)1)
+	{
+		Read_SHT21_Err=(u8)1;
+	}
+	else
+	{
+		Read_SHT21_Err=(u8)0;
+	}
+	if(SHT21_Write8Bit(RHCmd)==(u8)1)
+	{
+		Read_SHT21_Err=(u8)1;
+	}
+	else
+	{
+		Read_SHT21_Err=(u8)0;
+	}
 	SHT21_Start();
-	Read_SHT21_Err=SHT21_Write8Bit(ReadCmd);
+//	Read_SHT21_Err=SHT21_Write8Bit(ReadCmd);
+	if(SHT21_Write8Bit(ReadCmd)==(u8)1)
+	{
+		Read_SHT21_Err=(u8)1;
+	}
+	else
+	{
+		Read_SHT21_Err=(u8)0;
+	}
   SCL_INPUT_HIGH(); // set SCL I/O port as input
 	
 
-  	return Read_SHT21_Err;
+	return Read_SHT21_Err;
 }
 
 

@@ -1,11 +1,11 @@
 #include "all.h"
 
-//2019.03.30
-//sbit P20 = (uint8_t)0xA0^(uint8_t)0;
-sbit P20 = (uint8_t)0xA0;
-sbit P21 = (uint8_t)0xA0^(uint8_t)1;
-sbit P22 = (uint8_t)0xA0^(uint8_t)2;
-sbit P23 = (uint8_t)0xA0^(uint8_t)3;
+////2019.03.30
+////sbit P20 = (uint8_t)0xA0^(uint8_t)0;
+//sbit P20 = (uint8_t)0xA0;
+//sbit P21 = (uint8_t)0xA0^(uint8_t)1;
+//sbit P22 = (uint8_t)0xA0^(uint8_t)2;
+//sbit P23 = (uint8_t)0xA0^(uint8_t)3;
 
 WORK_STATUS Work_State = UI_STATE_POWER_OFF_MODE;//工作状态定义
 
@@ -153,17 +153,89 @@ void ManageTask(void)//Task0:Task Manager ----20mS
     }
 }
 
-KEY_STATUS KeyToFuncVal = KEY_STATE_ReleaseValue; 
+
 void KeyScanTask(void) //1
 {
-	BitStatus bit_status;
+	static KEY_STATUS KeyToFuncVal = KEY_STATE_ReleaseValue; 
+	static const struct Key_Multifun_Element Key_UP_Element = 
+	{
+		KEY_STATE_PressValue,       	//PressValue
+		KEY_STATE_ReleaseValue,     	//ReleaseValue
+		10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+		20,                         	//TimOfSe 初次长按响应时间
+		5,                          	//TimOfLg 后续长连续按下状态时间
+		KeyUpPressShortAction,      	//void (*)(void)短按键由低到高弹起
+		KeyUpPressLongFirstAction,    //按键长键后的响应函数
+		KeyUpPressLongRepeatAction,  //连续按下持续,连+连-
+	};
+	static struct Multifun_Key Key_UP =
+	{
+		&KeyToFuncVal,		        //按键码值
+		&Key_UP_Tik,	//按键时标
+		1,			      //处理状态
+	};
+	static const struct Key_Multifun_Element Key_Down_Element = 
+	{
+		KEY_STATE_PressValue,       	//PressValue
+		KEY_STATE_ReleaseValue,     	//ReleaseValue
+		10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+		20,                         	//TimOfSe 初次长按响应时间
+		5,                          	//TimOfLg 后续长连续按下状态时间
+		KeyDownPressShortAction,      	//void (*)(void)短按键由低到高弹起
+		KeyDownPressLongFirstAction,    //按键长键后的响应函数
+		KeyDownPressLongRepeatAction,  //连续按下持续,连+连-
+	};
+	static struct Multifun_Key Key_Down =
+	{
+		&KeyToFuncVal,		        //按键码值
+		&Key_Down_Tik,	//按键时标
+		1,			      //处理状态
+	};
+	static const struct Key_Multifun_Element Key_OK_Element = 
+	{
+		KEY_STATE_PressValue,       	//PressValue
+		KEY_STATE_ReleaseValue,     	//ReleaseValue
+		10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+		20,                         	//TimOfSe 初次长按响应时间
+		5,                          	//TimOfLg 后续长连续按下状态时间
+		KeyOKPressShortAction,      	//void (*)(void)短按键由低到高弹起
+		KeyOKPressLongFirstAction,    //按键长键后的响应函数
+		KeyOKPressLongRepeatAction,  //连续按下持续,连+连-
+	};
+	static struct Multifun_Key Key_OK =
+	{
+		&KeyToFuncVal,		        //按键码值
+		&Key_OK_Tik,	//按键时标
+		1,			      //处理状态
+	};
+	static const struct Key_Multifun_Element Key_Mute_Element = 
+	{
+		KEY_STATE_PressValue,       	//PressValue
+		KEY_STATE_ReleaseValue,     	//ReleaseValue
+		10,                         	//TimOf_Low_High 按下弹起的最大响应时间
+		20,                         	//TimOfSe 初次长按响应时间
+		5,                          	//TimOfLg 后续长连续按下状态时间
+		KeyMutePressShortAction,      	//void (*)(void)短按键由低到高弹起
+		KeyMutePressLongFirstAction,    //按键长键后的响应函数
+		KeyMutePressLongRepeatAction,  //连续按下持续,连+连-
+	};
+	static struct Multifun_Key Key_Mute =
+	{
+		&KeyToFuncVal,		        //按键码值
+		&Key_Mute_Tik,	//按键时标
+		1,			      //处理状态
+	};
+//	BitStatus bit_status;
+	bit bit_status;
 	WS_TaskState = KeyScanTIFG;
 	if(WS_TaskJudge(WS_TaskState)!=(uint8_t)0)
 	{   
 		WS_DelTaskIfg(WS_TaskState);
 		{
 			bit_status = KEY_LEFT_UP_IN;//UP
-			if((INT)bit_status == (INT)RESET)
+
+//			if((INT)bit_status == (INT)RESET)
+			if(!bit_status)
 			{
 				KeyToFuncVal = KEY_STATE_PressValue;     
 			}
@@ -174,7 +246,7 @@ void KeyScanTask(void) //1
 			Key_Multifun(Key_UP_Element,&Key_UP);
 			
 			bit_status = KEY_LEFT_DOWN_IN;//DOWN
-			if((INT)bit_status == (INT)RESET)
+			if(!bit_status)
 			{
 				KeyToFuncVal = KEY_STATE_PressValue;     
 			}
@@ -182,11 +254,12 @@ void KeyScanTask(void) //1
 			{
 				KeyToFuncVal = KEY_STATE_ReleaseValue; 
 			}
-				
+
 			Key_Multifun(Key_Down_Element,&Key_Down);
 			
 			bit_status = KEY_RIGHT_UP_IN;//OK
-			if((INT)bit_status == (INT)RESET)
+
+			if(!bit_status)
 			{
 				KeyToFuncVal = KEY_STATE_PressValue;     
 			}
@@ -198,7 +271,8 @@ void KeyScanTask(void) //1
 			Key_Multifun(Key_OK_Element,&Key_OK);
 			
 			bit_status = KEY_RIGHT_DOWN_IN;//MUTE
-			if((INT)bit_status == (INT)RESET)
+
+			if(!bit_status)
 			{
 				KeyToFuncVal = KEY_STATE_PressValue;				
 			}

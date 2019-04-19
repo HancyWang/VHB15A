@@ -76,7 +76,7 @@ void SaveDateToFlashTask(void);//22
 void UartRecTask(void);//23
 
 
-extern KEY_STATUS KeyToFuncVal;
+//extern KEY_STATUS KeyToFuncVal;
 
 
 

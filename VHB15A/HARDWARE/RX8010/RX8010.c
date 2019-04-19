@@ -1,4 +1,4 @@
- //#include "STC12C32AD.h"
+ #include "STC12C32AD.h"
  #include "all.h" 
  //#include "delay.h"
  //#include "RX8010.h"
@@ -18,13 +18,13 @@
 #define	RX8010_WRITE  0x64 //I2CÆ÷¼þµØÖ·
 #define RX8010_READ		0x65
 
-//2019.03.29
-sfr WDT_CONTR = 0xC1;
-sbit EA  = (u8)0xA8^(u8)7;
-sbit P25 = (u8)0xA0^(u8)5;
-sbit P26 = (u8)0xA0^(u8)6;
-sfr P2M0 = 0x96;
-sfr P2M1 = 0x95;
+////2019.03.29
+//sfr WDT_CONTR = 0xC1;
+//sbit EA  = (u8)0xA8^(u8)7;
+//sbit P25 = (u8)0xA0^(u8)5;
+//sbit P26 = (u8)0xA0^(u8)6;
+//sfr P2M0 = 0x96;
+//sfr P2M1 = 0x95;
 
 
 static void SCL_DIR_OUTPUT(void)
@@ -139,7 +139,12 @@ static uint8_t IC_ReadByte(void)
 		SCL_=(bit)1;
 		delay_us(2);
 		IC_data<<=1;
-		IC_data|=SDA_;
+
+		//IC_data|=SDA_;
+		if(SDA_)
+		{
+			IC_data++;
+		}
 		//delay_us(4);
 		SCL_=(bit)1;
 		delay_us(2);

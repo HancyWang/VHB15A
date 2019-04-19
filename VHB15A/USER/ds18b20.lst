@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   DS18B20                                                           04/11/2019 16:15:52 PAGE 1   
+C51 COMPILER V9.59.0.0   DS18B20                                                           04/19/2019 09:13:59 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DS18B20
@@ -10,7 +10,7 @@ COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\HARDWARE\DS18b20\ds18b20.c LA
 
 line level    source
 
-   1          // #include "STC12C32AD.h"
+   1           #include "STC12C32AD.h"
    2           #include "all.h"
    3          // #include "INTRINS.H" 
    4          // #include "delay.h"
@@ -19,10 +19,10 @@ line level    source
    7          uint8_t   Read_18B20_Value;
    8          uint8_t   Read_18B20_Value2; 
    9          
-  10          //2019.03.30
-  11          //sbit P10 = (u8)0x90^(u8)0;
-  12          sbit P10 = (u8)0x90;
-  13          sbit P37 = (u8)0xB0^(u8)7;
+  10          ////2019.03.30
+  11          ////sbit P10 = (u8)0x90^(u8)0;
+  12          //sbit P10 = (u8)0x90;
+  13          //sbit P37 = (u8)0xB0^(u8)7;
   14          
   15          //DS18B20程序=================================================
   16          void DS18B20_ReadByte(void)
@@ -43,99 +43,115 @@ line level    source
   31   2              HeatingPlateSensor_Port = (bit)1;             //准备接收
   32   2              ChamberOutletSensor_Port =(bit)1;
   33   2              delay_us(2);              //接收延时
-  34   2              Wei=HeatingPlateSensor_Port;
-  35   2              Wei2=ChamberOutletSensor_Port;
-  36   2              if (Wei==(u8)1)
-  37   2              {
-  38   3                Read_18B20_Value |= (uint8_t)0x80;        //读取数据
-  39   3              }         
-  40   2              if (Wei2==(u8)1) 
-  41   2              {
-  42   3                Read_18B20_Value2 |= (uint8_t)0x80;        //读取数据
-  43   3              }
-  44   2              delay_us(90);                  //等待60us时间片结束
-  45   2          }
-  46   1          //EA=1; 
-  47   1      }
-  48          
-  49          void DS18B20_WriteByte(uint8_t dat)
-  50          {
-  51   1          BYTE  i;
-  52   1          //EA=0;
-C51 COMPILER V9.59.0.0   DS18B20                                                           04/11/2019 16:15:52 PAGE 2   
+  34   2      //        Wei=HeatingPlateSensor_Port;
+  35   2              if(HeatingPlateSensor_Port)
+  36   2              {
+  37   3                Wei=(u8)1;
+  38   3              }
+  39   2              else
+  40   2              {
+  41   3                Wei=(u8)0;
+  42   3              }
+  43   2      //        Wei2=ChamberOutletSensor_Port;
+  44   2              if(ChamberOutletSensor_Port)
+  45   2              {
+  46   3                Wei2=(u8)1;
+  47   3              }
+  48   2              else
+  49   2              {
+  50   3                Wei2=(u8)0;
+  51   3              }
+  52   2              if (Wei==(u8)1)
+C51 COMPILER V9.59.0.0   DS18B20                                                           04/19/2019 09:13:59 PAGE 2   
 
-  53   1          for (i=0; i<(u8)8; i++)               //8位计数器
-  54   1          {
-  55   2              HeatingPlateSensor_Port = (bit)0;                        //开始时间片
-  56   2              ChamberOutletSensor_Port=(bit)0;
-  57   2              delay_us(2);                         //延时等待
-  58   2              if((dat & (uint8_t)0x01)!=(u8)0)
-  59   2              {
-  60   3                 HeatingPlateSensor_Port = (bit)1;
-  61   3                 ChamberOutletSensor_Port=(bit)1;
-  62   3              }
-  63   2              else
-  64   2              {
-  65   3                 HeatingPlateSensor_Port=(bit)0;
-  66   3                 ChamberOutletSensor_Port=(bit)0;
-  67   3              }
-  68   2              delay_us(110);                         //等待时间片结束
-  69   2              HeatingPlateSensor_Port = (bit)1;                     //恢复数据线
-  70   2              ChamberOutletSensor_Port=(bit)1;
-  71   2              delay_us(2);                         //延时等待
-  72   2              dat >>= 1;                           //送出数据
-  73   2          }
-  74   1          //EA=1;
-  75   1      }
-  76          
-  77          u8t DS18B20_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum)
-  78          //==============================================================================
-  79          {
-  80   1        u8t crc = 0;  
-  81   1        u8t byteCtr;
-  82   1        u8t bit8;
-  83   1        u8t crc_1byte = 0;
-  84   1        u8t ret=0;
-  85   1        //calculates 8-Bit checksum with given polynomial
-  86   1      //  crc = 0;
-  87   1        for (byteCtr = 0; byteCtr < nbrOfBytes; ++byteCtr)
-  88   1        { 
-  89   2          crc ^= (Cdata[byteCtr]);
-  90   2      //    crc_1byte ^= (u8t)0;
-  91   2          for (bit8 = 0; bit8 < (u8)8; bit8++)
-  92   2          {
-  93   3            if (((crc_1byte^crc) & (u8t)0x01)!=(u8t)0)
-  94   3            {
-  95   4              crc_1byte ^= (u8t)0x18;
-  96   4              crc_1byte >>= 1;
-  97   4              crc_1byte |= (u8t)0x80;
-  98   4            }
-  99   3            else
- 100   3            {
- 101   4              crc_1byte >>= 1;
- 102   4            }       
- 103   3            crc >>= 1;  
- 104   3          }
- 105   2          //crc = crc ^ crc_1byte;
- 106   2        }
- 107   1        if(crc_1byte != checksum) 
- 108   1        {
- 109   2          ret= CHECKSUM_ERROR;
- 110   2        }
- 111   1        else 
- 112   1        {
- 113   2          ret=(u8t)0;
- 114   2        }
-C51 COMPILER V9.59.0.0   DS18B20                                                           04/11/2019 16:15:52 PAGE 3   
+  53   2              {
+  54   3                Read_18B20_Value |= (uint8_t)0x80;        //读取数据
+  55   3              }         
+  56   2              if (Wei2==(u8)1) 
+  57   2              {
+  58   3                Read_18B20_Value2 |= (uint8_t)0x80;        //读取数据
+  59   3              }
+  60   2              delay_us(90);                  //等待60us时间片结束
+  61   2          }
+  62   1          //EA=1; 
+  63   1      }
+  64          
+  65          void DS18B20_WriteByte(uint8_t dat)
+  66          {
+  67   1          BYTE  i;
+  68   1          //EA=0;
+  69   1          for (i=0; i<(u8)8; i++)               //8位计数器
+  70   1          {
+  71   2              HeatingPlateSensor_Port = (bit)0;                        //开始时间片
+  72   2              ChamberOutletSensor_Port=(bit)0;
+  73   2              delay_us(2);                         //延时等待
+  74   2              if((dat & (uint8_t)0x01)!=(u8)0)
+  75   2              {
+  76   3                 HeatingPlateSensor_Port = (bit)1;
+  77   3                 ChamberOutletSensor_Port=(bit)1;
+  78   3              }
+  79   2              else
+  80   2              {
+  81   3                 HeatingPlateSensor_Port=(bit)0;
+  82   3                 ChamberOutletSensor_Port=(bit)0;
+  83   3              }
+  84   2              delay_us(110);                         //等待时间片结束
+  85   2              HeatingPlateSensor_Port = (bit)1;                     //恢复数据线
+  86   2              ChamberOutletSensor_Port=(bit)1;
+  87   2              delay_us(2);                         //延时等待
+  88   2              dat >>= 1;                           //送出数据
+  89   2          }
+  90   1          //EA=1;
+  91   1      }
+  92          
+  93          u8t DS18B20_CheckCrc(const u8t Cdata[], u8t nbrOfBytes, u8t checksum)
+  94          //==============================================================================
+  95          {
+  96   1        u8t crc = 0;  
+  97   1        u8t byteCtr;
+  98   1        u8t bit8;
+  99   1        u8t crc_1byte = 0;
+ 100   1        u8t ret=0;
+ 101   1        //calculates 8-Bit checksum with given polynomial
+ 102   1      //  crc = 0;
+ 103   1        for (byteCtr = 0; byteCtr < nbrOfBytes; ++byteCtr)
+ 104   1        { 
+ 105   2          crc ^= (Cdata[byteCtr]);
+ 106   2      //    crc_1byte ^= (u8t)0;
+ 107   2          for (bit8 = 0; bit8 < (u8)8; bit8++)
+ 108   2          {
+ 109   3            if (((crc_1byte^crc) & (u8t)0x01)!=(u8t)0)
+ 110   3            {
+ 111   4              crc_1byte ^= (u8t)0x18;
+ 112   4              crc_1byte >>= 1;
+ 113   4              crc_1byte |= (u8t)0x80;
+ 114   4            }
+C51 COMPILER V9.59.0.0   DS18B20                                                           04/19/2019 09:13:59 PAGE 3   
 
- 115   1        return ret;
- 116   1      } 
+ 115   3            else
+ 116   3            {
+ 117   4              crc_1byte >>= 1;
+ 118   4            }       
+ 119   3            crc >>= 1;  
+ 120   3          }
+ 121   2          //crc = crc ^ crc_1byte;
+ 122   2        }
+ 123   1        if(crc_1byte != checksum) 
+ 124   1        {
+ 125   2          ret= CHECKSUM_ERROR;
+ 126   2        }
+ 127   1        else 
+ 128   1        {
+ 129   2          ret=(u8t)0;
+ 130   2        }
+ 131   1        return ret;
+ 132   1      } 
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    341    ----
+   CODE SIZE        =    377    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =      2      11
+   XDATA SIZE       =      2      13
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

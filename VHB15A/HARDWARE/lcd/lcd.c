@@ -5,14 +5,14 @@
 
 uint8_t    Back_Color;
 
-//2019.03.29
-sfr P0   = 0x80;
-sbit P14 = (u8)0x90^(u8)4;
-sbit P15 = (u8)0x90^(u8)5;
-sbit P16 = (u8)0x90^(u8)6;
-//sbit P40 = (u8)0xC0^(u8)0;
-sbit P40 = (u8)0xC0;
-sbit P46 = (u8)0xC0^(u8)6;
+////2019.03.29
+//sfr P0   = 0x80;
+//sbit P14 = (u8)0x90^(u8)4;
+//sbit P15 = (u8)0x90^(u8)5;
+//sbit P16 = (u8)0x90^(u8)6;
+////sbit P40 = (u8)0xC0^(u8)0;
+//sbit P40 = (u8)0xC0;
+//sbit P46 = (u8)0xC0^(u8)6;
 
 //static const uint16_t code Table_Color[]=
 //{

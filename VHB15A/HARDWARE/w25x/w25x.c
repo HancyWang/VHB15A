@@ -1,4 +1,4 @@
-// #include "STC12C32AD.h"
+ #include "STC12C32AD.h"
  #include "all.h"
 // #include "w25x.h"
 // #include "lcd.h"
@@ -30,12 +30,12 @@
 //#define nop() _nop_()
 
 
-//2019.03.30
-sbit P17 = (u8)0x90^(u8)7;
-sbit P41 = (u8)0xC0^(u8)1;
-sbit P42 = (u8)0xC0^(u8)2;
-sbit P44 = (u8)0xC0^(u8)4;
-sbit P45 = (u8)0xC0^(u8)5;
+////2019.03.30
+//sbit P17 = (u8)0x90^(u8)7;
+//sbit P41 = (u8)0xC0^(u8)1;
+//sbit P42 = (u8)0xC0^(u8)2;
+//sbit P44 = (u8)0xC0^(u8)4;
+//sbit P45 = (u8)0xC0^(u8)5;
 					  
 //unsigned char Read_Data; 
 
@@ -143,7 +143,15 @@ uchar   SPI_Get_Byte(void)
 	for (; i < (u8)8; i++)
 	{
 		in = (uint8_t)(in << 1);                      //  shift 1 place to the left or shift in 0
-		temp = W25X_DO;                      //  save input
+//		temp = W25X_DO;                      //  save input
+		if(W25X_DO)
+		{
+			temp=(uchar)1;
+		}
+		else
+		{
+			temp=(uchar)0;
+		}
 		W25X_CLK = (bit)1; 
 		_nop_();                              //  toggle clock high
 		if (temp==(uchar)1)                        //  check to see if bit is high

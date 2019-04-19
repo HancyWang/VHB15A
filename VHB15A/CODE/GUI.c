@@ -1,12 +1,12 @@
 #include "all.h"
 
-//2019.03.29
-sfr WDT_CONTR = 0xC1;
-sbit P21 = (u8)0xA0^(u8)1;
-sbit P22 = (u8)0xA0^(u8)2;
-sbit P23 = (u8)0xA0^(u8)3;
-//sbit P40 = (u8)0xC0^(u8)0;
-sbit P40 = (u8)0xC0;
+////2019.03.29
+//sfr WDT_CONTR = 0xC1;
+//sbit P21 = (u8)0xA0^(u8)1;
+//sbit P22 = (u8)0xA0^(u8)2;
+//sbit P23 = (u8)0xA0^(u8)3;
+////sbit P40 = (u8)0xC0^(u8)0;
+//sbit P40 = (u8)0xC0;
 
 static uint8_t Tik_POST_Tick_100mS = 0;//运行模式的时标
 static uint8_t Tik_HmiFac_Tick_100mS_10S = 0;//10S内不响应则闪烁放入前台任务
@@ -352,7 +352,7 @@ void HmiServiceModeFunc(void)
 	}
 	else if(ServiceMode_Step == 5)
 	{
-		if((KEY_LEFT_DOWN_IN == (bit)0)&&(KEY_RIGHT_DOWN_IN == (bit)0))  //显示版本日期
+		if((!KEY_LEFT_DOWN_IN)&&(!KEY_RIGHT_DOWN_IN))  //显示版本日期
 		{
 			//显示日期	
 			LCD_ShowString((u16)20,(u16)20,(u16)16,(u16)200,(const u8*)DATE_VER,0,GRAY18);		
@@ -387,7 +387,7 @@ void HmiServiceModeFunc(void)
 	{
 		ServiceMode_TempHumidy_Disp(); //测试模式下显示温湿度
 		
-		if(KEY_RIGHT_UP_IN==0)
+		if(!KEY_RIGHT_UP_IN)
 		{
 			if(JEP_Temp<=800)
 			{
@@ -415,7 +415,7 @@ void HmiServiceModeFunc(void)
 			Micro_Temp_Out = 0;
 		}
 		
-		if((KEY_LEFT_DOWN_IN == 0)&&(KEY_RIGHT_DOWN_IN==0))//同时按下两键,进入正常工作模式
+		if((!KEY_LEFT_DOWN_IN)&&(!KEY_RIGHT_DOWN_IN))//同时按下两键,进入正常工作模式
 		{			
 			Test_Mode_Dis_Jrp_Ctl = 1; //是从测试模式进入正常模式,即显示加热盘控制的数据 	
 			Work_State = UI_STATE_POST_MODE;

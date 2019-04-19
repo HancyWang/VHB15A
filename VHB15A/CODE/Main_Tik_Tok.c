@@ -5,14 +5,14 @@
 //static uint16_t Sub_1_TikCount = 0;  
 //******************************************************************************
 
-//2019.03.29
-sfr AUXR  = 0x8E;
-sfr TMOD = 0x89;
-sfr TL0  = 0x8A;
-sfr TH0  = 0x8C;
-sbit ET0 = (uint8_t)0xA8^(uint8_t)1;
-sbit TF0 = (uint8_t)0x88^(uint8_t)5;
-sbit TR0 = (uint8_t)0x88^(uint8_t)4;
+////2019.03.29
+//sfr AUXR  = 0x8E;
+//sfr TMOD = 0x89;
+//sfr TL0  = 0x8A;
+//sfr TH0  = 0x8C;
+//sbit ET0 = (uint8_t)0xA8^(uint8_t)1;
+//sbit TF0 = (uint8_t)0x88^(uint8_t)5;
+//sbit TR0 = (uint8_t)0x88^(uint8_t)4;
 
 
 //******************************************************************************

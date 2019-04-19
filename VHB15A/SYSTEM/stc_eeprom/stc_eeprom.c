@@ -1,13 +1,14 @@
 //#include <reg51.H>
 #include <intrins.H>
 #include "stc_eeprom.h"
+#include "stc12c32ad.h"
 
-sfr IAP_DATA    = 0xC2;
-sfr IAP_ADDRH   = 0xC3;
-sfr IAP_ADDRL   = 0xC4;
-sfr IAP_CMD     = 0xC5;
-sfr IAP_TRIG    = 0xC6;
-sfr IAP_CONTR   = 0xC7;
+//sfr IAP_DATA    = 0xC2;
+//sfr IAP_ADDRH   = 0xC3;
+//sfr IAP_ADDRL   = 0xC4;
+//sfr IAP_CMD     = 0xC5;
+//sfr IAP_TRIG    = 0xC6;
+//sfr IAP_CONTR   = 0xC7;
 
 //Define the waiting time for Flash operations and the constants that allow IAP/ISP/EEPROM operations
 #define ENABLE_ISP 0x82 //

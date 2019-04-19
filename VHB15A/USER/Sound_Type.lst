@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   SOUND_TYPE                                                        04/11/2019 16:15:51 PAGE 1   
+C51 COMPILER V9.59.0.0   SOUND_TYPE                                                        04/19/2019 09:13:59 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE SOUND_TYPE
@@ -16,8 +16,8 @@ line level    source
    4          static uint8_t Sound_En_Cnt = 0;
    5          static uint16_t SoundPauseCnt = 0;
    6          
-   7          //2019.03.30
-   8          sbit P43 = (uint8_t)0xC0^(uint8_t)3;
+   7          ////2019.03.30
+   8          //sbit P43 = (uint8_t)0xC0^(uint8_t)3;
    9          
   10          void Sound_Short(void)//ßÙ¶ÌÏìÒ»Éù
   11          { 
@@ -62,7 +62,7 @@ line level    source
   50   2          {
   51   3            Buzzer_Port=(bit)1;
   52   3            Sound_En_Cnt--;
-C51 COMPILER V9.59.0.0   SOUND_TYPE                                                        04/11/2019 16:15:51 PAGE 2   
+C51 COMPILER V9.59.0.0   SOUND_TYPE                                                        04/19/2019 09:13:59 PAGE 2   
 
   53   3          }
   54   2          else

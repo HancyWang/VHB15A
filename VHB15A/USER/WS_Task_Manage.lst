@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   WS_TASK_MANAGE                                                    04/11/2019 16:15:50 PAGE 1   
+C51 COMPILER V9.59.0.0   WS_TASK_MANAGE                                                    04/19/2019 08:51:27 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE WS_TASK_MANAGE
@@ -62,7 +62,7 @@ line level    source
   50   1          WS_TaskIfg |= WS_TaskMap[Setprio];
   51   1      }
   52          
-C51 COMPILER V9.59.0.0   WS_TASK_MANAGE                                                    04/11/2019 16:15:50 PAGE 2   
+C51 COMPILER V9.59.0.0   WS_TASK_MANAGE                                                    04/19/2019 08:51:27 PAGE 2   
 
   53          //任务在就绪表中删除操作
   54          void WS_DelTaskIfg(uint8_t DelPrio)
